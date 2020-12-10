@@ -120,7 +120,7 @@ namespace stool
                     }
                     */
                     
-                    auto start = std::chrono::system_clock::now();
+                    //auto start = std::chrono::system_clock::now();
 
                     auto trees = stnodeSequencer.get_sub_trees();
 
@@ -131,7 +131,7 @@ namespace stool
                         assert(tree.node_count() == tree.maximal_repeat_check_vec.size());
                         for (uint64_t j = 0; j < tree.maximal_repeat_check_vec.size(); j++)
                         {
-                            auto &it = tree.get_stnode(j);
+                            //auto &it = tree.get_stnode(j);
                             bool b = tree.maximal_repeat_check_vec[j];
                             if (b)
                             {
@@ -147,8 +147,8 @@ namespace stool
                             }
                         }
                     }
-                    auto end = std::chrono::system_clock::now();
-                    double elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+                    //auto end = std::chrono::system_clock::now();
+                    //double elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
                     /*
                     if (elapsed1 > 10)
                     {
