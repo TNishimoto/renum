@@ -50,9 +50,10 @@ namespace stool
             }
             uint64_t get_lindex_containing_the_position(uint64_t lposition) const
             {
-                auto p = std::upper_bound(this->lpos_vec.begin(), this->lpos_vec.end(), lposition);
-                INDEX pos = std::distance(this->lpos_vec.begin(), p) - 1;
-                return pos;
+                uint64_t x = this->lpos_vec.rank(lposition+1) - 1;
+                return x;
+                
+                
             }
             uint64_t str_size() const
             {

@@ -13,6 +13,29 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
+        template <typename T>
+        class RankSupportVectorWrapper
+        {
+            T &items;
+            public:
+            RankSupportVectorWrapper(T &_items) : items(_items)
+            {
+            }
+            uint64_t operator[](uint64_t index) const
+            {
+                return this->items[index];
+            }
+            uint64_t rank(uint64_t value) const
+            {
+                auto p2 = std::lower_bound(this->items.begin(), this->items.end(), value);
+                uint64_t pos2 = std::distance(this->items.begin(), p2);
+
+                return pos2;
+            }
+            uint64_t size() const {
+                return this->items.size();
+            }
+        };
         class FPosDataStructure
         {
         public:
@@ -48,7 +71,7 @@ namespace stool
     Let R be the output array of length r.
     R[i] stores the starting position of the F-run corresponding to i-th L-run.
     */
-           template <typename LPOSDS>
+            template <typename LPOSDS>
             static std::vector<uint64_t> construct_fpos_array(const sdsl::int_vector<> &bwt, const LPOSDS &lpos_vec)
             {
                 std::vector<uint64_t> fvec = construct_rle_fl_mapper(bwt);
@@ -104,7 +127,7 @@ namespace stool
 
                 std::cout << "OK!" << std::endl;
             }
-           template <typename LPOSDS>
+            template <typename LPOSDS>
             static std::vector<uint64_t> construct(const sdsl::int_vector<> &bwt, const LPOSDS &lpos_vec)
             {
                 std::vector<uint64_t> v1 = construct_fpos_array(bwt, lpos_vec);
@@ -127,7 +150,8 @@ namespace stool
             const sdsl::wt_huff<> &wt;
 
             template <typename LPOSVEC>
-            LightFPosDataStructure(const sdsl::int_vector<> &_bwt, const LPOSVEC &_lposvec,const sdsl::wt_huff<> &_wt) : bwt(_bwt), wt(_wt){
+            LightFPosDataStructure(const sdsl::int_vector<> &_bwt, const LPOSVEC &_lposvec, const sdsl::wt_huff<> &_wt) : bwt(_bwt), wt(_wt)
+            {
                 LightFPosDataStructure::construct_C(bwt, this->C);
                 LightFPosDataStructure::construct_sorted_fpos_array(_bwt, _lposvec, this->fposSortedArray);
             }
@@ -172,7 +196,7 @@ namespace stool
                 for (uint64_t i = 0; i < rle; i++)
                 {
                     uint8_t c = bwt_head_chars[i];
-                    uint64_t l = lposvec[i+1] - lposvec[i];
+                    uint64_t l = lposvec[i + 1] - lposvec[i];
                     CK[c] += l;
                     numVec[c]++;
                 }
@@ -185,7 +209,7 @@ namespace stool
                 for (uint64_t i = 0; i < rle; i++)
                 {
                     uint8_t c = bwt_head_chars[i];
-                    uint64_t l = lposvec[i+1] - lposvec[i];
+                    uint64_t l = lposvec[i + 1] - lposvec[i];
                     X[numC[c]] = C[c];
                     numC[c]++;
                     C[c] += l;
@@ -209,9 +233,10 @@ namespace stool
                 return begin_pos2;
             }
             */
-           uint64_t size() const {
-               return this->bwt.size();
-           }
+            uint64_t size() const
+            {
+                return this->bwt.size();
+            }
         };
     } // namespace lcp_on_rlbwt
 } // namespace stool
