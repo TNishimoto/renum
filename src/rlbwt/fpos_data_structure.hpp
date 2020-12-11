@@ -17,7 +17,8 @@ namespace stool
         class RankSupportVectorWrapper
         {
             T &items;
-            public:
+
+        public:
             RankSupportVectorWrapper(T &_items) : items(_items)
             {
             }
@@ -32,7 +33,8 @@ namespace stool
 
                 return pos2;
             }
-            uint64_t size() const {
+            uint64_t size() const
+            {
                 return this->items.size();
             }
         };
