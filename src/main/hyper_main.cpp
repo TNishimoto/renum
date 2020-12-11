@@ -86,8 +86,10 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
     stool::WT wt;
     construct_im(wt, diff_char_vec);
 
+    /*
     sdsl::wt_huff_int<> wt2;
     construct_im(wt2, diff_char_vec);
+    */
 
 
 //DEBUG
@@ -97,11 +99,12 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             std::cout << (char)bwtAnalysis.id_to_character_vec[diff_char_vec[i]];
         }
         std::cout << std::endl;
-
+        /*
         for(uint64_t i=0;i<wt2.size();i++){
             std::cout << (char)bwtAnalysis.id_to_character_vec[wt2[i]];
         }
         std::cout << std::endl;
+        */
 
     }
 
@@ -214,11 +217,12 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
 
     stool::WT wt;
     construct_im(wt, diff_char_vec);
-
+    /*
     throw -1;
 
     sdsl::wt_huff_int<> wt2;
     construct_im(wt2, diff_char_vec);
+    */
 
 
 
@@ -264,7 +268,9 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
         {
             using FPOSDS = std::vector<uint64_t>;
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec_wrapper);
+
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
 
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
@@ -308,6 +314,8 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
         {
             using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+            //throw -1;
+
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
@@ -316,9 +324,9 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
             
             stnodeTraverser.initialize(thread_num, ds);
 
-            /*
+            
             ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
-            */
+            
         }
     }
 

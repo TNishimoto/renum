@@ -132,8 +132,11 @@ namespace stool
             template <typename LPOSDS>
             static std::vector<uint64_t> construct(const sdsl::int_vector<> &bwt, const LPOSDS &lpos_vec)
             {
+                std::cout << "Building Fpos_vec(std::vector<uint64_t>) ..." << std::flush;
                 std::vector<uint64_t> v1 = construct_fpos_array(bwt, lpos_vec);
-                check(bwt, lpos_vec, v1);
+                std::cout << "[Finished]" << std::endl;
+
+                //check(bwt, lpos_vec, v1);
                 return v1;
             }
             /*
@@ -146,16 +149,55 @@ namespace stool
         class LightFPosDataStructure
         {
         public:
+            /*
             std::vector<uint64_t> C;
             stool::EliasFanoVector fposSortedArray;
+            */
             const sdsl::int_vector<> &bwt;
             const stool::WT &wt;
+
+            std::vector<stool::EliasFanoVector> efv_vec;
+            std::vector<uint64_t> C2;
 
             template <typename LPOSVEC>
             LightFPosDataStructure(const sdsl::int_vector<> &_bwt, const LPOSVEC &_lposvec, const stool::WT &_wt) : bwt(_bwt), wt(_wt)
             {
+
+                std::cout << "Building Fpos_vec(EliasFanoVector) ..." << std::flush;
+                /*
                 LightFPosDataStructure::construct_C(bwt, this->C);
                 LightFPosDataStructure::construct_sorted_fpos_array(_bwt, _lposvec, this->fposSortedArray);
+                */
+                this->build(_lposvec);
+                std::cout << "[Finished]" << std::endl;
+
+                //this->check(_lposvec);
+            }
+            template <typename LPOSVEC>
+            void check(const LPOSVEC &_lposvec)
+            {
+                std::vector<uint64_t> collectVec = FPosDataStructure::construct(this->bwt, _lposvec);
+                /*
+                std::vector<uint64_t> C;
+                stool::EliasFanoVector fposSortedArray;
+                LightFPosDataStructure::construct_C(bwt, C);
+                LightFPosDataStructure::construct_sorted_fpos_array(this->bwt, _lposvec, fposSortedArray);
+                */
+
+                for (uint64_t i = 0; i < this->bwt.size(); i++)
+                {
+                    uint8_t c = (this->bwt)[i];
+                    uint64_t rank1 = wt.rank(i + 1, c);
+                    uint64_t q = C2[c] + this->efv_vec[c][rank1];
+
+                    uint64_t p = collectVec[i];
+
+                    if (p != q)
+                    {
+                        std::cout << "Error" << std::endl;
+                        throw -1;
+                    }
+                }
             }
 
             static void construct_C(const sdsl::int_vector<> &bwt_head_chars, std::vector<uint64_t> &C)
@@ -177,18 +219,70 @@ namespace stool
                 }
             }
             template <typename LPOSVEC>
+            void build(const LPOSVEC &lposvec)
+            {
+                uint64_t CHARMAX = UINT8_MAX + 1;
+                std::vector<uint64_t> C_run_sum;
+                std::vector<uint64_t> numVec;
+                std::vector<uint64_t> numC;
+
+                std::vector<stool::EliasFanoVectorBuilder> builders;
+
+                C_run_sum.resize(CHARMAX, 0);
+                numVec.resize(CHARMAX, 0);
+                this->C2.resize(CHARMAX, 0);
+                this->efv_vec.resize(CHARMAX);
+                builders.resize(CHARMAX);
+                uint64_t rle = this->bwt.size();
+
+                for (uint64_t i = 0; i < rle; i++)
+                {
+                    uint8_t c = this->bwt[i];
+                    uint64_t l = lposvec[i + 1] - lposvec[i];
+                    C_run_sum[c] += l;
+                    numVec[c]++;
+                }
+
+                for (uint64_t i = 1; i < CHARMAX; i++)
+                {
+                    this->C2[i] = this->C2[i - 1] + C_run_sum[i - 1];
+                }
+
+                for (uint64_t i = 0; i < CHARMAX; i++)
+                {
+                    builders[i].initialize(C_run_sum[i] + 1, numVec[i]);
+                }
+
+                std::vector<uint64_t> tmp_sum;
+                tmp_sum.resize(CHARMAX, 0);
+                for (uint64_t i = 0; i < rle; i++)
+                {
+                    uint8_t c = this->bwt[i];
+                    //std::cout << (uint64_t)c << "/" << numVec[c]<< std::endl;
+                    builders[c].push(tmp_sum[c]);
+                    //std::cout << "a" << std::endl;
+                    uint64_t l = lposvec[i + 1] - lposvec[i];
+                    tmp_sum[c] += l;
+                }
+
+                for (uint64_t i = 0; i < CHARMAX; i++)
+                {
+                    builders[i].finish();
+                    this->efv_vec[i].build_from_builder(builders[i]);
+                }
+            }
+            template <typename LPOSVEC>
             static void construct_sorted_fpos_array(const sdsl::int_vector<> &bwt_head_chars, const LPOSVEC &lposvec, stool::EliasFanoVector &output)
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
-                std::vector<uint64_t> X;
-                std::vector<uint64_t> CK;
+                std::vector<uint64_t> C_run_sum;
                 std::vector<uint64_t> C;
                 std::vector<uint64_t> numVec;
                 std::vector<uint64_t> numC;
 
                 std::vector<uint64_t> CK3;
 
-                CK.resize(CHARMAX, 0);
+                C_run_sum.resize(CHARMAX, 0);
                 numVec.resize(CHARMAX, 0);
                 numC.resize(CHARMAX, 0);
                 C.resize(CHARMAX, 0);
@@ -199,14 +293,16 @@ namespace stool
                 {
                     uint8_t c = bwt_head_chars[i];
                     uint64_t l = lposvec[i + 1] - lposvec[i];
-                    CK[c] += l;
+                    C_run_sum[c] += l;
                     numVec[c]++;
                 }
                 for (uint64_t i = 1; i < CHARMAX; i++)
                 {
-                    C[i] = C[i - 1] + CK[i - 1];
+                    C[i] = C[i - 1] + C_run_sum[i - 1];
                     numC[i] = numC[i - 1] + numVec[i - 1];
                 }
+
+                std::vector<uint64_t> X;
                 X.resize(rle);
                 for (uint64_t i = 0; i < rle; i++)
                 {
@@ -219,11 +315,18 @@ namespace stool
                 output.construct(&X);
             }
 
-            uint64_t operator[](uint64_t index) const
+            uint64_t operator[](uint64_t i) const
             {
+
+                uint8_t c = (this->bwt)[i];
+                uint64_t rank1 = wt.rank(i + 1, c);
+                uint64_t q = C2[c] + this->efv_vec[c][rank1];
+                return q;
+                /*
                 uint64_t rank1 = wt.rank(index + 1, (this->bwt)[index]);
                 uint64_t xx = C[(this->bwt)[index]] + rank1;
                 return this->fposSortedArray[xx];
+                */
                 //return yy;
             }
             /*

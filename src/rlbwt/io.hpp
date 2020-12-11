@@ -43,8 +43,8 @@ namespace stool
                  this->character_to_id_vec.resize(size, 0);
             }
             uint64_t character_bit_size(){
-                //return 8;
-                return std::log2(this->alphabet_count) + 1;
+                return 8;
+                //return std::log2(this->alphabet_count) + 1;
             }
             void analyze(std::string filename)
             {
@@ -127,6 +127,11 @@ namespace stool
                 std::cout << "Alphabet size \t\t : " << this->alphabet_count << std::endl;
                 std::cout << "log sigma \t\t : " << this->character_bit_size() << std::endl;
 
+                for(uint64_t i = 0;i<this->id_to_character_vec.size();i++){
+                    std::cout << "["<< (char)id_to_character_vec[i] << "->" << i << "] ";
+                }
+                std::cout << std::endl;
+
                 std::cout << "_______________________________________________________" << std::endl;
                 std::cout << "\033[39m" << std::endl;
             }
@@ -144,7 +149,7 @@ namespace stool
             BWTAnalysisResult analysisResult;
             analysisResult.analyze(filename);
 
-            diff_char_vec.width(analysisResult.character_bit_size());
+            //diff_char_vec.width(analysisResult.character_bit_size());
 
             diff_char_vec.resize(analysisResult.run_count);
             /*

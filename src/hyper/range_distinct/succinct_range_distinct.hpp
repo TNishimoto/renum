@@ -19,7 +19,7 @@ namespace stool
         class SuccinctRangeDistinctDataStructure
         {
         public:
-            using XCHAR = uint64_t;
+            using XCHAR = uint8_t;
             const stool::WT *wt;
             uint8_t lastChar;
             uint64_t size;
@@ -29,7 +29,6 @@ namespace stool
             std::vector<uint64_t> C;
             void initialize(const stool::WT *_wt, const sdsl::int_vector<> *_bwt)
             {
-                std::cout << "BWT = " << _bwt->size() << std::endl;
                 wt = _wt;
                 this->size = wt->size();
                 lastChar = (*_bwt)[_bwt->size() - 1];
@@ -49,7 +48,7 @@ namespace stool
 
                 assert(i + 1 <= newJ);
 
-                std::cout << i+1 << "/" << newJ << "/" << wt->size() << std::endl;
+                //std::cout << i+1 << "/" << newJ << "/" << wt->size() << std::endl;
                 sdsl::interval_symbols(*wt, i + 1, newJ, k, cs, cs1, cs2);
 
                 bool b = j + 1 < this->size;
@@ -58,12 +57,12 @@ namespace stool
                     uint64_t fstRank = cs1[x] + 1;
                     uint64_t lastRank = cs2[x];
 
-                    std::cout << "x = " << (cs[x]) << " [" << cs1[x] << "/" << cs2[x] << std::endl;
+                    //std::cout << "x = " << (cs[x]) << " [" << cs1[x] << "/" << cs2[x] << std::endl;
 
                     uint64_t left = wt->select(fstRank, cs[x]) - 1;
 
                     uint64_t right = wt->select(lastRank, cs[x]) - 1;
-                    std::cout << "LR = " << (cs[x]) << " [" << left << "/" << right << std::endl;
+                    //std::cout << "LR = " << (cs[x]) << " [" << left << "/" << right << std::endl;
 
                     if (j + 1 == this->size && cs[x] == lastChar)
                     {

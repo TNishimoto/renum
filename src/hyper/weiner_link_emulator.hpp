@@ -158,7 +158,31 @@ namespace stool
                     }
                 }
             }
-            uint64_t thshold = 1;
+            uint64_t thshold = 16;
+            bool check(const RInterval<INDEX_SIZE> &range)
+            {
+                uint64_t CHARMAX = UINT8_MAX + 1;
+
+                std::vector<CharInterval<INDEX_SIZE>> DEBUGcharIntervalTmpVec1;
+                std::vector<CharInterval<INDEX_SIZE>> DEBUGcharIntervalTmpVec2;
+                DEBUGcharIntervalTmpVec1.resize(CHARMAX);
+                DEBUGcharIntervalTmpVec2.resize(CHARMAX);
+
+                assert(range.beginIndex <= range.endIndex);
+                uint64_t count1 = heavyDS->range_distinct(range.beginIndex, range.endIndex, DEBUGcharIntervalTmpVec1);
+                uint64_t count2 = lightDS->range_distinct(range.beginIndex, range.endIndex, DEBUGcharIntervalTmpVec2);
+                if(count1 != count2){
+                    std::cout << "count distinct" << std::endl;
+                    throw -1;
+                }else{
+                    DEBUGcharIntervalTmpVec1.resize(count1);
+                    DEBUGcharIntervalTmpVec2.resize(count2);
+                    stool::beller::check(DEBUGcharIntervalTmpVec1, DEBUGcharIntervalTmpVec2);
+
+                }
+                return true;
+
+            }
             uint64_t range_distinct(const RInterval<INDEX_SIZE> &range)
             {
                 assert(this->lightDS != nullptr);
@@ -171,6 +195,7 @@ namespace stool
                 {
                     count = this->lightDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
                 }
+                //check(range);
                 //uint64_t count = this->lightDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
 
                 assert(count > 0);
@@ -273,7 +298,6 @@ namespace stool
                 for (uint64_t x = 0; x < resultCount; x++)
                 {
                     auto &it = this->rIntervalTmpVec[x];
-                    std::cout << it.beginIndex << ", " << it.endIndex << std::endl;
                     assert(this->_RLBWTDS->get_char_by_run_index(it.beginIndex) == this->_RLBWTDS->get_char_by_run_index(it.endIndex));
                     //output.push_weiner(it);
                     this->pushExplicitWeinerInterval(it, 0);

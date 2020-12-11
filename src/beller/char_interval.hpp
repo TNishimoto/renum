@@ -20,7 +20,7 @@ using namespace sdsl;
 
 namespace stool
 {
-    using WT = sdsl::wt_huff_int<>;
+    using WT = sdsl::wt_huff<>;
     template <typename index_type>
     class CharInterval
     {
