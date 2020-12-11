@@ -30,7 +30,7 @@ namespace stool
             uint64_t total_cover2 = 0;
             uint64_t num2 = 0;
 
-            void initialize(const sdsl::wt_huff<> *_wt, const sdsl::int_vector<> *_bwt)
+            void initialize(const stool::WT *_wt, const sdsl::int_vector<> *_bwt)
             {
 
                 uint64_t CHARMAX = UINT8_MAX + 1;

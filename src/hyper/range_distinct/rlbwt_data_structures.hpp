@@ -30,7 +30,7 @@ namespace stool
             const sdsl::int_vector<> &bwt;
             using CHAR_VEC = sdsl::int_vector<>;
 
-            sdsl::wt_huff<> &wt;
+            stool::WT &wt;
             const LPOSDS &lpos_vec;
             const FPOSDS &_fposDS;
             //RangeDistinctDataStructureOnRLBWT<INDEX_SIZE> rangeOnRLBWT;
@@ -38,7 +38,7 @@ namespace stool
             //const RLBWT_STR &_rlbwt;
 
             RLBWTDataStructures(const sdsl::int_vector<> &diff_char_vec,
-                                sdsl::wt_huff<> &_wt, const LPOSDS &_lpos_vec, const FPOSDS &__fposDS) : bwt(diff_char_vec), wt(_wt), lpos_vec(_lpos_vec), _fposDS(__fposDS)
+                                stool::WT &_wt, const LPOSDS &_lpos_vec, const FPOSDS &__fposDS) : bwt(diff_char_vec), wt(_wt), lpos_vec(_lpos_vec), _fposDS(__fposDS)
             {
 
                 //rangeOnRLBWT.initialize(&wt, &bwt);                

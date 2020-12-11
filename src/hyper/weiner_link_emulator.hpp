@@ -158,11 +158,12 @@ namespace stool
                     }
                 }
             }
+            uint64_t thshold = 1;
             uint64_t range_distinct(const RInterval<INDEX_SIZE> &range)
             {
                 assert(this->lightDS != nullptr);
                 uint64_t count = 0;
-                if (range.endIndex - range.beginIndex > 16)
+                if (range.endIndex - range.beginIndex > thshold)
                 {
                     count = this->heavyDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
                 }
@@ -272,6 +273,7 @@ namespace stool
                 for (uint64_t x = 0; x < resultCount; x++)
                 {
                     auto &it = this->rIntervalTmpVec[x];
+                    std::cout << it.beginIndex << ", " << it.endIndex << std::endl;
                     assert(this->_RLBWTDS->get_char_by_run_index(it.beginIndex) == this->_RLBWTDS->get_char_by_run_index(it.endIndex));
                     //output.push_weiner(it);
                     this->pushExplicitWeinerInterval(it, 0);

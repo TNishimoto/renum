@@ -20,6 +20,7 @@ using namespace sdsl;
 
 namespace stool
 {
+    using WT = sdsl::wt_huff_int<>;
     template <typename index_type>
     class CharInterval
     {
@@ -88,7 +89,7 @@ namespace stool
     {
         public:
         std::vector<uint64_t> C;
-        sdsl::wt_huff<> wt;
+        stool::WT wt;
         uint8_t lastChar;
         std::vector<uint8_t> cs;
         std::vector<uint64_t> cs1;

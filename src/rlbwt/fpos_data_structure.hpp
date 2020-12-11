@@ -149,10 +149,10 @@ namespace stool
             std::vector<uint64_t> C;
             stool::EliasFanoVector fposSortedArray;
             const sdsl::int_vector<> &bwt;
-            const sdsl::wt_huff<> &wt;
+            const stool::WT &wt;
 
             template <typename LPOSVEC>
-            LightFPosDataStructure(const sdsl::int_vector<> &_bwt, const LPOSVEC &_lposvec, const sdsl::wt_huff<> &_wt) : bwt(_bwt), wt(_wt)
+            LightFPosDataStructure(const sdsl::int_vector<> &_bwt, const LPOSVEC &_lposvec, const stool::WT &_wt) : bwt(_bwt), wt(_wt)
             {
                 LightFPosDataStructure::construct_C(bwt, this->C);
                 LightFPosDataStructure::construct_sorted_fpos_array(_bwt, _lposvec, this->fposSortedArray);

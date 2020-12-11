@@ -24,7 +24,7 @@ namespace stool
             using CHAR = typename CHAR_VEC::value_type;
 
             const CHAR_VEC *_char_vec;
-            const sdsl::wt_huff<> *wt;
+            const stool::WT *wt;
             std::vector<stool::EliasFanoVector> positionVec;
             //std::vector<INDEX_SIZE> rankVec;
             INDEX_SIZE size;
@@ -162,7 +162,7 @@ namespace stool
             RangeDistinctDataStructure()
             {
             }
-            void preprocess(const CHAR_VEC *__char_vec, const sdsl::wt_huff<> *_wt)
+            void preprocess(const CHAR_VEC *__char_vec, const stool::WT *_wt)
             {
                 wt = _wt;
                 int32_t charMaxSize = ((int32_t)UINT8_MAX) + 1;
