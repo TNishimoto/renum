@@ -114,6 +114,7 @@ namespace stool
             //uint64_t node_count = 0;
             uint64_t child_count = 0;
             uint64_t peak_child_count = 0;
+            uint64_t alpha = 1;
             RLBWTDS *_RLBWTDS;
             bool is_parallel = true;
 
@@ -236,6 +237,12 @@ namespace stool
                 {
                     this->peak_child_count = current_child_count;
                 }
+                /*
+                if(this->peak_child_count > 1000 * 1000){
+                    throw -1;
+                }
+                */
+
                 assert(total_counter <= strSize);
 
                 current_lcp++;

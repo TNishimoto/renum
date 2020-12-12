@@ -145,6 +145,17 @@ namespace stool
 
                 //this->leftmost_child_bits.clear();
             }
+            void shrink(uint64_t node_capacity, uint64_t child_capacity){
+                if(this->childVec.capacity() > child_capacity){
+                    this->childVec.reserve(child_capacity);
+                    this->childVec.shrink_to_fit();
+                    this->w_builder.reserve(child_capacity);
+                    this->w_builder.shrink_to_fit();
+                }
+                if(this->maximal_repeat_check_vec.capacity() > node_capacity){
+                    this->maximal_repeat_check_vec.reserve(node_capacity);
+                }
+            }
             void first_compute(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
             {
                 w_builder.clear();
@@ -160,14 +171,24 @@ namespace stool
                 this->maximal_repeat_check_vec.resize(1);
                 this->maximal_repeat_check_vec[0] = true;
             }
+            uint64_t get_child_rank(uint64_t i){
+                return this->leftmost_child_bits_selecter(i + 1);
+            }
             void computeNextLCPIntervalSet(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &inputSet, uint64_t start_index, uint64_t width, uint64_t rank, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
             {
-                assert(inputSet.node_count() > 0);
-                w_builder.clear();
 
+                assert(inputSet.node_count() > 0);
                 this->clear();
+
+
+
                 uint64_t end_index = start_index + width - 1;
                 assert(end_index < inputSet.node_count());
+
+                uint64_t node_capacity = width * 2;
+                uint64_t width_sum = inputSet.get_child_rank(end_index + 1) - inputSet.get_child_rank(start_index);
+                uint64_t child_capacity = width_sum * 2;
+                this->shrink(node_capacity, child_capacity);
 
                 RINTERVAL intv;
                 for (uint64_t i = start_index; i <= end_index; i++)
@@ -183,13 +204,13 @@ namespace stool
             void build_bits()
             {
                 w_builder.push_back(true);
-                sdsl::bit_vector v;
-                v.resize(w_builder.size());
+                //sdsl::bit_vector v;
+                leftmost_child_bits.resize(w_builder.size());
                 for (uint64_t i = 0; i < w_builder.size(); i++)
                 {
-                    v[i] = w_builder[i];
+                    leftmost_child_bits[i] = w_builder[i];
                 }
-                this->leftmost_child_bits.swap(v);
+                //this->leftmost_child_bits.swap(v);
 
                 sdsl::bit_vector::select_1_type b_sel(&leftmost_child_bits);
                 leftmost_child_bits_selecter.set_vector(&leftmost_child_bits);

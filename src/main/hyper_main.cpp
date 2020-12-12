@@ -374,6 +374,8 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
     std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
 
     std::cout << "_______________________________________________________" << std::endl;
+
+
     std::cout << "\033[39m" << std::endl;
 }
 
