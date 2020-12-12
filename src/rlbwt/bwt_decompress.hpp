@@ -1,3 +1,5 @@
+#pragma once
+
 #include <sdsl/bit_vectors.hpp>
 #include <iostream>
 #include <sdsl/wt_gmr.hpp>

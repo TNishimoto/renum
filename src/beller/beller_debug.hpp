@@ -135,27 +135,11 @@ namespace stool
                 }
             });
 
-            if (item1.size() < 100)
-            {
-                std::cout << "Test Vec:" << std::endl;
-                for (auto it : item1)
-                {
-                    std::cout << it.to_string();
-                }
-                std::cout << std::endl;
-
-                std::cout << "Correct Vec:" << std::endl;
-                for (auto it : item2)
-                {
-                    std::cout << it.to_string();
-                }
-                std::cout << std::endl;
-            }
-
+            bool b = true;
             if (item1.size() != item2.size())
             {
                 std::cout << "Distinct Size!" << item1.size() << "/" << item2.size() << std::endl;
-                throw -1;
+                b = false;
             }
             else
             {
@@ -167,8 +151,30 @@ namespace stool
                         std::cout << "Distinct Value!" << std::endl;
                         std::cout << item1[i].to_string() << "/" << item2[i].to_string() << std::endl;
 
-                        throw -1;
+                        b = false;
+                        break;
                     }
+                }
+            }
+            if (!b)
+            {
+                if (item1.size() < 100)
+                {
+                    std::cout << "Test: " << item1.size() << "/ Collect: " << item2.size() << std::endl;
+
+                    std::cout << "Test Vec:" << std::endl;
+                    for (auto it : item1)
+                    {
+                        std::cout << it.to_string();
+                    }
+                    std::cout << std::endl;
+
+                    std::cout << "Correct Vec:" << std::endl;
+                    for (auto it : item2)
+                    {
+                        std::cout << it.to_string();
+                    }
+                    std::cout << std::endl;
                 }
             }
             return true;

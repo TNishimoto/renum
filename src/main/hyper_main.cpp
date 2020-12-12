@@ -27,6 +27,7 @@
 
 #include "../rlbwt/bwt_decompress.hpp"
 #include "../rlbwt/light_rlbwt.hpp"
+#include "../test/stnode_checker.hpp"
 
 using namespace std;
 using namespace stool;
@@ -105,8 +106,17 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         }
         std::cout << std::endl;
         */
-
     }
+
+    stool::lcp_on_rlbwt::STNodeChecker stnc;
+    stnc.initialize(inputFile);
+    /*
+    std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
+    vector<uint64_t> sa = stool::construct_suffix_array(text);    
+    vector<stool::LCPInterval<uint64_t>> correct_intervals = stool::esaxx::naive_compute_maximal_substrings<char, uint64_t>(text, sa);
+    vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::naive_compute_complete_lcp_intervals<char, uint64_t>(text, sa);
+    */
+
 
     //uint64_t input_text_size = ds.str_size();
     std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
@@ -135,10 +145,11 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec_wrapper);
 
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
+            ds.stnc = &stnc;
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
 
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::testMaximalSubstrings(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
         else
@@ -147,10 +158,11 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec_wrapper, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
+            ds.stnc = &stnc;
 
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::testMaximalSubstrings(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
     }
@@ -170,9 +182,11 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
+                        ds.stnc = &stnc;
+
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::testMaximalSubstrings(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
         else
@@ -181,23 +195,19 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
+                        ds.stnc = &stnc;
+
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::computeMaximalSubstrings(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::testMaximalSubstrings(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
     }
 
 
    
-    std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
-    vector<uint64_t> sa = stool::construct_suffix_array(text);
-    //using BWT = stool::esaxx::ForwardBWT<char, std::vector<char>, std::vector<INDEX>>;
-    //BWT bwt(&text, &sa);
     
-    vector<stool::LCPInterval<uint64_t>> correct_intervals = stool::esaxx::naive_compute_maximal_substrings<char, uint64_t>(text, sa);
-    
-    stool::beller::equal_check_lcp_intervals(test_Intervals, correct_intervals);
+    //stool::beller::equal_check_lcp_intervals(test_Intervals, correct_intervals);
     std::cout << "Maximal repeats check OK!" << std::endl;
     
 
@@ -314,7 +324,6 @@ void computeMaximalSubstrings(std::string inputFile,std::string outputFile, stri
         {
             using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
-            //throw -1;
 
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);

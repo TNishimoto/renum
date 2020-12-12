@@ -9,6 +9,7 @@
 #include <type_traits>
 //#include "./rinterval_storage.hpp"
 #include "./range_distinct_on_rlbwt.hpp"
+#include "../../test/stnode_checker.hpp"
 
 namespace stool
 {
@@ -18,7 +19,10 @@ namespace stool
         template <typename INDEX_SIZE, typename LPOSDS, typename FPOSDS>
         class RLBWTDataStructures
         {
+
         public:
+                       stool::lcp_on_rlbwt::STNodeChecker *stnc;
+
             /*
             using CHARVEC = typename RLBWT_STR::char_vec_type;
             */
@@ -37,11 +41,46 @@ namespace stool
 
             //const RLBWT_STR &_rlbwt;
 
+
+            std::vector<stool::LCPInterval<uint64_t>> *collectLCPIntervals;
+
+            bool checkLCPInterval(const RINTERVAL &input)
+            {
+                if(this->stnc == nullptr){
+                    std::cout << "stnc is null" << std::endl;
+                    throw -1;
+                }
+                stool::LCPInterval<uint64_t> intv2 = input.get_lcp_interval(this->stnc->current_lcp, this->_fposDS);
+                return this->stnc->check(intv2.i, intv2.j);
+            }
+            bool checkWeinerLink(const RINTERVAL &input, std::vector<RINTERVAL> &stnodeVec, std::vector<uint64_t> &indexVec, uint64_t indexCount)
+            {
+                if(this->stnc == nullptr){
+                    std::cout << "stnc is null" << std::endl;
+                    throw -1;
+                }
+
+                stool::LCPInterval<uint64_t> intv2 = input.get_lcp_interval(this->stnc->current_lcp-1, this->_fposDS);
+
+                //std::cout << "PREV = [" <<    intv2.i << ", " << intv2.j << "]" << std::endl;
+                //std::cout << "NEXT: " ;                     
+                std::vector<stool::LCPInterval<uint64_t>> wlinks;
+                for(uint64_t i=0;i<indexCount;i++){
+                    stool::LCPInterval<uint64_t> intv = stnodeVec[indexVec[i]].get_lcp_interval(this->stnc->current_lcp, this->_fposDS);
+                    //std::cout << "[" << intv.i << ", " << intv.j << "]";
+                    wlinks.push_back(intv);
+                }
+                //std::cout << std::endl;
+
+                return this->stnc->check2(intv2.i, intv2.j, wlinks);
+            }
+
+
             RLBWTDataStructures(const sdsl::int_vector<> &diff_char_vec,
                                 stool::WT &_wt, const LPOSDS &_lpos_vec, const FPOSDS &__fposDS) : bwt(diff_char_vec), wt(_wt), lpos_vec(_lpos_vec), _fposDS(__fposDS)
             {
 
-                //rangeOnRLBWT.initialize(&wt, &bwt);                
+                //rangeOnRLBWT.initialize(&wt, &bwt);
             }
 
             INDEX_SIZE get_fpos(INDEX_SIZE index, INDEX_SIZE diff) const
@@ -50,10 +89,8 @@ namespace stool
             }
             uint64_t get_lindex_containing_the_position(uint64_t lposition) const
             {
-                uint64_t x = this->lpos_vec.rank(lposition+1) - 1;
+                uint64_t x = this->lpos_vec.rank(lposition + 1) - 1;
                 return x;
-                
-                
             }
             uint64_t str_size() const
             {

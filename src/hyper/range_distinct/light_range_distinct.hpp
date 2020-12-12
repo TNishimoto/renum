@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <unordered_map>
 #include <queue>
+#include <mutex>
+#include <thread>
 
 #include "stool/src/debug.hpp"
 #include "stool/src/elias_fano_vector.hpp"
@@ -18,6 +20,7 @@ namespace stool
         template <typename CHAR_VEC, typename INDEX_SIZE>
         class LightRangeDistinctDataStructure
         {
+
         public:
             const CHAR_VEC *_char_vec;
 
@@ -37,6 +40,8 @@ namespace stool
             }
             uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
             {
+                //std::lock_guard<std::mutex> lock(std::mutex);
+
                 uint64_t count = 0;
                 assert(i <= j);
                 for (uint64_t x = i; x <= j; x++)

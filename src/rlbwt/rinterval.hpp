@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <queue>
 
-
 namespace stool
 {
     namespace lcp_on_rlbwt
@@ -39,11 +38,20 @@ namespace stool
                     INDEX_SIZE begin_pos = fposArray[this->beginIndex] + this->beginDiff;
                     INDEX_SIZE end_pos = fposArray[this->endIndex] + this->endDiff;
 
-                std::cout << "[(" << this->beginIndex << ", " << this->beginDiff << "), (" << this->endIndex << ", " << this->endDiff << ")]" << std::flush;
-                    std::cout << "[" << begin_pos << ", " << end_pos << "]" << std::endl;
+                    std::cout << "[(" << this->beginIndex << ", " << this->beginDiff << "), (" << this->endIndex << ", " << this->endDiff << ")]" << std::flush;
+                    std::cout << "[" << begin_pos << ", " << end_pos << "]" << std::flush;
                     assert(begin_pos <= end_pos);
-
                 }
+            }
+            template <typename FPOSDS>
+            stool::LCPInterval<uint64_t> get_lcp_interval(uint64_t lcp,const FPOSDS &fposArray) const
+            {
+                    assert(this->beginIndex < fposArray.size());
+                    assert(this->endIndex < fposArray.size());
+
+                    INDEX_SIZE begin_pos = fposArray[this->beginIndex] + this->beginDiff;
+                    INDEX_SIZE end_pos = fposArray[this->endIndex] + this->endDiff;
+                    return stool::LCPInterval<uint64_t>(begin_pos, end_pos,lcp);
             }
 
             bool is_special() const
@@ -59,6 +67,5 @@ namespace stool
             }
         };
 
-
-    } // namespace rlbwt
+    } // namespace lcp_on_rlbwt
 } // namespace stool
