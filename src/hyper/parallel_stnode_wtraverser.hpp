@@ -111,7 +111,7 @@ namespace stool
             uint64_t current_lcp = 0;
             uint64_t total_counter = 0;
             uint64_t strSize = 0;
-            uint64_t node_count = 0;
+            //uint64_t node_count = 0;
             uint64_t child_count = 0;
             uint64_t peak_child_count = 0;
             RLBWTDS *_RLBWTDS;
@@ -120,6 +120,9 @@ namespace stool
             STNODE_WTRAVERSER *get_sub_tree()
             {
                 return &this->sub_tree;
+            }
+            uint64_t node_count() const {
+                return this->sub_tree.node_count();
             }
 
             void initialize(uint64_t size, RLBWTDS &_RLBWTDS)
@@ -179,8 +182,13 @@ namespace stool
             {
                 if (current_lcp > 0)
                 {
+                    if(current_lcp % 100 == 0){
+                    std::cout << "LCP " << (strSize - total_counter) << std::endl;
+
+                    }
+
 #if DEBUG
-                    std::cout << "LCP " << current_lcp << std::endl;
+                                        std::cout << "LCP " << current_lcp << "/" << this->child_count << std::endl;
 
                     if (this->_RLBWTDS->str_size() < 100)
                     {
@@ -217,41 +225,22 @@ namespace stool
                     this->sub_tree.add(this->sub_tmp_trees[i]);
                 }
                 this->sub_tree.build_bits();
-#if DEBUG
-                if (this->_RLBWTDS->str_size() < 100)
-                {
-                    this->print();
-                }
-#endif
-                /*
-                for(uint64_t i=0;i<this->sub_trees.size();i++){
-                    this->sub_trees[i].print2(*this->_RLBWTDS);
-                }
-                */
 
                 uint64_t current_child_count = sub_tree.children_count();
                 uint64_t current_node_count = sub_tree.node_count();
 
-                this->node_count = 0;
-                /*
-                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
-                {
-                    current_child_count += sub_trees[i].children_count();
-                    current_node_count += sub_trees[i].node_count();
-                }
-                */
                 total_counter += (current_child_count - current_node_count);
                 this->child_count = current_child_count;
-                this->node_count = current_node_count;
+                //this->node_count = current_node_count;
                 if (current_child_count > this->peak_child_count)
                 {
                     this->peak_child_count = current_child_count;
                 }
                 assert(total_counter <= strSize);
-                std::cout << total_counter << "/" << strSize <<std::endl;
 
                 current_lcp++;
                 assert(this->child_count > 0);
+                assert(this->node_count() > 0);
             }
             bool isStop()
             {

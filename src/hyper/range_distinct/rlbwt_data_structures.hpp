@@ -70,7 +70,6 @@ namespace stool
                     //std::cout << "[" << intv.i << ", " << intv.j << "]";
                     wlinks.push_back(intv);
                 }
-                //std::cout << std::endl;
 
                 return this->stnc->check2(intv2.i, intv2.j, wlinks);
             }
@@ -128,7 +127,7 @@ namespace stool
             }
             uint64_t get_start_rle_lposition() const{
                 uint8_t max_char = 0;
-                uint64_t max_position;
+                uint64_t max_position = 0;
                 for (int64_t i = bwt.size() - 1; i >= 0; i--)
                 {
                     if (max_char < bwt[i])

@@ -40,7 +40,6 @@ namespace stool
             void preprocess(CHAR_VEC *__char_vec)
             {
                 this->_char_vec = __char_vec;
-
             }
             uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
             {
@@ -120,15 +119,18 @@ namespace stool
                 vector<uint64_t> sa = stool::construct_suffix_array(text);
 
                 vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::naive_compute_complete_lcp_intervals<char, uint64_t>(text, sa);
-                for(auto& it: correct_lcp_intervals){
-                    if(it.lcp < bwt.size()){
+                for (auto &it : correct_lcp_intervals)
+                {
+                    if (it.lcp < bwt.size())
+                    {
                         this->lcp_intervals.push_back(it);
-                    }else if(bwt[it.i] == 0 || bwt[it.i] == '$'){
+                    }
+                    else if (bwt[it.i] == 0 || bwt[it.i] == '$')
+                    {
                         std::cout << "Doller " << bwt[it.i] << std::endl;
                         it.lcp = bwt.size();
                         this->lcp_intervals.push_back(it);
                     }
-
                 }
                 //this->lcp_intervals.swap(correct_lcp_intervals);
 
@@ -145,35 +147,44 @@ namespace stool
             }
             void increment(uint64_t k)
             {
-                assert(this->maps[this->current_lcp].size() == k);
 
-                if(this->maps[this->current_lcp].size() != k){
-                    std::cout << "INCREMENT ERROR!" << std::endl;
+                if (this->maps[this->current_lcp].size() != k)
+                {
+
+                    std::cout << "INCREMENT ERROR!" << this->maps[this->current_lcp].size() << "/" << k << std::endl;
+                assert(this->maps[this->current_lcp].size() == k);
 
                     throw -1;
                 }
-                
+
                 this->current_lcp++;
             }
             bool check2(uint64_t i, uint64_t j, std::vector<stool::LCPInterval<uint64_t>> &wlinks)
             {
                 std::lock_guard<std::mutex> lock(std::mutex);
-
-                std::vector<CharInterval<uint64_t>> output;
-                output.resize(256);
-
-                uint64_t count = this->lrdds.range_distinct(i, j, output);
                 std::vector<stool::LCPInterval<uint64_t>> correctWlinks;
 
-                for (uint64_t x = 0; x < count; x++)
+                if (this->current_lcp == 0)
                 {
-                    uint64_t l = stool::FMIndex::LF(output[x].i, bwt, C, wt);
-                    uint64_t r = stool::FMIndex::LF(output[x].j, bwt, C, wt);
+                    correctWlinks.push_back(stool::LCPInterval<uint64_t>(0, bwt.size()-1, this->current_lcp));
+                }
+                else
+                {
+                    std::vector<CharInterval<uint64_t>> output;
+                    output.resize(256);
 
-                    auto it = this->maps[this->current_lcp].find(l);
-                    if (it != this->maps[this->current_lcp].end())
+                    uint64_t count = this->lrdds.range_distinct(i, j, output);
+
+                    for (uint64_t x = 0; x < count; x++)
                     {
-                        correctWlinks.push_back(stool::LCPInterval<uint64_t>(l, r, this->current_lcp));
+                        uint64_t l = stool::FMIndex::LF(output[x].i, bwt, C, wt);
+                        uint64_t r = stool::FMIndex::LF(output[x].j, bwt, C, wt);
+
+                        auto it = this->maps[this->current_lcp].find(l);
+                        if (it != this->maps[this->current_lcp].end())
+                        {
+                            correctWlinks.push_back(stool::LCPInterval<uint64_t>(l, r, this->current_lcp));
+                        }
                     }
                 }
 
@@ -186,6 +197,7 @@ namespace stool
                     correctWlinks.begin(),
                     correctWlinks.end(),
                     stool::LCPIntervalPreorderComp<uint64_t>());
+
                 stool::beller::equal_check_lcp_intervals(wlinks, correctWlinks);
                 return true;
             }

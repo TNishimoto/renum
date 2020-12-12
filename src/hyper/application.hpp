@@ -95,7 +95,7 @@ namespace stool
                 while (!stnodeSequencer.isStop())
                 {
                     stnodeSequencer.process();
-                    for (uint64_t i = 0; i < stnodeSequencer.node_count; i++)
+                    for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
                         auto &it = stnodeSequencer.get_stnode(i);
                         uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
@@ -118,8 +118,8 @@ namespace stool
 
                     stnodeSequencer.process();
                     auto tree = stnodeSequencer.get_sub_tree();
-                    assert(stnodeSequencer.node_count == tree->maximal_repeat_check_vec.size());
-                    for (uint64_t i = 0; i < stnodeSequencer.node_count; i++)
+                    assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
+                    for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
                         bool b = tree->maximal_repeat_check_vec[i];
                         //auto &it = stnodeSequencer.get_stnode(i);
@@ -177,9 +177,9 @@ namespace stool
                     stnodeSequencer.process();
                     auto tree = stnodeSequencer.get_sub_tree();
 
-                    assert(stnodeSequencer.node_count == tree->maximal_repeat_check_vec.size());
+                    assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
 
-                    for (uint64_t i = 0; i < stnodeSequencer.node_count; i++)
+                    for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
                         bool b = tree->maximal_repeat_check_vec[i];
                         auto &it = stnodeSequencer.get_stnode(i);
@@ -193,7 +193,7 @@ namespace stool
                             r.push_back(newLCPIntv);
                         }
                     }
-                    stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count);
+                    stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count());
                 }
                 uint64_t dx = stnodeSequencer._RLBWTDS->get_end_rle_lposition();
                 uint64_t dollerPos = stnodeSequencer._RLBWTDS->get_lpos(dx);
@@ -210,11 +210,11 @@ namespace stool
                 while (!stnodeSequencer.isStop())
                 {
                     stnodeSequencer.process();
-                    auto tree = stnodeSequencer.get_sub_tree();
+                    //auto tree = stnodeSequencer.get_sub_tree();
 
-                    assert(stnodeSequencer.node_count == tree->maximal_repeat_check_vec.size());
+                    //assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
 
-                    for (uint64_t i = 0; i < stnodeSequencer.node_count; i++)
+                    for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
                         RINTERVAL it;
                         stnodeSequencer.get_stnode(i, it);
@@ -223,7 +223,7 @@ namespace stool
                         stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
                         r.push_back(newLCPIntv);
                     }
-                    stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count);
+                    stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count());
                 }
                 uint64_t dx = stnodeSequencer._RLBWTDS->get_end_rle_lposition();
                 uint64_t dollerPos = stnodeSequencer._RLBWTDS->get_lpos(dx);

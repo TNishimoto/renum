@@ -83,7 +83,7 @@ namespace stool
                 explicitChildCount = 0;
             }
 
-            void move_st_internal_nodes(std::vector<RINTERVAL> &outputSTVec, std::vector<RINTERVAL> &outputExplicitChildrenVec, std::vector<bool> &leftmost_child_bits)
+            void move_st_internal_nodes(std::vector<RINTERVAL> &outputExplicitChildrenVec, std::vector<bool> &leftmost_child_bits)
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
@@ -92,20 +92,12 @@ namespace stool
 
                     auto &currentVec = this->childrenVec[character];
                     uint64_t count = this->childrenVec[character].size();
-                    outputSTVec.push_back(this->stnodeVec[character]);
-                    //outputWidthVec.push_back(count);
                     leftmost_child_bits.push_back(true);
-                    for(uint64_t i=1;i<count;i++){
+                    for (uint64_t i = 1; i < count; i++)
+                    {
                         leftmost_child_bits.push_back(false);
                     }
 
-#if DEBUG
-                    if (this->_RLBWTDS->str_size() < DEBUG_LIMIT)
-                    {
-                        std::cout << "Move Node: ";
-                        this->stnodeVec[character].print2(_RLBWTDS->_fposDS);
-                    }
-#endif
                     for (uint64_t j = 0; j < count; j++)
                     {
                         outputExplicitChildrenVec.push_back(currentVec[j]);
@@ -242,34 +234,13 @@ namespace stool
             }
             uint64_t computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::vector<RINTERVAL> &weinerVec, uint64_t rank, uint64_t width)
             {
-#if DEBUG
-                if (this->_RLBWTDS->str_size() < DEBUG_LIMIT)
-                {
-
-                    std::cout << "Process " << std::flush;
-                    lcpIntv.print2(this->_RLBWTDS->_fposDS);
-                    std::cout << std::endl;
-                    std::cout << "Rank: " << rank << ", width: " << width << std::endl;
-                }
-#endif
 
                 this->clear();
-//uint64_t i = rank;
-#if DEBUG
-                INDEX_SIZE lcpIntvBeginPos = this->_RLBWTDS->get_fpos(lcpIntv.beginIndex, lcpIntv.beginDiff);
-                INDEX_SIZE lcpIntvEndPos = this->_RLBWTDS->get_fpos(lcpIntv.endIndex, lcpIntv.endDiff);
-#endif
 
                 this->getNextSAIntervalsForLCPIntervals(lcpIntv);
 
                 for (uint64_t j = 0; j < width; j++)
                 {
-#if DEBUG
-                    INDEX_SIZE weinerBeginPos = this->_RLBWTDS->get_fpos(weinerVec[rank + j].beginIndex, weinerVec[rank + j].beginDiff);
-                    INDEX_SIZE weinerEndPos = this->_RLBWTDS->get_fpos(weinerVec[rank + j].endIndex, weinerVec[rank + j].endDiff);
-                    assert(lcpIntvBeginPos <= weinerBeginPos && weinerEndPos <= lcpIntvEndPos);
-#endif
-
                     this->computeNextExplicitWeinerIntervals(weinerVec[rank + j]);
                 }
                 this->fit();
@@ -278,36 +249,18 @@ namespace stool
                 this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
 #endif
 
-                return width;
+                return this->indexCount;
 
                 //intervalTemporary.move(outputSet);
             }
-            void computeFirstLCPIntervalSet()
+            uint64_t computeFirstLCPIntervalSet()
             {
                 this->clear();
                 RINTERVAL lcpIntv;
-                size_t minIndex = this->_RLBWTDS->get_end_rle_lposition();
-
-                uint64_t maxIndex = 0;
-                typename RLBWTDS::UCHAR c = 0;
-                for (uint64_t i = 0; i < this->_RLBWTDS->rle_size(); i++)
-                {
-                    typename RLBWTDS::UCHAR c2 = this->_RLBWTDS->get_char_by_run_index(i);
-                    if (c < c2)
-                    {
-                        c = c2;
-                        maxIndex = i;
-                    }
-                    else if (c == c2)
-                    {
-                        maxIndex = i;
-                    }
-                }
-                uint64_t diff = this->_RLBWTDS->get_run(maxIndex) - 1;
-                lcpIntv.beginIndex = minIndex;
+                lcpIntv.beginIndex = this->_RLBWTDS->get_end_rle_lposition();
                 lcpIntv.beginDiff = 0;
-                lcpIntv.endIndex = maxIndex;
-                lcpIntv.endDiff = diff;
+                lcpIntv.endIndex = this->_RLBWTDS->get_start_rle_lposition();
+                lcpIntv.endDiff = this->_RLBWTDS->get_run(lcpIntv.endIndex) - 1;
 
                 uint64_t begin_lindex = 0;
                 uint64_t begin_diff = 0;
@@ -321,26 +274,9 @@ namespace stool
                 tmpArg.endDiff = end_diff;
                 //std::vector<CHAR> charOutputVec;
 
-#if DEBUG
-                if (this->_RLBWTDS->str_size() < DEBUG_LIMIT)
-                {
-
-                    std::cout << "Process " << std::flush;
-                    lcpIntv.print2(this->_RLBWTDS->_fposDS);
-                    std::cout << std::endl;
-                }
-#endif
                 uint64_t resultCount = this->range_distinct(tmpArg);
                 uint64_t counter = 0;
                 this->pushLCPInterval(lcpIntv, 0);
-
-#if DEBUG
-                if (this->_RLBWTDS->str_size() < DEBUG_LIMIT)
-                {
-
-                    std::cout << "Found:  " << std::flush;
-                }
-#endif
 
                 for (uint64_t x = 0; x < resultCount; x++)
                 {
@@ -348,27 +284,22 @@ namespace stool
                     assert(this->_RLBWTDS->get_char_by_run_index(it.beginIndex) == this->_RLBWTDS->get_char_by_run_index(it.endIndex));
                     //output.push_weiner(it);
                     this->pushExplicitWeinerInterval(it, 0);
-#if DEBUG
-                    if (this->_RLBWTDS->str_size() < DEBUG_LIMIT)
-                    {
-                        it.print2(this->_RLBWTDS->_fposDS);
-                    }
-#endif
 
                     counter++;
                 }
+                this->fit();
+
 #if DEBUG
-                if (this->_RLBWTDS->str_size() < DEBUG_LIMIT)
-                {
-                    std::cout << std::endl;
-                }
+                this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
 #endif
 
+                return 1;
                 //return counter;
             }
             void fit()
             {
                 uint64_t k = 0;
+
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     auto c = this->indexVec[i];
@@ -377,16 +308,50 @@ namespace stool
                     assert(this->_RLBWTDS->checkLCPInterval(this->stnodeVec[c]) == (explicitChildrenCount > 0));
                     if (explicitChildrenCount > 0)
                     {
-                        this->indexVec[k++] = this->indexVec[i];
+
+                        this->indexVec[k] = this->indexVec[i];
+
+                        k++;
                     }
                 }
-                /*
-                while (this->indexVec.size() > k)
+                for (uint64_t i = 0; i < this->indexCount; i++)
                 {
-                    this->indexVec.pop_back();
-                }
-                */
+                    auto c = this->indexVec[i];
+                    uint64_t minCharIndex = 0;
+                    uint64_t maxCharIndex = 0;
 
+                    auto &currentVec = this->childrenVec[c];
+                    uint64_t count = this->childrenVec[c].size();
+                    for (uint64_t i = 0; i < count; i++)
+                    {
+                        auto &it = currentVec[i];
+                        bool isLeft = it.beginIndex < currentVec[minCharIndex].beginIndex || (it.beginIndex == currentVec[minCharIndex].beginIndex && it.beginDiff < currentVec[minCharIndex].beginDiff);
+                        if (isLeft)
+                        {
+                            minCharIndex = i;
+                        }
+                        bool isRight = it.endIndex > currentVec[maxCharIndex].endIndex || (it.endIndex == currentVec[maxCharIndex].endIndex && it.endDiff > currentVec[maxCharIndex].endDiff);
+                        if (isRight)
+                        {
+                            maxCharIndex = i;
+                        }
+                    }
+                    if (minCharIndex != 0)
+                    {
+                        auto tmp = currentVec[0];
+                        currentVec[0] = currentVec[minCharIndex];
+                        currentVec[minCharIndex] = tmp;
+                    }
+
+                    if (maxCharIndex == 0)
+                        maxCharIndex = minCharIndex;
+                    if (maxCharIndex != count - 1)
+                    {
+                        auto tmp2 = currentVec[count - 1];
+                        currentVec[count - 1] = currentVec[maxCharIndex];
+                        currentVec[maxCharIndex] = tmp2;
+                    }
+                }
                 this->indexCount = k;
             }
         };
