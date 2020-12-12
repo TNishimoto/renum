@@ -209,6 +209,7 @@ namespace stool
                 {
                     this->sub_tree.add(this->sub_tmp_trees[i]);
                 }
+                this->sub_tree.build_bits();
 #if DEBUG
                 if (this->_RLBWTDS->str_size() < 100)
                 {
@@ -232,7 +233,7 @@ namespace stool
                     current_node_count += sub_trees[i].node_count();
                 }
                 */
-                total_counter += current_child_count;
+                total_counter += (current_child_count - current_node_count);
                 this->child_count = current_child_count;
                 this->node_count = current_node_count;
                 if (current_child_count > this->peak_child_count)
@@ -240,13 +241,14 @@ namespace stool
                     this->peak_child_count = current_child_count;
                 }
                 assert(total_counter <= strSize);
+                std::cout << total_counter << "/" << strSize <<std::endl;
 
                 current_lcp++;
                 assert(this->child_count > 0);
             }
             bool isStop()
             {
-                return total_counter == strSize;
+                return total_counter == strSize - 1;
             }
             
             void print()

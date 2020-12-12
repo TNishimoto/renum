@@ -83,7 +83,7 @@ namespace stool
                 explicitChildCount = 0;
             }
 
-            void move_st_internal_nodes(std::vector<RINTERVAL> &outputSTVec, std::vector<RINTERVAL> &outputExplicitChildrenVec, std::vector<uint8_t> &outputWidthVec)
+            void move_st_internal_nodes(std::vector<RINTERVAL> &outputSTVec, std::vector<RINTERVAL> &outputExplicitChildrenVec, std::vector<bool> &leftmost_child_bits)
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
@@ -93,7 +93,12 @@ namespace stool
                     auto &currentVec = this->childrenVec[character];
                     uint64_t count = this->childrenVec[character].size();
                     outputSTVec.push_back(this->stnodeVec[character]);
-                    outputWidthVec.push_back(count);
+                    //outputWidthVec.push_back(count);
+                    leftmost_child_bits.push_back(true);
+                    for(uint64_t i=1;i<count;i++){
+                        leftmost_child_bits.push_back(false);
+                    }
+
 #if DEBUG
                     if (this->_RLBWTDS->str_size() < DEBUG_LIMIT)
                     {
@@ -110,17 +115,26 @@ namespace stool
             }
 
         private:
-            void pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
+            bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
             {
-                if (this->childrenVec[c].size() == 0)
+                auto &lcpIntv = this->stnodeVec[c];
+                bool isLastChild = lcpIntv.endIndex == w.endIndex && lcpIntv.endDiff == w.endDiff;
+                bool isFirstChild = lcpIntv.beginIndex == w.beginIndex && lcpIntv.beginDiff == w.beginDiff;
+                bool b = !(isFirstChild && isLastChild);
+
+                if (b)
                 {
 
-                    this->indexVec[this->indexCount] = c;
-                    this->indexCount++;
-                }
-                this->childrenVec[c].push_back(w);
+                    if (this->childrenVec[c].size() == 0)
+                    {
 
-                explicitChildCount++;
+                        this->indexVec[this->indexCount] = c;
+                        this->indexCount++;
+                    }
+                    this->childrenVec[c].push_back(w);
+                    explicitChildCount++;
+                }
+                return b;
             }
             void pushLCPInterval(const RINTERVAL &w, uint8_t c)
             {
@@ -156,12 +170,11 @@ namespace stool
                     typename RLBWTDS::UCHAR c = this->charTmpVec[i];
                     auto &it = this->rIntervalTmpVec[i];
 
-                    auto &lcpIntv = this->stnodeVec[c];
-                    bool isLastChild = lcpIntv.endIndex == it.endIndex && lcpIntv.endDiff == it.endDiff;
-                    if (!isLastChild)
-                    {
-                        this->pushExplicitWeinerInterval(it, c);
-                    }
+                    //auto &lcpIntv = this->stnodeVec[c];
+                    //bool isLastChild = lcpIntv.endIndex == it.endIndex && lcpIntv.endDiff == it.endDiff;
+                    //if(!isLastChild){
+                    this->pushExplicitWeinerInterval(it, c);
+                    //}
                 }
             }
             bool check(const RInterval<INDEX_SIZE> &range)
@@ -241,32 +254,29 @@ namespace stool
 #endif
 
                 this->clear();
-                //uint64_t i = rank;
-                #if DEBUG
+//uint64_t i = rank;
+#if DEBUG
                 INDEX_SIZE lcpIntvBeginPos = this->_RLBWTDS->get_fpos(lcpIntv.beginIndex, lcpIntv.beginDiff);
                 INDEX_SIZE lcpIntvEndPos = this->_RLBWTDS->get_fpos(lcpIntv.endIndex, lcpIntv.endDiff);
-                #endif
+#endif
 
                 this->getNextSAIntervalsForLCPIntervals(lcpIntv);
 
                 for (uint64_t j = 0; j < width; j++)
                 {
-                    #if DEBUG
-                    INDEX_SIZE weinerBeginPos = this->_RLBWTDS->get_fpos(weinerVec[rank+j].beginIndex, weinerVec[rank+j].beginDiff);
-                    INDEX_SIZE weinerEndPos = this->_RLBWTDS->get_fpos(weinerVec[rank+j].endIndex, weinerVec[rank+j].endDiff);
+#if DEBUG
+                    INDEX_SIZE weinerBeginPos = this->_RLBWTDS->get_fpos(weinerVec[rank + j].beginIndex, weinerVec[rank + j].beginDiff);
+                    INDEX_SIZE weinerEndPos = this->_RLBWTDS->get_fpos(weinerVec[rank + j].endIndex, weinerVec[rank + j].endDiff);
                     assert(lcpIntvBeginPos <= weinerBeginPos && weinerEndPos <= lcpIntvEndPos);
-                    #endif
+#endif
 
-                    this->computeNextExplicitWeinerIntervals(weinerVec[rank+j]);
-
+                    this->computeNextExplicitWeinerIntervals(weinerVec[rank + j]);
                 }
                 this->fit();
 
-                #if DEBUG
+#if DEBUG
                 this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
-                #endif
-
-
+#endif
 
                 return width;
 

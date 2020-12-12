@@ -120,7 +120,17 @@ namespace stool
                 vector<uint64_t> sa = stool::construct_suffix_array(text);
 
                 vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::naive_compute_complete_lcp_intervals<char, uint64_t>(text, sa);
-                this->lcp_intervals.swap(correct_lcp_intervals);
+                for(auto& it: correct_lcp_intervals){
+                    if(it.lcp < bwt.size()){
+                        this->lcp_intervals.push_back(it);
+                    }else if(bwt[it.i] == 0 || bwt[it.i] == '$'){
+                        std::cout << "Doller " << bwt[it.i] << std::endl;
+                        it.lcp = bwt.size();
+                        this->lcp_intervals.push_back(it);
+                    }
+
+                }
+                //this->lcp_intervals.swap(correct_lcp_intervals);
 
                 this->maps.resize(text.size());
 
