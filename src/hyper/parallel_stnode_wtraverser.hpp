@@ -72,11 +72,12 @@ namespace stool
                 uint64_t size = tmp_tree.w_builder.size();
                 RInterval<INDEX_SIZE> it;
                 uint64_t L = 0;
-                uint64_t x=0;
+                uint64_t x = 0;
                 for (uint64_t i = 1; i < size; i++)
                 {
-                    if(tmp_tree.w_builder[i]){
-                        uint64_t R = i-1;
+                    if (tmp_tree.w_builder[i])
+                    {
+                        uint64_t R = i - 1;
                         tmp_tree.get_stnode(L, R, it);
                         bool b = checkMaximalRepeat(it, *(em._RLBWTDS));
                         tmp_tree.maximal_repeat_check_vec[x++] = b;
@@ -98,7 +99,6 @@ namespace stool
             std::vector<uint8_t> widthVec;
             std::vector<bool> maximal_repeat_check_vec;
             */
-
 
             STNODE_WTRAVERSER sub_tree;
             std::vector<STNODE_WTRAVERSER> sub_tmp_trees;
@@ -122,7 +122,8 @@ namespace stool
             {
                 return &this->sub_tree;
             }
-            uint64_t node_count() const {
+            uint64_t node_count() const
+            {
                 return this->sub_tree.node_count();
             }
 
@@ -158,7 +159,6 @@ namespace stool
             void get_stnode(uint64_t index, RINTERVAL &output)
             {
                 return this->sub_tree.get_stnode(index, output);
-
             }
             RINTERVAL &get_child(uint64_t index)
             {
@@ -183,13 +183,13 @@ namespace stool
             {
                 if (current_lcp > 0)
                 {
-                    if(current_lcp % 100 == 0){
-                    std::cout << "LCP " << (strSize - total_counter) << std::endl;
-
+                    if (current_lcp % 100 == 0)
+                    {
+                        std::cout << "LCP " << (strSize - total_counter) << std::endl;
                     }
 
 #if DEBUG
-                                        std::cout << "LCP " << current_lcp << "/" << this->child_count << std::endl;
+                    std::cout << "LCP " << current_lcp << "/" << this->child_count << std::endl;
 
                     if (this->_RLBWTDS->str_size() < 100)
                     {
@@ -243,6 +243,8 @@ namespace stool
                 }
                 */
 
+                std::cout << "Memory: " << this->get_peak_memory() / (1000 * 1000) << "[MB]" << "/ Optimal: " << this->get_optimal_memory() / (1000 * 1000) << "[MB]" << std::endl;
+
                 assert(total_counter <= strSize);
 
                 current_lcp++;
@@ -253,7 +255,7 @@ namespace stool
             {
                 return total_counter == strSize - 1;
             }
-            
+
             void print()
             {
                 std::cout << "PRINT PTREE" << std::endl;
@@ -264,9 +266,8 @@ namespace stool
                 }
                 std::cout << std::endl;
                 std::cout << "PRINT PTREE[END]" << std::endl;
-
             }
-            
+
         private:
             void single_process()
             {
@@ -291,9 +292,9 @@ namespace stool
             }
             void parallel_process()
             {
-                #if DEBUG
+#if DEBUG
                 std::cout << "PARALLEL PROCESS" << std::endl;
-                #endif
+#endif
                 std::vector<ParallelData> w_vec;
                 w_vec.resize(this->sub_tmp_trees.size());
                 this->get_start_indexes(w_vec);
@@ -303,9 +304,7 @@ namespace stool
                     if (w_vec[i].width > 0)
                     {
                         threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_tree), ref(sub_tmp_trees[i]), w_vec[i], ref(ems[i])));
-
                     }
-
                 }
                 for (thread &t : threads)
                     t.join();
@@ -333,16 +332,41 @@ namespace stool
                         child_start_index += k;
                         k = 0;
                         p++;
-                        if(p < output.size()){
+                        if (p < output.size())
+                        {
                             output[p] = ParallelData(start_index, child_start_index);
-                        }else{
+                        }
+                        else
+                        {
                             std::cout << "Child count = " << this->child_count << ", size = " << this->sub_tmp_trees.size() << ", avg = " << child_avg_count << std::endl;
                             assert(i + 1 == this->sub_tree.node_count());
                         }
-
                     }
                 }
             }
+            uint64_t get_peak_memory()
+            {
+                uint64_t k = this->sub_tree.get_peak_memory();
+                
+                for (auto &it : this->sub_tmp_trees)
+                {
+                    k += it.get_peak_memory();
+                }
+                
+                return k;
+            }
+            uint64_t get_optimal_memory()
+            {
+                uint64_t k = this->sub_tree.get_optimal_memory();
+                
+                for (auto &it : this->sub_tmp_trees)
+                {
+                    k += it.get_optimal_memory();
+                }
+                
+                return k;
+            }
+
         };
 
     } // namespace lcp_on_rlbwt

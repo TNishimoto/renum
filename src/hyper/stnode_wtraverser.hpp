@@ -257,6 +257,21 @@ namespace stool
 
                 item.clear();
             }
+            uint64_t get_peak_memory(){
+                uint64_t x1 = this->childVec.capacity() * sizeof(RINTERVAL);
+                uint64_t x2 = (this->w_builder.capacity() * 1) / 8;
+                uint64_t x3 = (this->leftmost_child_bits.size() * 1) / 8;
+                uint64_t x4 = (maximal_repeat_check_vec.capacity() * 1)/8;
+
+                return x1 + x2 + x3 + x4;
+            }
+            uint64_t get_optimal_memory(){
+                uint64_t x1 = this->childVec.size() * sizeof(RINTERVAL);
+                uint64_t x2 = (this->w_builder.size() * 1) / 8;
+                uint64_t x3 = (this->leftmost_child_bits.size() * 1) / 8;
+                uint64_t x4 = (maximal_repeat_check_vec.size() * 1)/8;
+                return x1 + x2 + x3 + x4;
+            }
         };
 
     } // namespace lcp_on_rlbwt
