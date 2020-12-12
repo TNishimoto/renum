@@ -115,9 +115,6 @@ namespace stool
 
             uint64_t get_end_rle_lposition() const
             {
-                //uint64_t min_char = UINT64_MAX;
-                //uint64_t min_pos = UINT64_MAX;
-
                 for (INDEX i = 0; i < bwt.size(); i++)
                 {
                     if (bwt[i] == 0)
@@ -128,9 +125,22 @@ namespace stool
                 }
                 std::cout << "No doller character!" << std::endl;
                 throw -1;
-                //return min_pos;
-                //return std::numeric_limits<INDEX>::max();
             }
+            uint64_t get_start_rle_lposition() const{
+                uint8_t max_char = 0;
+                uint64_t max_position;
+                for (int64_t i = bwt.size() - 1; i >= 0; i--)
+                {
+                    if (max_char < bwt[i])
+                    {
+                        max_char = bwt[i];
+                        max_position = i;
+                    }
+                }
+                return max_position;
+
+            }
+
 
             RINTERVAL getIntervalOnL(const RINTERVAL &interval) const
             {

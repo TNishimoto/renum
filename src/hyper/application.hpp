@@ -24,7 +24,7 @@ namespace stool
         public:
             uint64_t max_nodes_at_level;
         };
-
+        /*
         template <typename INDEX_SIZE, typename RLBWTDS>
         void find_maximal_repeats(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer, RLBWTDS &_RLBWTDS, uint64_t start_index, uint64_t size, std::vector<bool> &ms_check_vec)
         {
@@ -37,6 +37,7 @@ namespace stool
                 ms_check_vec[i] = b;
             }
         }
+        */
         /*
         template <typename INDEX_SIZE, typename RLBWTDS>
         void find_maximal_repeats_with_multi_thread(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer, RLBWTDS &_RLBWTDS, std::vector<bool> &ms_check_vec, uint64_t )
@@ -84,6 +85,8 @@ namespace stool
                 return r;
             }
             */
+
+           /*
             static std::vector<stool::LCPInterval<uint64_t>> constructLCPIntervals(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
             {
 
@@ -104,7 +107,7 @@ namespace stool
 
                 //return weiner.enumerateLCPInterval();
             }
-
+            */
             static uint64_t outputMaximalSubstrings(std::ofstream &out, ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
 
@@ -213,7 +216,8 @@ namespace stool
 
                     for (uint64_t i = 0; i < stnodeSequencer.node_count; i++)
                     {
-                        auto &it = stnodeSequencer.get_stnode(i);
+                        RINTERVAL it;
+                        stnodeSequencer.get_stnode(i, it);
                         uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
                         uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
                         stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);

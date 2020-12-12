@@ -69,12 +69,19 @@ namespace stool
 
                 tmp_tree.maximal_repeat_check_vec.resize(tmp_tree.node_count(), false);
 
-                uint64_t size = tmp_tree.node_count();
-                for (uint64_t i = 0; i < size; i++)
+                uint64_t size = tmp_tree.w_builder.size();
+                RInterval<INDEX_SIZE> it;
+                uint64_t L = 0;
+                uint64_t x=0;
+                for (uint64_t i = 1; i < size; i++)
                 {
-                    const RInterval<INDEX_SIZE> &it = tmp_tree.get_stnode(i);
-                    bool b = checkMaximalRepeat(it, *(em._RLBWTDS));
-                    tmp_tree.maximal_repeat_check_vec[i] = b;
+                    if(tmp_tree.w_builder[i]){
+                        uint64_t R = i-1;
+                        tmp_tree.get_stnode(L, R, it);
+                        bool b = checkMaximalRepeat(it, *(em._RLBWTDS));
+                        tmp_tree.maximal_repeat_check_vec[x++] = b;
+                        L = i;
+                    }
                 }
             }
         }
@@ -144,9 +151,9 @@ namespace stool
                     ems[i].heavyDS = &heavyRDs[i];
                 }
             }
-            RINTERVAL &get_stnode(uint64_t index)
+            void get_stnode(uint64_t index, RINTERVAL &output)
             {
-                return this->sub_tree.get_stnode(index);
+                return this->sub_tree.get_stnode(index, output);
 
             }
             RINTERVAL &get_child(uint64_t index)

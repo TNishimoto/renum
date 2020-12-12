@@ -35,6 +35,8 @@ namespace stool
                     std::cout << intv.to_string();
                 }
                 */
+                        std::cout << "Distinct Sizes" << std::endl;
+
                 throw -1;
             }
             else
@@ -176,6 +178,7 @@ namespace stool
                     }
                     std::cout << std::endl;
                 }
+                throw -1;
             }
             return true;
         }

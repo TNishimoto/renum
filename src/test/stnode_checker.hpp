@@ -148,6 +148,7 @@ namespace stool
                 assert(this->maps[this->current_lcp].size() == k);
 
                 if(this->maps[this->current_lcp].size() != k){
+                    std::cout << "INCREMENT ERROR!" << std::endl;
 
                     throw -1;
                 }
@@ -196,6 +197,7 @@ namespace stool
                 auto it = this->maps[this->current_lcp].find(i);
                 if (it == this->maps[this->current_lcp].end())
                 {
+                    std::cout << "CHECK ERROR!" << std::endl;
                     throw -1;
                 }
                 else
@@ -206,6 +208,8 @@ namespace stool
                     }
                     else
                     {
+                        std::cout << "CHECK ERROR!" << std::endl;
+
                         throw -1;
                     }
                 }
