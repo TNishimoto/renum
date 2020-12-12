@@ -28,6 +28,7 @@ namespace stool
 
             uint64_t indexCount = 0;
             uint64_t explicitChildCount = 0;
+            uint64_t range_distinct_threshold = 16;
 
         public:
             // For range distinct
@@ -163,7 +164,6 @@ namespace stool
                     }
                 }
             }
-            uint64_t thshold = 1;
             bool check(const RInterval<INDEX_SIZE> &range)
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
@@ -193,7 +193,7 @@ namespace stool
             {
                 assert(this->lightDS != nullptr);
                 uint64_t count = 0;
-                if (range.endIndex - range.beginIndex > thshold)
+                if (range.endIndex - range.beginIndex > range_distinct_threshold)
                 {
                     count = this->heavyDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
                 }

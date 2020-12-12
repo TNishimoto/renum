@@ -62,14 +62,6 @@ namespace stool
             {
                 return this->widthVec[i];
             }
-            /*
-            void swap(STNodeWTraverser &copy)
-            {
-                this->stnodeVec.swap(copy.stnodeVec);
-                this->childVec.swap(copy.childVec);
-                this->widthVec.swap(copy.widthVec);
-            }
-            */
             void clear()
             {
                 this->stnodeVec.clear();
@@ -111,44 +103,6 @@ namespace stool
                     rank += inputSet.widthVec[i];
                 }
             }
-            /*
-            void spill(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item, uint64_t limit_child_count)
-            {
-                assert(item.children_count() <= limit_child_count);
-
-                uint64_t capacity = limit_child_count - item.children_count();
-                uint64_t k = 0;
-                uint64_t k2 = 0;
-                int64_t x = this->node_count() - 1;
-                while (x >= 0 && k <= capacity && (this->children_count() - k) > limit_child_count)
-                {
-                    k += this->widthVec[x--];
-                    k2++;
-                }
-                uint64_t current_children_count = this->children_count();
-                for (uint64_t i = current_children_count - k; i < current_children_count; i++)
-                {
-                    item.childVec.push_back(this->childVec[i]);
-                }
-                for (uint64_t i = current_children_count - k; i < current_children_count; i++)
-                {
-                    this->childVec.pop_back();
-                }
-
-                uint64_t current_node_count = this->node_count();
-
-                for (uint64_t i = current_node_count - k2; i < current_node_count; i++)
-                {
-                    item.stnodeVec.push_back(this->stnodeVec[i]);
-                    item.widthVec.push_back(this->widthVec[i]);
-                }
-                for (uint64_t i = current_node_count - k2; i < current_node_count; i++)
-                {
-                    this->stnodeVec.pop_back();
-                    this->widthVec.pop_back();
-                }
-            }
-            */
             void print()
             {
                 std::cout << "[" << this->node_count() << ", " << this->children_count() << "]" << std::endl;
@@ -190,48 +144,6 @@ namespace stool
                 }
                 item.clear();
             }
-            /*
-            void check()
-            {
-                uint64_t x = 0;
-                for (uint64_t i = 0; i < this->node_count(); i++)
-                {
-                    uint64_t lcpIntvBeginPos = this->_RLBWTDS->get_fpos(this->stnodeVec[i].beginIndex, this->stnodeVec[i].beginDiff);
-                    uint64_t lcpIntvEndPos = this->_RLBWTDS->get_fpos(this->stnodeVec[i].endIndex, this->stnodeVec[i].endDiff);
-
-                    for (uint64_t j = 0; j < this->widthVec[i]; j++)
-                    {
-                        uint64_t weinerBeginPos = this->_RLBWTDS->get_fpos(this->childVec[x].beginIndex, this->childVec[x].beginDiff);
-                        uint64_t weinerEndPos = this->_RLBWTDS->get_fpos(this->childVec[x].endIndex, this->childVec[x].endDiff);
-                        assert(lcpIntvBeginPos <= weinerBeginPos && weinerEndPos <= lcpIntvEndPos);
-
-                        x++;
-                    }
-                }
-            }
-            */
-            /*
-            void check(uint64_t t)
-            {
-                uint64_t x = 0;
-                for (uint64_t i = 0; i < t; i++)
-                {
-                    uint64_t lcpIntvBeginPos = this->_RLBWTDS->get_fpos(this->stnodeVec[i].beginIndex, this->stnodeVec[i].beginDiff);
-                    uint64_t lcpIntvEndPos = this->_RLBWTDS->get_fpos(this->stnodeVec[i].endIndex, this->stnodeVec[i].endDiff);
-
-                    for (uint64_t j = 0; j < this->widthVec[i]; j++)
-                    {
-                        uint64_t weinerBeginPos = this->_RLBWTDS->get_fpos(this->childVec[x].beginIndex, this->childVec[x].beginDiff);
-                        uint64_t weinerEndPos = this->_RLBWTDS->get_fpos(this->childVec[x].endIndex, this->childVec[x].endDiff);
-                        assert(lcpIntvBeginPos <= weinerBeginPos && weinerEndPos <= lcpIntvEndPos);
-
-                        x++;
-                    }
-                }
-            }
-            */
-
-        private:
         };
 
     } // namespace lcp_on_rlbwt

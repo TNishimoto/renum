@@ -119,7 +119,7 @@ namespace stool
                     for (uint64_t i = 0; i < stnodeSequencer.node_count; i++)
                     {
                         bool b = tree->maximal_repeat_check_vec[i];
-                        auto &it = stnodeSequencer.get_stnode(i);
+                        //auto &it = stnodeSequencer.get_stnode(i);
 
                         if (b)
                         {
@@ -162,6 +162,7 @@ namespace stool
                 count += 1;
                 return count;
             }
+            /*
             static std::vector<stool::LCPInterval<uint64_t>> testMaximalSubstrings(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
             {
                 //Application<RLBWTDS> hsc(*__RLBWTDS, thread_num);
@@ -188,6 +189,35 @@ namespace stool
                             stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
                             r.push_back(newLCPIntv);
                         }
+                    }
+                    stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count);
+                }
+                uint64_t dx = stnodeSequencer._RLBWTDS->get_end_rle_lposition();
+                uint64_t dollerPos = stnodeSequencer._RLBWTDS->get_lpos(dx);
+                auto last = stool::LCPInterval<uint64_t>(dollerPos, dollerPos, stnodeSequencer._RLBWTDS->str_size());
+                r.push_back(last);
+                return r;
+            }
+            */
+            static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
+            {
+
+                std::vector<stool::LCPInterval<uint64_t>> r;
+
+                while (!stnodeSequencer.isStop())
+                {
+                    stnodeSequencer.process();
+                    auto tree = stnodeSequencer.get_sub_tree();
+
+                    assert(stnodeSequencer.node_count == tree->maximal_repeat_check_vec.size());
+
+                    for (uint64_t i = 0; i < stnodeSequencer.node_count; i++)
+                    {
+                        auto &it = stnodeSequencer.get_stnode(i);
+                        uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
+                        uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
+                        stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
+                        r.push_back(newLCPIntv);
                     }
                     stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count);
                 }

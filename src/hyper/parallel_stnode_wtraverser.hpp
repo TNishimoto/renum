@@ -85,12 +85,20 @@ namespace stool
             using RINTERVAL = RInterval<INDEX_SIZE>;
             using STNODE_WTRAVERSER = STNodeWTraverser<INDEX_SIZE, RLBWTDS>;
 
+            /*
+            std::vector<RINTERVAL> stnodeVec;
+            std::vector<RINTERVAL> childVec;
+            std::vector<uint8_t> widthVec;
+            std::vector<bool> maximal_repeat_check_vec;
+            */
+
+
             STNODE_WTRAVERSER sub_tree;
             std::vector<STNODE_WTRAVERSER> sub_tmp_trees;
             std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
             std::vector<LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE>> lightRDs;
             std::vector<SuccinctRangeDistinctDataStructure<INDEX_SIZE>> heavyRDs;
-            uint64_t minimum_child_count = 1;
+            uint64_t minimum_child_count = 1000;
 
         public:
             uint64_t current_lcp = 0;
@@ -106,12 +114,6 @@ namespace stool
             {
                 return &this->sub_tree;
             }
-            /*
-            uint64_t get_tree_count()
-            {
-                return this->sub_tmp_trees.size();
-            }
-            */
 
             void initialize(uint64_t size, RLBWTDS &_RLBWTDS)
             {
@@ -145,24 +147,7 @@ namespace stool
             RINTERVAL &get_stnode(uint64_t index)
             {
                 return this->sub_tree.get_stnode(index);
-                /*
-                uint64_t x = 0;
-                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
-                {
-                    uint64_t k = this->sub_trees[i].node_count();
-                    if (x <= index && index < x + k)
-                    {
-                        return this->sub_trees[i].get_stnode(index - x);
-                    }
-                    else
-                    {
-                        x += k;
-                    }
-                }
-                std::cout << index << "/" << this->node_count << "/" << x << std::endl;
-                assert(false);
-                throw -1;
-                */
+
             }
             RINTERVAL &get_child(uint64_t index)
             {
@@ -185,12 +170,6 @@ namespace stool
 
             void process()
             {
-                /*
-                if (this->child_count > 10000)
-                {
-                    std::cout << "LCP = " << this->current_lcp << ", node count = " << this->node_count << ", child count = " << this->child_count << std::endl;
-                }
-                */
                 if (current_lcp > 0)
                 {
 #if DEBUG
@@ -283,64 +262,6 @@ namespace stool
 
             }
             
-            /*
-            void allocate_data()
-            {
-                uint64_t child_avg_count = (this->child_count / this->get_tree_count()) + 256;
-                std::queue<uint64_t> lower_indexes, upper_indexes;
-                for (uint64_t i = 0; i < this->get_tree_count(); i++)
-                {
-                    if (this->sub_trees[i].children_count() <= child_avg_count)
-                    {
-                        lower_indexes.push(i);
-                    }
-                    else
-                    {
-                        upper_indexes.push(i);
-                    }
-                }
-                if (upper_indexes.size() == 0)
-                    return;
-
-                while (upper_indexes.size() > 0)
-                {
-                    uint64_t i = upper_indexes.front();
-
-                    while (this->sub_trees[i].children_count() > child_avg_count)
-                    {
-                        assert(lower_indexes.size() > 0);
-                        uint64_t j = lower_indexes.front();
-
-                        this->sub_trees[i].spill(this->sub_trees[j], child_avg_count);
-                        if (this->sub_trees[j].children_count() > child_avg_count)
-                        {
-                            lower_indexes.pop();
-                        }
-                        //this->print();
-                    }
-                    upper_indexes.pop();
-                }
-            }
-            */
-            /*
-            template <typename FUNC, typename OUTPUT>
-            void execute_function_with_multi_thread(FUNC func, int thread_num, std::vector<std::vector<OUTPUT>> &output){
-                uint64_t psize = this->node_count / thread_num;
-                std::vector<thread> threads;
-                uint64_t x = 0;
-                while(true){
-                    threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(this), ref(sub_tmp_trees[i]), ref(ems[i])));
-
-                }
-                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
-                {
-                    threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees[i]), ref(sub_tmp_trees[i]), ref(ems[i])));
-                }
-                for (thread &t : threads)
-                    t.join();
-
-            }
-            */
         private:
             void single_process()
             {
@@ -391,12 +312,6 @@ namespace stool
                     output[i].width = 0;
                 }
                 uint64_t child_avg_count = (this->child_count / this->sub_tmp_trees.size()) + 1;
-                /*
-                if (child_avg_count < 100)
-                {
-                    child_avg_count = 100;
-                }
-                */
                 uint64_t start_index = 0;
                 uint64_t child_start_index = 0;
                 uint64_t p = 0;
@@ -422,15 +337,6 @@ namespace stool
 
                     }
                 }
-                /*
-                std::cout << "WAJTIOE" << std::endl;
-                for(uint64_t i=0;i<output.size();i++){
-                    std::cout << "[" << output[i].start_index << ", " << (output[i].start_index + output[i].width - 1) << "]";
-                }
-                std::cout << std::endl;
-                */
-
-                //output[p++] = this->sub_tree.node_count();
             }
         };
 
