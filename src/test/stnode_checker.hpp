@@ -119,11 +119,20 @@ namespace stool
                 vector<uint64_t> sa = stool::construct_suffix_array(text);
 
                 vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::naive_compute_complete_lcp_intervals<char, uint64_t>(text, sa);
+                std::sort(
+                    correct_lcp_intervals.begin(),
+                    correct_lcp_intervals.end(),
+                    stool::LCPIntervalPreorderComp<uint64_t>());
+
                 for (auto &it : correct_lcp_intervals)
                 {
                     if (it.lcp < bwt.size())
                     {
                         this->lcp_intervals.push_back(it);
+                        if(text.size() < 100){
+                        std::cout << it.to_string();
+
+                        }
                     }
                     else if (bwt[it.i] == 0 || bwt[it.i] == '$')
                     {
@@ -132,6 +141,8 @@ namespace stool
                         this->lcp_intervals.push_back(it);
                     }
                 }
+                std::cout << std::endl;
+
                 //this->lcp_intervals.swap(correct_lcp_intervals);
 
                 this->maps.resize(text.size());
@@ -151,8 +162,8 @@ namespace stool
                 if (this->maps[this->current_lcp].size() != k)
                 {
 
-                    std::cout << "INCREMENT ERROR!" << this->maps[this->current_lcp].size() << "/" << k << std::endl;
-                assert(this->maps[this->current_lcp].size() == k);
+                    std::cout << "INCREMENT ERROR! Collect : " << this->maps[this->current_lcp].size() << "/Test: " << k << std::endl;
+                    assert(this->maps[this->current_lcp].size() == k);
 
                     throw -1;
                 }
@@ -166,7 +177,7 @@ namespace stool
 
                 if (this->current_lcp == 0)
                 {
-                    correctWlinks.push_back(stool::LCPInterval<uint64_t>(0, bwt.size()-1, this->current_lcp));
+                    correctWlinks.push_back(stool::LCPInterval<uint64_t>(0, bwt.size() - 1, this->current_lcp));
                 }
                 else
                 {

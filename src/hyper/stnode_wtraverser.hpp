@@ -15,32 +15,31 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        std::mutex test_mtx;
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeWTraverser
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
-            //std::vector<RINTERVAL> stnodeVec;
-            //std::vector<uint8_t> _widthVec;
 
             std::deque<RINTERVAL> childVec;
 
-            sdsl::bit_vector leftmost_child_bits;
-            sdsl::bit_vector::select_1_type leftmost_child_bits_selecter;
+            //sdsl::bit_vector leftmost_child_bits;
+            //sdsl::bit_vector::select_1_type leftmost_child_bits_selecter;
             bool builded = false;
             uint64_t _stnode_count = 0;
 
         public:
             std::deque<bool> w_builder;
-
-            RLBWTDS *_RLBWTDS;
-
+            RLBWTDS *_RLBWTDS = nullptr;
             std::vector<bool> maximal_repeat_check_vec;
 
             STNodeWTraverser()
             {
             }
+            STNodeWTraverser(RLBWTDS *__RLBWTDS) : _RLBWTDS(__RLBWTDS)
+            {
+            }
 
+            /*
             void get_stnode(uint64_t i, RINTERVAL &output)
             {
                 assert(builded);
@@ -50,6 +49,7 @@ namespace stool
 
                 this->get_stnode(L, R, output);
             }
+            */
 
             void get_stnode(uint64_t L, uint64_t R, RINTERVAL &output)
             {
@@ -67,9 +67,35 @@ namespace stool
                     output.endIndex = this->_RLBWTDS->get_start_rle_lposition();
                     output.endDiff = this->_RLBWTDS->get_run(output.endIndex) - 1;
                 }
-
-                //return this->stnodeVec[i];
             }
+            uint64_t get_stnode2(uint64_t L, RINTERVAL &output)
+            {
+                assert(this->w_builder[L]);
+                assert(!this->w_builder[L+1]);
+
+                uint64_t R = L + 1;
+                while (!this->w_builder[R])
+                {
+                    R++;
+                }
+                R--;
+                uint64_t beg_index = childVec[L].beginIndex, end_index = childVec[R].endIndex,
+                         beg_diff = childVec[L].beginDiff, end_diff = childVec[R].endDiff;
+
+                output.beginIndex = beg_index;
+                output.beginDiff = beg_diff;
+                output.endIndex = end_index;
+                output.endDiff = end_diff;
+                if (this->_RLBWTDS->bwt[beg_index] != this->_RLBWTDS->bwt[end_index])
+                {
+                    output.beginIndex = this->_RLBWTDS->get_end_rle_lposition();
+                    output.beginDiff = 0;
+                    output.endIndex = this->_RLBWTDS->get_start_rle_lposition();
+                    output.endDiff = this->_RLBWTDS->get_run(output.endIndex) - 1;
+                }
+                return R + 1;
+            }
+
             /*
             std::vector<RINTERVAL> *get_stnode_vec()
             {
@@ -118,7 +144,7 @@ namespace stool
                 //this->w_builder.clear();
                 this->builded = false;
 
-                this->leftmost_child_bits.clear();
+                //this->leftmost_child_bits.clear();
             }
             void swap(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item)
             {
@@ -169,13 +195,12 @@ namespace stool
                 this->maximal_repeat_check_vec.resize(1);
                 this->maximal_repeat_check_vec[0] = true;
 
-                std::cout << "Node count : " << this->_stnode_count << std::endl;
             }
             uint64_t get_child_rank(uint64_t i)
             {
                 return this->leftmost_child_bits_selecter(i + 1);
             }
-            bool computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, std::vector<STNodeWTraverser> &tmp, uint64_t limit)
+            bool computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, std::vector<STNodeWTraverser *> &tmp, uint64_t limit)
             {
                 //this->w_builder.clear();
                 bool isSplit = false;
@@ -215,20 +240,19 @@ namespace stool
                             bool limitOver = ((this->childVec.size() + count) > limit);
                             if (limitOver)
                             {
-                                if (tmp.size() == 0 || tmp[tmp.size() - 1].childVec.size() + count > limit)
+                                if (tmp.size() == 0 || tmp[tmp.size() - 1]->childVec.size() + count > limit)
                                 {
                                     isSplit = true;
-                                    std::cout << "PUSH" << std::endl;
-                                    tmp.push_back(STNodeWTraverser());
-
-                                    tmp[tmp.size() - 1]._RLBWTDS = this->_RLBWTDS;
+                                    tmp.push_back(new STNodeWTraverser(this->_RLBWTDS));
                                 }
                             }
 
-                            auto &it = limitOver ? tmp[tmp.size() - 1] : *this;
-                            em.move_st_internal_nodes(it.childVec, it.w_builder, c);
-                            assert(it.childVec.size() <= limit);
-                            it._stnode_count++;
+                            STNodeWTraverser *it = limitOver ? tmp[tmp.size() - 1] : this;
+
+                            em.move_st_internal_nodes(it->childVec, it->w_builder, c);
+                            assert(it->childVec.size() <= limit);
+                            it->_stnode_count++;
+
                             /*
                             if (isSplit)
                             {
@@ -270,6 +294,7 @@ namespace stool
             void build_bits()
             {
                 w_builder.push_back(true);
+                /*
                 leftmost_child_bits.resize(w_builder.size());
                 for (uint64_t i = 0; i < w_builder.size(); i++)
                 {
@@ -280,6 +305,7 @@ namespace stool
                 leftmost_child_bits_selecter.set_vector(&leftmost_child_bits);
                 leftmost_child_bits_selecter.swap(b_sel);
                 this->builded = true;
+                */
             }
 
             void print()
@@ -288,13 +314,31 @@ namespace stool
             }
             void print_info()
             {
-                std::cout << "PRINT TREE" << std::endl;
+                RINTERVAL it;
+                it.beginIndex = 0;
+                it.beginDiff = 0;
+                it.endIndex = 0;
+                it.endDiff = 0;
+
+                uint64_t L = 0;
+                for (uint64_t i = 0; i < this->node_count(); i++)
+                {
+
+                    L = this->get_stnode2(L, it);
+                    it.print2(this->_RLBWTDS->_fposDS);
+                    //uint64_t beg = this->_RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
+                    //uint64_t end = this->_RLBWTDS->get_fpos(it.endIndex, it.endDiff);
+                    //std::cout << "[" << beg << ", " << end << "]" << std::flush;
+                    //stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
+                    //r.push_back(newLCPIntv);
+                }
                 /*
                 for (uint64_t i = 0; i < this->node_count(); i++)
                 {
                     this->stnodeVec[i].print2(this->_RLBWTDS->_fposDS);
                 }
                 */
+
                 std::cout << std::endl;
             }
 
@@ -325,18 +369,18 @@ namespace stool
             {
                 uint64_t x1 = this->childVec.size() * sizeof(RINTERVAL);
                 uint64_t x2 = (this->w_builder.size() * 1) / 8;
-                uint64_t x3 = (this->leftmost_child_bits.size() * 1) / 8;
+                //uint64_t x3 = (this->leftmost_child_bits.size() * 1) / 8;
                 uint64_t x4 = (maximal_repeat_check_vec.capacity() * 1) / 8;
 
-                return x1 + x2 + x3 + x4;
+                return x1 + x2 + x4;
             }
             uint64_t get_optimal_memory()
             {
                 uint64_t x1 = this->childVec.size() * sizeof(RINTERVAL);
                 uint64_t x2 = (this->w_builder.size() * 1) / 8;
-                uint64_t x3 = (this->leftmost_child_bits.size() * 1) / 8;
+                //uint64_t x3 = (this->leftmost_child_bits.size() * 1) / 8;
                 uint64_t x4 = (maximal_repeat_check_vec.size() * 1) / 8;
-                return x1 + x2 + x3 + x4;
+                return x1 + x2 + x4;
             }
             void split(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item)
             {

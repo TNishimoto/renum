@@ -56,8 +56,8 @@ namespace stool
         }
         std::mutex mtx;
         template <typename INDEX_SIZE, typename RLBWTDS>
-        void parallel_process_stnodes(std::vector<STNodeWTraverser<INDEX_SIZE, RLBWTDS>> &trees, uint64_t fst_position,
-                                      std::stack<uint64_t> &position_stack, std::vector<STNodeWTraverser<INDEX_SIZE, RLBWTDS>> &new_trees, uint64_t limit, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+        void parallel_process_stnodes(std::vector<STNodeWTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
+                                      std::stack<uint64_t> &position_stack, std::vector<STNodeWTraverser<INDEX_SIZE, RLBWTDS> *> &new_trees, uint64_t limit, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
         {
 #if DEBUG
             //std::cout << "Run " << data.start_index << ", " << data.width << ", " <<  data.rank << ", " << tree.node_count() << std::endl;
@@ -68,9 +68,9 @@ namespace stool
             while (pos != UINT64_MAX)
             {
 
-                bool b2 = trees[pos].computeNextLCPIntervalSet(em, new_trees, limit);
+                bool b2 = trees[pos]->computeNextLCPIntervalSet(em, new_trees, limit);
                 b = b || b2;
-                assert(trees[pos].children_count() <= limit);
+                assert(trees[pos]->children_count() <= limit);
                 /*
                 std::cout << "A! " << trees.size() << std::endl;
                 if (trees.size() > 1)
@@ -117,7 +117,6 @@ namespace stool
                     }
                 }
             }
-            std::cout << "END" << std::endl;
         }
 
         template <typename INDEX_SIZE, typename RLBWTDS>
@@ -126,8 +125,8 @@ namespace stool
             using RINTERVAL = RInterval<INDEX_SIZE>;
             using STNODE_WTRAVERSER = STNodeWTraverser<INDEX_SIZE, RLBWTDS>;
 
-            std::vector<STNODE_WTRAVERSER> sub_trees;
-            std::vector<std::vector<STNODE_WTRAVERSER>> new_trees;
+            std::vector<STNODE_WTRAVERSER *> sub_trees;
+            std::vector<std::vector<STNODE_WTRAVERSER *>> new_trees;
 
             //std::stack<STNODE_WTRAVERSER> empty_trees;
 
@@ -136,7 +135,7 @@ namespace stool
             std::vector<LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE>> lightRDs;
             std::vector<SuccinctRangeDistinctDataStructure<INDEX_SIZE>> heavyRDs;
             uint64_t minimum_child_count = 1000;
-            uint64_t sub_tree_limit_size = 1000000;
+            uint64_t sub_tree_limit_size = 1000;
 
         public:
             uint64_t current_lcp = 0;
@@ -171,7 +170,7 @@ namespace stool
                 uint64_t k = 0;
                 for (auto &it : this->sub_trees)
                 {
-                    k += it.node_count();
+                    k += it->node_count();
                 }
                 return k;
 
@@ -197,8 +196,8 @@ namespace stool
 
                 //this->sub_trees.resize(size);
 
-                sub_trees.push_back(STNODE_WTRAVERSER());
-                sub_trees[sub_trees.size() - 1]._RLBWTDS = this->_RLBWTDS;
+                auto st = new STNODE_WTRAVERSER(this->_RLBWTDS);
+                sub_trees.push_back(st);
                 //sub_trees.resize(256);
 
                 this->new_trees.resize(size);
@@ -229,6 +228,9 @@ namespace stool
 
             void get_stnode(uint64_t index, RINTERVAL &output)
             {
+                std::cout << "get ST NODE" << std::endl;
+                throw -1;
+                /*
                 uint64_t p = 0;
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
@@ -243,6 +245,26 @@ namespace stool
                         p += this->sub_trees[i].node_count();
                     }
                 }
+                */
+            }
+            uint64_t get_stnode2(uint64_t L, RINTERVAL &output)
+            {
+
+                uint64_t p = 0;
+                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                {
+                    uint64_t csize = this->sub_trees[i]->children_count();
+
+                    if (p <= L && L < p + csize)
+                    {
+                        return p + this->sub_trees[i]->get_stnode2(L - p, output);
+                    }
+                    else
+                    {
+                        p += csize;
+                    }
+                }
+                return UINT64_MAX;
             }
 
             /*
@@ -273,15 +295,15 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
-                    uint64_t k = this->sub_trees[i].children_count();
+                    uint64_t k = this->sub_trees[i]->children_count();
                     if (k < (this->sub_tree_limit_size / 10))
                     {
                         while (mergeIndex < i)
                         {
-                            if (this->sub_trees[mergeIndex].children_count() > 0 && this->sub_trees[mergeIndex].children_count() + k < this->sub_tree_limit_size)
+                            if (this->sub_trees[mergeIndex]->children_count() > 0 && this->sub_trees[mergeIndex]->children_count() + k < this->sub_tree_limit_size)
                             {
                                 mergeCount++;
-                                this->sub_trees[mergeIndex].merge(this->sub_trees[i]);
+                                this->sub_trees[mergeIndex]->merge(*this->sub_trees[i]);
                                 break;
                             }
                             else
@@ -291,27 +313,32 @@ namespace stool
                         }
                     }
                 }
+                /*
                 if (mergeCount > 3)
                 {
                     std::cout << "M" << mergeCount << std::endl;
                 }
+                */
             }
             void remove_empty_trees()
             {
                 uint64_t nonEmptyCount = 0;
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
-                    if (this->sub_trees[i].node_count() > 0)
+                    if (this->sub_trees[i]->node_count() > 0)
                     {
                         if (i != nonEmptyCount)
                         {
-                            this->sub_trees[nonEmptyCount].swap(this->sub_trees[i]);
+                            this->sub_trees[nonEmptyCount]->swap(*this->sub_trees[i]);
 
                             //this->sub_trees[i] = STNODE_WTRAVERSER();
                             //sub_trees[i]._RLBWTDS = this->_RLBWTDS;
                         }
                         nonEmptyCount++;
                     }
+                }
+                for(uint64_t i=nonEmptyCount;i<this->sub_trees.size(); i++){
+                    delete this->sub_trees[i];
                 }
                 this->sub_trees.resize(nonEmptyCount);
             }
@@ -341,34 +368,46 @@ namespace stool
             */
 
             uint64_t kk = 0;
+#if DEBUG
+            uint64_t prev_child_count = 0;
+#endif
             void process()
             {
                 bool isSingleProcess = false;
                 if (current_lcp > 0)
                 {
+                    
                     if (this->child_count > this->switch_threshold())
                     {
                         kk++;
                         std::cout << "LCP " << this->current_lcp << "/" << (this->child_count) << "/" << this->switch_threshold() << "/" << this->sub_trees.size() << std::endl;
                         std::cout << "Memory: " << this->get_peak_memory() / (1000 * 1000) << "[MB]"
                                   << "/ Optimal: " << this->get_optimal_memory() / (1000 * 1000) << "[MB]" << std::endl;
-
-                        if (kk == 1)
+                        /*
+                        if (kk == 3)
                         {
                             std::cout << "STOP" << std::endl;
                             throw -1;
                         }
+                        */
+                        
                     }
+                    
+                    
 
 #if DEBUG
-                    std::cout << "LCP " << current_lcp << "/" << this->child_count << "/" << this->sub_trees.size() << std::endl;
-
+                    if (prev_child_count != this->child_count)
+                    {
+                        std::cout << "LCP = " << current_lcp << "/" << this->child_count << "/" << this->sub_trees.size() << std::endl;
+                        prev_child_count = this->child_count;
+                    }
                     if (this->_RLBWTDS->str_size() < 100)
                     {
                         this->print();
                     }
-
 #endif
+
+
                     isSingleProcess = this->child_count < minimum_child_count || this->thread_count == 1;
                     //bool b = true;
                     if (isSingleProcess)
@@ -384,7 +423,7 @@ namespace stool
                 else
                 {
 
-                    this->sub_trees[0].first_compute(ems[0]);
+                    this->sub_trees[0]->first_compute(ems[0]);
                 }
 
                 uint64_t kp = 0;
@@ -393,19 +432,14 @@ namespace stool
                     while (it.size() > 0)
                     {
 
-
-                        this->sub_trees.push_back(STNODE_WTRAVERSER());
-
-                        this->sub_trees[this->sub_trees.size() - 1].swap(it[it.size() - 1]);
+                        this->sub_trees.push_back(it[it.size() - 1]);
                         it.pop_back();
-
                         kp++;
                     }
                 }
-                /*
-                    this->merge();
-                    this->remove_empty_trees();
-                */
+
+                this->merge();
+                this->remove_empty_trees();
 
                 if ((double)this->sub_trees.size() * 2 < (double)this->sub_trees.capacity())
                 {
@@ -416,10 +450,10 @@ namespace stool
                 uint64_t current_node_count = 0;
                 for (auto &it : this->sub_trees)
                 {
-                    it.build_bits();
+                    it->build_bits();
 
-                    current_child_count += it.children_count();
-                    current_node_count += it.node_count();
+                    current_child_count += it->children_count();
+                    current_node_count += it->node_count();
                 }
 
                 total_counter += (current_child_count - current_node_count);
@@ -429,6 +463,14 @@ namespace stool
                 {
                     this->peak_child_count = current_child_count;
                 }
+#if DEBUG
+
+                if (this->_RLBWTDS->str_size() < 100)
+                {
+                    this->print();
+                }
+
+#endif
 
                 assert(total_counter <= strSize);
 
@@ -445,14 +487,13 @@ namespace stool
             {
                 std::cout << "PRINT PTREE" << std::endl;
                 //this->sub_tree.print_info();
-                /*
-                for (uint64_t i = 0; i < this->sub_tmp_trees.size(); i++)
+
+                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
-                    this->sub_tmp_trees[i].print_info();
+                    this->sub_trees[i]->print_info();
                 }
-                */
-                std::cout << std::endl;
-                std::cout << "PRINT PTREE[END]" << std::endl;
+
+                std::cout << "[END]" << std::endl;
             }
 
         private:
@@ -469,9 +510,9 @@ namespace stool
             }
             void parallel_process()
             {
-                //#if DEBUG
+                #if DEBUG
                 std::cout << "PARALLEL PROCESS" << std::endl;
-                //#endif
+                #endif
                 std::vector<uint64_t> fst_pos_vec;
                 fst_pos_vec.resize(this->thread_count, UINT64_MAX);
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
@@ -485,13 +526,11 @@ namespace stool
                         position_stack.push(i);
                     }
                 }
-                sub_trees.push_back(STNODE_WTRAVERSER());
-                sub_trees[sub_trees.size() - 1]._RLBWTDS = this->_RLBWTDS;
 
                 std::vector<thread> threads;
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(sub_trees), this->sub_tree_limit_size, ref(ems[i])));
+                    threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(new_trees[i]), this->sub_tree_limit_size, ref(ems[i])));
                 }
                 for (thread &t : threads)
                     t.join();
@@ -547,7 +586,7 @@ namespace stool
 
                 for (auto &it : this->sub_trees)
                 {
-                    k += it.get_peak_memory();
+                    k += it->get_peak_memory();
                 }
                 /*
                 for (auto &it : this->sub_tmp_trees)
@@ -564,7 +603,7 @@ namespace stool
 
                 for (auto &it : this->sub_trees)
                 {
-                    k += it.get_optimal_memory();
+                    k += it->get_optimal_memory();
                 }
                 /*
                 for (auto &it : this->sub_tmp_trees)
