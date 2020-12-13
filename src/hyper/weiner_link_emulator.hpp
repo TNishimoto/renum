@@ -20,8 +20,8 @@ namespace stool
         class ExplicitWeinerLinkEmulator
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
-        public:
 
+        public:
             std::vector<std::vector<RINTERVAL>> childrenVec;
             std::vector<RINTERVAL> stnodeVec;
             std::vector<uint64_t> indexVec;
@@ -103,6 +103,20 @@ namespace stool
                         outputExplicitChildrenVec.push_back(currentVec[j]);
                         //output.push_weiner(currentVec[j]);
                     }
+                }
+            }
+            void move_st_internal_nodes(std::deque<RINTERVAL> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, uint8_t c)
+            {
+                auto &currentVec = this->childrenVec[c];
+                uint64_t count = currentVec.size();
+                leftmost_child_bits.push_back(true);
+                for (uint64_t i = 1; i < count; i++)
+                {
+                    leftmost_child_bits.push_back(false);
+                }
+                for (uint64_t j = 0; j < count; j++)
+                {
+                    outputExplicitChildrenVec.push_back(currentVec[j]);
                 }
             }
 

@@ -15,6 +15,7 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
+        std::mutex test_mtx;
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeWTraverser
         {
@@ -117,7 +118,7 @@ namespace stool
                 //this->w_builder.clear();
                 this->builded = false;
 
-                //this->leftmost_child_bits.clear();
+                this->leftmost_child_bits.clear();
             }
             void swap(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item)
             {
@@ -131,6 +132,10 @@ namespace stool
                 uint64_t tmp2 = this->_stnode_count;
                 this->_stnode_count = item._stnode_count;
                 item._stnode_count = tmp2;
+
+                auto tmp3 = this->_RLBWTDS;
+                this->_RLBWTDS = item._RLBWTDS;
+                item._RLBWTDS = tmp3;
             }
             /*
             void shrink(uint64_t node_capacity, uint64_t child_capacity)
@@ -170,14 +175,12 @@ namespace stool
             {
                 return this->leftmost_child_bits_selecter(i + 1);
             }
-            void computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            bool computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, std::vector<STNodeWTraverser> &tmp, uint64_t limit)
             {
-
                 //this->w_builder.clear();
-
+                bool isSplit = false;
                 RINTERVAL intv;
-                uint64_t tmp_count = 0;
-
+                //uint64_t tmp_count = 0;
 
                 assert(this->childVec.size() + 1 == this->w_builder.size());
                 uint64_t size = this->w_builder.size();
@@ -201,8 +204,46 @@ namespace stool
 #if DEBUG
                         em.check2(intv);
 #endif
-                        tmp_count += em.indexCount;
-                        em.move_st_internal_nodes(this->childVec, w_builder);
+
+                        //std::lock_guard<std::mutex> lock(test_mtx);
+                        for (uint64_t i = 0; i < em.indexCount; i++)
+                        {
+                            auto c = em.indexVec[i];
+                            auto &currentVec = em.childrenVec[c];
+                            uint64_t count = currentVec.size();
+
+                            bool limitOver = ((this->childVec.size() + count) > limit);
+                            if (limitOver)
+                            {
+                                if (tmp.size() == 0 || tmp[tmp.size() - 1].childVec.size() + count > limit)
+                                {
+                                    isSplit = true;
+                                    std::cout << "PUSH" << std::endl;
+                                    tmp.push_back(STNodeWTraverser());
+
+                                    tmp[tmp.size() - 1]._RLBWTDS = this->_RLBWTDS;
+                                }
+                            }
+
+                            auto &it = limitOver ? tmp[tmp.size() - 1] : *this;
+                            em.move_st_internal_nodes(it.childVec, it.w_builder, c);
+                            assert(it.childVec.size() <= limit);
+                            it._stnode_count++;
+                            /*
+                            if (isSplit)
+                            {
+                                std::cout << "PUSH3" << std::endl;
+                            }
+                            */
+                        }
+                        /*
+                        if (isSplit)
+                        {
+                            std::cout << "PUSH4/" << this->w_builder.size()<< std::endl;
+                        }
+                        */
+
+                        this->_stnode_count--;
 
                         x = 1;
                     }
@@ -211,68 +252,20 @@ namespace stool
                         x++;
                     }
                 }
+                /*
+                if (isSplit)
+                {
+                    
+                    std::cout << "PUSH5/" << this->w_builder.size() << std::endl;
+                    throw -1;
+                }
+                */
+
                 this->w_builder.pop_front();
-                this->_stnode_count = tmp_count;
+                //this->_stnode_count = tmp_count;
                 assert(this->childVec.size() == this->w_builder.size());
 
-                //this->clear();
-                /*
-                for (auto &it : tmpChildVec)
-                {
-                    this->childVec.push_back(it);
-                }
-                */
-                /*
-                for (uint64_t i = 0; i < k; i++)
-                {
-
-                    if (this->w_builder[0])
-                    {
-                        uint64_t end_index = i;
-
-                        if (b)
-                        {
-                            em.clear();
-                            em.computeSTNodeCandidates(lcpIntv);
-                        }
-                        intv.beginIndex = this->childVec[0].beginIndex;
-                        intv.beginDiff = this->childVec[0].beginDiff;
-                        b = true;
-                    }
-                    else
-                    {
-                        if (i + 1 == k || this->w_builder[1])
-                        {
-                            intv.endIndex = this->childVec[0].endIndex;
-                            intv.endDiff = this->childVec[0].endDiff;
-                        }
-                    }
-
-                    this->get_stnode(i, intv);
-                    tmp_count += em.computeNextLCPIntervalSet(intv, this->childVec, rank, width);
-                    em.move_st_internal_nodes(tmpChildVec, w_builder);
-
-                    rank += width;
-                }
-                */
-
-                //this->shrink(this->_stnode_count * 2, this->childVec.size()*2);
-
-                /*
-                assert(inputSet.node_count() > 0);
-                this->clear();
-
-
-
-                uint64_t end_index = start_index + width - 1;
-                assert(end_index < inputSet.node_count());
-
-                uint64_t node_capacity = width * 2;
-                uint64_t width_sum = inputSet.get_child_rank(end_index + 1) - inputSet.get_child_rank(start_index);
-                uint64_t child_capacity = width_sum * 2;
-                this->shrink(node_capacity, child_capacity);
-
-                */
+                return isSplit;
             }
             void build_bits()
             {
@@ -384,8 +377,10 @@ namespace stool
                 }
                 assert(this->_stnode_count == k);
             }
-            void merge(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item){
-                while(item.childVec.size() > 0){
+            void merge(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item)
+            {
+                while (item.childVec.size() > 0)
+                {
                     this->childVec.push_back(item.childVec[0]);
                     item.childVec.pop_front();
                     this->w_builder.push_back(item.w_builder[0]);
