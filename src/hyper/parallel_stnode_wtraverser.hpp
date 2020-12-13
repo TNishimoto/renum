@@ -9,6 +9,8 @@
 #include <type_traits>
 #include "stnode_wtraverser.hpp"
 #include <thread>
+#include "stool/src/byte.hpp"
+#include <cmath>
 namespace stool
 {
     namespace lcp_on_rlbwt
@@ -114,7 +116,10 @@ namespace stool
             //uint64_t node_count = 0;
             uint64_t child_count = 0;
             uint64_t peak_child_count = 0;
-            uint64_t alpha = 1;
+            uint64_t alpha = 2;
+            uint64_t _expected_peak_memory_bits=0;
+            uint64_t _switch_threshold=0;
+
             RLBWTDS *_RLBWTDS;
             bool is_parallel = true;
 
@@ -125,6 +130,13 @@ namespace stool
             uint64_t node_count() const
             {
                 return this->sub_tree.node_count();
+            }
+            uint64_t expected_peak_memory_bits(){
+                return this->_expected_peak_memory_bits;
+            }
+
+            uint64_t switch_threshold(){
+                return this->_switch_threshold;
             }
 
             void initialize(uint64_t size, RLBWTDS &_RLBWTDS)
@@ -155,6 +167,10 @@ namespace stool
                     ems[i].lightDS = &lightRDs[i];
                     ems[i].heavyDS = &heavyRDs[i];
                 }
+                double ratio = (double)this->_RLBWTDS->str_size() / (double)this->_RLBWTDS->rle_size();
+                double d = std::log2(ratio);
+                this->_expected_peak_memory_bits = this->_RLBWTDS->rle_size() * d;
+                this->_switch_threshold = this->alpha * (this->expected_peak_memory_bits() / (sizeof(uint64_t) * 8));
             }
             void get_stnode(uint64_t index, RINTERVAL &output)
             {
@@ -183,9 +199,9 @@ namespace stool
             {
                 if (current_lcp > 0)
                 {
-                    if (current_lcp % 100 == 0)
+                    if (this->child_count > this->switch_threshold())
                     {
-                        std::cout << "LCP " << (strSize - total_counter) << std::endl;
+                        std::cout << "LCP " << (this->child_count) << "/" << this->switch_threshold() << std::endl;
                     }
 
 #if DEBUG
@@ -243,7 +259,7 @@ namespace stool
                 }
                 */
 
-                std::cout << "Memory: " << this->get_peak_memory() / (1000 * 1000) << "[MB]" << "/ Optimal: " << this->get_optimal_memory() / (1000 * 1000) << "[MB]" << std::endl;
+                //std::cout << "Memory: " << this->get_peak_memory() / (1000 * 1000) << "[MB]" << "/ Optimal: " << this->get_optimal_memory() / (1000 * 1000) << "[MB]" << std::endl;
 
                 assert(total_counter <= strSize);
 
