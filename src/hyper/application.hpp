@@ -117,25 +117,20 @@ namespace stool
                 {
 
                     stnodeSequencer.process();
-                    auto tree = stnodeSequencer.get_sub_tree();
-                    assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
+                    //auto tree = stnodeSequencer.get_sub_tree();
+                    //assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
+                    count += stnodeSequencer.count_maximal_repeats();
+                    /*
                     for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
                         bool b = tree->maximal_repeat_check_vec[i];
-                        //auto &it = stnodeSequencer.get_stnode(i);
 
                         if (b)
                         {
                             count++;
                         }
-                        /*
-                        bool b = tree->maximal_repeat_check_vec[i];
-                        if (b)
-                        {
-                            count++;
-                        }
-                        */
                     }
+                    */
 
                     /*
                                 uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);

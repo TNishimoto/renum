@@ -135,8 +135,7 @@ namespace stool
             }
 
             //template <typename LPOSDS, typename RANGEDS>
-            void getNextSAIntervalsForLCPIntervals(const RINTERVAL &w)
-            {
+            void computeSTNodeCandidates(const RINTERVAL &w){
                 RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
                 uint64_t resultCount = this->range_distinct(frontL);
                 //this->_RLBWTDS->rangeOnRLBWT.range_distinct(frontL);
@@ -150,7 +149,7 @@ namespace stool
             }
 
         public:
-            void computeNextExplicitWeinerIntervals(const RINTERVAL &w)
+            void computeSTChildren(const RINTERVAL &w)
             {
                 RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
 
@@ -237,11 +236,11 @@ namespace stool
 
                 this->clear();
 
-                this->getNextSAIntervalsForLCPIntervals(lcpIntv);
+                this->computeSTNodeCandidates(lcpIntv);
 
                 for (uint64_t j = 0; j < width; j++)
                 {
-                    this->computeNextExplicitWeinerIntervals(weinerVec[rank + j]);
+                    this->computeSTChildren(weinerVec[rank + j]);
                 }
                 this->fit();
 
@@ -251,7 +250,6 @@ namespace stool
 
                 return this->indexCount;
 
-                //intervalTemporary.move(outputSet);
             }
             uint64_t computeFirstLCPIntervalSet()
             {
