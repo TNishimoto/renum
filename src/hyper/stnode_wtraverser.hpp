@@ -367,6 +367,9 @@ namespace stool
                 this->_stnode_count -= num;
                 this->childVec.resize(k);
                 this->w_builder.resize(k);
+
+                this->childVec.shrink_to_fit();
+                this->w_builder.shrink_to_fit();
                 this->bit_check();
             }
             void bit_check()

@@ -21,7 +21,7 @@ namespace stool
         {
 
         public:
-                       stool::lcp_on_rlbwt::STNodeChecker *stnc;
+            stool::lcp_on_rlbwt::STNodeChecker *stnc;
 
             /*
             using CHARVEC = typename RLBWT_STR::char_vec_type;
@@ -31,9 +31,9 @@ namespace stool
             using RINTERVAL = RInterval<INDEX_SIZE>;
             using CHAR = uint8_t;
             using UCHAR = typename std::make_unsigned<CHAR>::type;
-            const sdsl::int_vector<> &bwt;
             using CHAR_VEC = sdsl::int_vector<>;
 
+            const sdsl::int_vector<> &bwt;
             stool::WT &wt;
             const LPOSDS &lpos_vec;
             const FPOSDS &_fposDS;
@@ -41,12 +41,12 @@ namespace stool
 
             //const RLBWT_STR &_rlbwt;
 
-
             std::vector<stool::LCPInterval<uint64_t>> *collectLCPIntervals;
 
             bool checkLCPInterval(const RINTERVAL &input)
             {
-                if(this->stnc == nullptr){
+                if (this->stnc == nullptr)
+                {
                     std::cout << "stnc is null" << std::endl;
                     throw -1;
                 }
@@ -55,17 +55,19 @@ namespace stool
             }
             bool checkWeinerLink(const RINTERVAL &input, std::vector<RINTERVAL> &stnodeVec, std::vector<uint64_t> &indexVec, uint64_t indexCount)
             {
-                if(this->stnc == nullptr){
+                if (this->stnc == nullptr)
+                {
                     std::cout << "stnc is null" << std::endl;
                     throw -1;
                 }
 
-                stool::LCPInterval<uint64_t> intv2 = input.get_lcp_interval(this->stnc->current_lcp-1, this->_fposDS);
+                stool::LCPInterval<uint64_t> intv2 = input.get_lcp_interval(this->stnc->current_lcp - 1, this->_fposDS);
 
                 //std::cout << "PREV = [" <<    intv2.i << ", " << intv2.j << "]" << std::endl;
-                //std::cout << "NEXT: " ;                     
+                //std::cout << "NEXT: " ;
                 std::vector<stool::LCPInterval<uint64_t>> wlinks;
-                for(uint64_t i=0;i<indexCount;i++){
+                for (uint64_t i = 0; i < indexCount; i++)
+                {
                     stool::LCPInterval<uint64_t> intv = stnodeVec[indexVec[i]].get_lcp_interval(this->stnc->current_lcp, this->_fposDS);
                     //std::cout << "[" << intv.i << ", " << intv.j << "]";
                     wlinks.push_back(intv);
@@ -73,7 +75,6 @@ namespace stool
 
                 return this->stnc->check2(intv2.i, intv2.j, wlinks);
             }
-
 
             RLBWTDataStructures(const sdsl::int_vector<> &diff_char_vec,
                                 stool::WT &_wt, const LPOSDS &_lpos_vec, const FPOSDS &__fposDS) : bwt(diff_char_vec), wt(_wt), lpos_vec(_lpos_vec), _fposDS(__fposDS)
@@ -125,7 +126,8 @@ namespace stool
                 std::cout << "No doller character!" << std::endl;
                 throw -1;
             }
-            uint64_t get_start_rle_lposition() const{
+            uint64_t get_start_rle_lposition() const
+            {
                 uint8_t max_char = 0;
                 uint64_t max_position = 0;
                 for (int64_t i = bwt.size() - 1; i >= 0; i--)
@@ -137,9 +139,7 @@ namespace stool
                     }
                 }
                 return max_position;
-
             }
-
 
             RINTERVAL getIntervalOnL(const RINTERVAL &interval) const
             {

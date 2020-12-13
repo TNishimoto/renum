@@ -124,7 +124,7 @@ namespace stool
             std::vector<LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE>> lightRDs;
             std::vector<SuccinctRangeDistinctDataStructure<INDEX_SIZE>> heavyRDs;
             uint64_t minimum_child_count = 1000;
-            uint64_t sub_tree_limit_size = 1000;
+            uint64_t sub_tree_limit_size = 4176400;
 
         public:
             uint64_t current_lcp = 0;
@@ -250,8 +250,78 @@ namespace stool
                 throw -1;
             }
             */
+            void merge()
+            {
 
-                uint64_t kk = 0;
+                uint64_t mergeIndex = 0;
+                uint64_t mergeCount = 0;
+
+                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                {
+                    if (this->sub_trees[i].node_count() < (this->sub_tree_limit_size / 10))
+                    {
+                        while (mergeIndex < i)
+                        {
+                            if (this->sub_trees[mergeIndex].node_count() > 0 && this->sub_trees[mergeIndex].node_count() < this->sub_tree_limit_size)
+                            {
+                                mergeCount++;
+                                this->sub_trees[mergeIndex].merge(this->sub_trees[i]);
+                                break;
+                            }
+                            else
+                            {
+                                mergeIndex++;
+                            }
+                        }
+                    }
+                }
+                if (mergeCount > 10)
+                {
+                    std::cout << "M" << mergeCount << std::endl;
+                }
+            }
+            void remove_empty_trees()
+            {
+                uint64_t nonEmptyCount = 0;
+                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                {
+                    if (this->sub_trees[i].node_count() > 0)
+                    {
+                        if (i != nonEmptyCount)
+                        {
+                            this->sub_trees[nonEmptyCount].swap(this->sub_trees[i]);
+                            /*
+                            this->sub_trees[i] = STNODE_WTRAVERSER();
+                            sub_trees[i]._RLBWTDS = this->_RLBWTDS;
+                            */
+                        }
+                        nonEmptyCount++;
+                    }
+                }
+                this->sub_trees.resize(nonEmptyCount);
+            }
+            void split_big_trees()
+            {
+
+                uint64_t xindex = 0;
+                while (xindex < this->sub_trees.size())
+                {
+                    if (this->sub_trees[xindex].children_count() > this->sub_tree_limit_size)
+                    {
+                        std::cout << "S" << this->sub_trees.size() << std::endl;
+                        this->sub_trees.push_back(STNODE_WTRAVERSER());
+                        auto &it = this->sub_trees[sub_trees.size() - 1];
+                        it._RLBWTDS = this->_RLBWTDS;
+                        this->sub_trees[xindex].split(it);
+                    }
+                    else
+                    {
+                        xindex++;
+                    }
+                }
+            }
+
+            uint64_t kk = 0;
             void process()
             {
                 if (current_lcp > 0)
@@ -263,7 +333,8 @@ namespace stool
                         std::cout << "Memory: " << this->get_peak_memory() / (1000 * 1000) << "[MB]"
                                   << "/ Optimal: " << this->get_optimal_memory() / (1000 * 1000) << "[MB]" << std::endl;
 
-                        if(kk == 3){
+                        if (kk == 3)
+                        {
                             throw -1;
                         }
                     }
@@ -300,6 +371,11 @@ namespace stool
 
                     this->sub_trees[0].first_compute(ems[0]);
                 }
+                if(this->thread_count > 1){
+                    this->merge();
+                    this->remove_empty_trees();
+                    this->split_big_trees();
+                }
                 /*
                 this->sub_tree.clear();
                 for (uint64_t i = 0; i < this->sub_tmp_trees.size(); i++)
@@ -307,70 +383,6 @@ namespace stool
                     this->sub_tree.add(this->sub_tmp_trees[i]);
                 }
                 */
-
-                uint64_t current_child_count = 0;
-                uint64_t current_node_count = 0;
-
-                uint64_t mergeIndex = 0;
-                uint64_t mergeCount = 0;
-                
-                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
-                {
-                    if (this->sub_trees[i].node_count() < (this->sub_tree_limit_size / 10))
-                    {
-                        while (mergeIndex < i)
-                        {
-                            if (this->sub_trees[mergeIndex].node_count() > 0 && this->sub_trees[mergeIndex].node_count() < this->sub_tree_limit_size)
-                            {
-                                mergeCount++;
-                                this->sub_trees[mergeIndex].merge(this->sub_trees[i]);
-                                break;
-                            }else{
-                                mergeIndex++;
-                            }
-                        }
-                    }
-                }
-                if (mergeCount > 10)
-                {
-                    std::cout << "M" << mergeCount << std::endl;
-                }
-                
-
-                uint64_t nonEmptyCount = 0;
-                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
-                {
-                    if (this->sub_trees[i].node_count() > 0)
-                    {
-                        if (i != nonEmptyCount)
-                        {
-                            this->sub_trees[nonEmptyCount].swap(this->sub_trees[i]);
-                            /*
-                            this->sub_trees[i] = STNODE_WTRAVERSER();
-                            sub_trees[i]._RLBWTDS = this->_RLBWTDS;
-                            */
-                        }
-                        nonEmptyCount++;
-                    }
-                }
-                this->sub_trees.resize(nonEmptyCount);
-
-                uint64_t xindex = 0;
-                while (xindex < this->sub_trees.size())
-                {
-                    if (this->sub_trees[xindex].children_count() > this->sub_tree_limit_size)
-                    {
-                        //std::cout << "S" << this->sub_trees.size() << std::endl;
-                        this->sub_trees.push_back(STNODE_WTRAVERSER());
-                        auto &it = this->sub_trees[sub_trees.size() - 1];
-                        it._RLBWTDS = this->_RLBWTDS;
-                        this->sub_trees[xindex].split(it);
-                    }
-                    else
-                    {
-                        xindex++;
-                    }
-                }
 
                 /*
                 if(this->sub_trees.size() != nonEmptyCount){
@@ -382,6 +394,8 @@ namespace stool
                     this->sub_trees.shrink_to_fit();
                 }
 
+                uint64_t current_child_count = 0;
+                uint64_t current_node_count = 0;
                 for (auto &it : this->sub_trees)
                 {
                     it.build_bits();
