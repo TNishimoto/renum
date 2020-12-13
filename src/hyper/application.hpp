@@ -209,9 +209,14 @@ namespace stool
 
                     //assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
 
+                    RINTERVAL it;
+                    it.beginIndex = 0;
+                    it.beginDiff = 0;
+                    it.endIndex = 0;
+                    it.endDiff = 0;
+
                     for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
-                        RINTERVAL it;
                         stnodeSequencer.get_stnode(i, it);
                         uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
                         uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);

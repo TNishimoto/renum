@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <queue>
+#include <deque>
 #include <vector>
 #include <type_traits>
 #include "weiner_link_emulator.hpp"
@@ -21,7 +22,7 @@ namespace stool
             //std::vector<RINTERVAL> stnodeVec;
             //std::vector<uint8_t> _widthVec;
 
-            std::vector<RINTERVAL> childVec;
+            std::deque<RINTERVAL> childVec;
 
             sdsl::bit_vector leftmost_child_bits;
             sdsl::bit_vector::select_1_type leftmost_child_bits_selecter;
@@ -29,7 +30,7 @@ namespace stool
             uint64_t _stnode_count = 0;
 
         public:
-            std::vector<bool> w_builder;
+            std::deque<bool> w_builder;
 
             RLBWTDS *_RLBWTDS;
 
@@ -38,6 +39,7 @@ namespace stool
             STNodeWTraverser()
             {
             }
+
             void get_stnode(uint64_t i, RINTERVAL &output)
             {
                 assert(builded);
@@ -47,6 +49,7 @@ namespace stool
 
                 this->get_stnode(L, R, output);
             }
+
             void get_stnode(uint64_t L, uint64_t R, RINTERVAL &output)
             {
                 uint64_t beg_index = childVec[L].beginIndex, end_index = childVec[R].endIndex,
@@ -116,7 +119,8 @@ namespace stool
 
                 //this->leftmost_child_bits.clear();
             }
-            void swap(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item){
+            void swap(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item)
+            {
                 this->childVec.swap(item.childVec);
                 this->w_builder.swap(item.w_builder);
                 bool tmp = this->builded;
@@ -128,6 +132,7 @@ namespace stool
                 this->_stnode_count = item._stnode_count;
                 item._stnode_count = tmp2;
             }
+            /*
             void shrink(uint64_t node_capacity, uint64_t child_capacity)
             {
 
@@ -143,6 +148,7 @@ namespace stool
                     this->maximal_repeat_check_vec.reserve(node_capacity);
                 }
             }
+            */
             void first_compute(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
             {
                 w_builder.clear();
@@ -167,27 +173,90 @@ namespace stool
             void computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
             {
 
-                this->w_builder.clear();
-                std::vector<RINTERVAL> tmpChildVec;
+                //this->w_builder.clear();
 
                 RINTERVAL intv;
                 uint64_t tmp_count = 0;
-                uint64_t rank = 0;
-                for (uint64_t i = 0; i < this->node_count(); i++)
+
+
+                assert(this->childVec.size() + 1 == this->w_builder.size());
+                uint64_t size = this->w_builder.size();
+                uint64_t x = 1;
+                for (uint64_t i = 1; i < size; i++)
                 {
-                    uint64_t width = this->get_width(i);
+                    if (this->w_builder[x])
+                    {
+                        this->get_stnode(0, x - 1, intv);
+                        em.clear();
+                        em.computeSTNodeCandidates(intv);
+
+                        for (uint64_t i = 0; i < x; i++)
+                        {
+                            auto &child = this->childVec[0];
+                            em.computeSTChildren(child);
+                            this->childVec.pop_front();
+                            this->w_builder.pop_front();
+                        }
+                        em.fit();
+#if DEBUG
+                        em.check2(intv);
+#endif
+                        tmp_count += em.indexCount;
+                        em.move_st_internal_nodes(this->childVec, w_builder);
+
+                        x = 1;
+                    }
+                    else
+                    {
+                        x++;
+                    }
+                }
+                this->w_builder.pop_front();
+                this->_stnode_count = tmp_count;
+                assert(this->childVec.size() == this->w_builder.size());
+
+                //this->clear();
+                /*
+                for (auto &it : tmpChildVec)
+                {
+                    this->childVec.push_back(it);
+                }
+                */
+                /*
+                for (uint64_t i = 0; i < k; i++)
+                {
+
+                    if (this->w_builder[0])
+                    {
+                        uint64_t end_index = i;
+
+                        if (b)
+                        {
+                            em.clear();
+                            em.computeSTNodeCandidates(lcpIntv);
+                        }
+                        intv.beginIndex = this->childVec[0].beginIndex;
+                        intv.beginDiff = this->childVec[0].beginDiff;
+                        b = true;
+                    }
+                    else
+                    {
+                        if (i + 1 == k || this->w_builder[1])
+                        {
+                            intv.endIndex = this->childVec[0].endIndex;
+                            intv.endDiff = this->childVec[0].endDiff;
+                        }
+                    }
+
                     this->get_stnode(i, intv);
                     tmp_count += em.computeNextLCPIntervalSet(intv, this->childVec, rank, width);
                     em.move_st_internal_nodes(tmpChildVec, w_builder);
 
                     rank += width;
                 }
-                this->clear();
-                for (auto &it : tmpChildVec)
-                {
-                    this->childVec.push_back(it);
-                }
-                this->_stnode_count = tmp_count;
+                */
+
+                //this->shrink(this->_stnode_count * 2, this->childVec.size()*2);
 
                 /*
                 assert(inputSet.node_count() > 0);
@@ -261,8 +330,8 @@ namespace stool
             }
             uint64_t get_peak_memory()
             {
-                uint64_t x1 = this->childVec.capacity() * sizeof(RINTERVAL);
-                uint64_t x2 = (this->w_builder.capacity() * 1) / 8;
+                uint64_t x1 = this->childVec.size() * sizeof(RINTERVAL);
+                uint64_t x2 = (this->w_builder.size() * 1) / 8;
                 uint64_t x3 = (this->leftmost_child_bits.size() * 1) / 8;
                 uint64_t x4 = (maximal_repeat_check_vec.capacity() * 1) / 8;
 
@@ -276,15 +345,19 @@ namespace stool
                 uint64_t x4 = (maximal_repeat_check_vec.size() * 1) / 8;
                 return x1 + x2 + x3 + x4;
             }
-            void split(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item){
+            void split(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item)
+            {
                 uint64_t k = this->childVec.size() / 2;
-                
-                while(!this->w_builder[k]){
-                    k--; 
+
+                while (!this->w_builder[k])
+                {
+                    k--;
                 }
                 uint64_t num = 0;
-                for(uint64_t i=k;i<this->childVec.size();i++){
-                    if(this->w_builder[i]){
+                for (uint64_t i = k; i < this->childVec.size(); i++)
+                {
+                    if (this->w_builder[i])
+                    {
                         num++;
                     }
                     item.childVec.push_back(this->childVec[i]);
@@ -296,16 +369,27 @@ namespace stool
                 this->w_builder.resize(k);
                 this->bit_check();
             }
-            void bit_check(){
-                uint64_t k=0;
+            void bit_check()
+            {
+                uint64_t k = 0;
                 for (uint64_t i = 0; i < w_builder.size(); i++)
                 {
-                    if(w_builder[i]){
+                    if (w_builder[i])
+                    {
                         k++;
                     }
                 }
                 assert(this->_stnode_count == k);
-
+            }
+            void merge(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item){
+                while(item.childVec.size() > 0){
+                    this->childVec.push_back(item.childVec[0]);
+                    item.childVec.pop_front();
+                    this->w_builder.push_back(item.w_builder[0]);
+                    item.w_builder.pop_front();
+                }
+                this->_stnode_count += item._stnode_count;
+                item.clear();
             }
         };
 

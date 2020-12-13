@@ -20,6 +20,7 @@ namespace stool
         class ExplicitWeinerLinkEmulator
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
+        public:
 
             std::vector<std::vector<RINTERVAL>> childrenVec;
             std::vector<RINTERVAL> stnodeVec;
@@ -30,7 +31,6 @@ namespace stool
             uint64_t explicitChildCount = 0;
             uint64_t range_distinct_threshold = 16;
 
-        public:
             // For range distinct
             std::vector<uint8_t> charTmpVec;
             vector<RINTERVAL> rIntervalTmpVec;
@@ -83,7 +83,7 @@ namespace stool
                 explicitChildCount = 0;
             }
 
-            void move_st_internal_nodes(std::vector<RINTERVAL> &outputExplicitChildrenVec, std::vector<bool> &leftmost_child_bits)
+            void move_st_internal_nodes(std::deque<RINTERVAL> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits)
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
@@ -106,7 +106,6 @@ namespace stool
                 }
             }
 
-        private:
             bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
             {
                 auto &lcpIntv = this->stnodeVec[c];
@@ -135,7 +134,8 @@ namespace stool
             }
 
             //template <typename LPOSDS, typename RANGEDS>
-            void computeSTNodeCandidates(const RINTERVAL &w){
+            void computeSTNodeCandidates(const RINTERVAL &w)
+            {
                 RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
                 uint64_t resultCount = this->range_distinct(frontL);
                 //this->_RLBWTDS->rangeOnRLBWT.range_distinct(frontL);
@@ -231,7 +231,8 @@ namespace stool
 
                 return count;
             }
-            uint64_t computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::vector<RINTERVAL> &weinerVec, uint64_t rank, uint64_t width)
+            /*
+            uint64_t computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::deque<RINTERVAL> &weinerVec, uint64_t rank, uint64_t width)
             {
 
                 this->clear();
@@ -244,12 +245,15 @@ namespace stool
                 }
                 this->fit();
 
-#if DEBUG
-                this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
-#endif
+                this->check();
 
                 return this->indexCount;
+            }
+            */
+            void check2(const RINTERVAL &lcpIntv)
+            {
 
+                this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
             }
             uint64_t computeFirstLCPIntervalSet()
             {
