@@ -161,6 +161,19 @@ namespace stool
                     this->pushLCPInterval(it, c);
                 }
             }
+            void computeSTNodeCandidates2(const RINTERVAL &w)
+            {
+                uint64_t resultCount = this->range_distinct(w);
+                for (uint64_t i = 0; i < resultCount; i++)
+                {
+                    typename RLBWTDS::UCHAR c = this->charTmpVec[i];
+                    auto &it = this->rIntervalTmpVec[i];
+
+                    this->pushLCPInterval(it, c);
+                }
+
+            }
+
 
         public:
             void computeSTChildren(const RINTERVAL &w)
@@ -169,6 +182,24 @@ namespace stool
 
                 assert(frontL.beginIndex <= frontL.endIndex);
                 uint64_t resultCount = this->range_distinct(frontL);
+
+                for (uint64_t i = 0; i < resultCount; i++)
+                {
+                    typename RLBWTDS::UCHAR c = this->charTmpVec[i];
+                    auto &it = this->rIntervalTmpVec[i];
+
+                    //auto &lcpIntv = this->stnodeVec[c];
+                    //bool isLastChild = lcpIntv.endIndex == it.endIndex && lcpIntv.endDiff == it.endDiff;
+                    //if(!isLastChild){
+                    this->pushExplicitWeinerInterval(it, c);
+                    //}
+                }
+            }
+            void computeSTChildren2(const RINTERVAL &w)
+            {
+ 
+                assert(w.beginIndex <= w.endIndex);
+                uint64_t resultCount = this->range_distinct(w);
 
                 for (uint64_t i = 0; i < resultCount; i++)
                 {
@@ -266,9 +297,14 @@ namespace stool
             */
             void check2(const RINTERVAL &lcpIntv)
             {
-
+                stool::LCPInterval<uint64_t> intv2 = lcpIntv.get_lcp_interval(this->_RLBWTDS->stnc->current_lcp - 1, this->_RLBWTDS->_fposDS);
+                this->_RLBWTDS->checkWeinerLink(intv2, this->stnodeVec, this->indexVec, this->indexCount);
+            }
+            void check2(const LCPInterval<uint64_t> &lcpIntv)
+            {
                 this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
             }
+
             uint64_t computeFirstLCPIntervalSet()
             {
                 this->clear();
@@ -306,7 +342,7 @@ namespace stool
                 this->fit();
 
 #if DEBUG
-                this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
+                this->check2(lcpIntv);
 #endif
 
                 return 1;

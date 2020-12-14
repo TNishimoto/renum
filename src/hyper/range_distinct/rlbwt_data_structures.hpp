@@ -53,7 +53,7 @@ namespace stool
                 stool::LCPInterval<uint64_t> intv2 = input.get_lcp_interval(this->stnc->current_lcp, this->_fposDS);
                 return this->stnc->check(intv2.i, intv2.j);
             }
-            bool checkWeinerLink(const RINTERVAL &input, std::vector<RINTERVAL> &stnodeVec, std::vector<uint64_t> &indexVec, uint64_t indexCount)
+            bool checkWeinerLink(const stool::LCPInterval<uint64_t> intv2, std::vector<RINTERVAL> &stnodeVec, std::vector<uint64_t> &indexVec, uint64_t indexCount)
             {
                 if (this->stnc == nullptr)
                 {
@@ -61,7 +61,6 @@ namespace stool
                     throw -1;
                 }
 
-                stool::LCPInterval<uint64_t> intv2 = input.get_lcp_interval(this->stnc->current_lcp - 1, this->_fposDS);
 
                 //std::cout << "PREV = [" <<    intv2.i << ", " << intv2.j << "]" << std::endl;
                 //std::cout << "NEXT: " ;
@@ -153,6 +152,15 @@ namespace stool
                 output.endIndex = this->get_lindex_containing_the_position(end_pos);
                 output.endDiff = end_pos - lpos_vec[output.endIndex];
                 return output;
+            }
+            void to_rinterval(uint64_t left, uint64_t right, RINTERVAL &output) const
+            {
+
+                output.beginIndex = this->get_lindex_containing_the_position(left);
+                output.beginDiff = left - this->get_lpos(output.beginIndex);
+                output.endIndex = this->get_lindex_containing_the_position(right);
+                output.endDiff = right - this->get_lpos(output.endIndex);
+
             }
         };
     } // namespace lcp_on_rlbwt

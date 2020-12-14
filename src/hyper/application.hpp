@@ -209,21 +209,20 @@ namespace stool
 
                     //assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
 
-                    RINTERVAL it;
-                    it.beginIndex = 0;
-                    it.beginDiff = 0;
-                    it.endIndex = 0;
-                    it.endDiff = 0;
+                    stool::LCPInterval<uint64_t> it;
+                    it.i = 0;
+                    it.j = 0;
+                    it.lcp = 0;
 
                     uint64_t L = 0;
                     for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
 
                         L = stnodeSequencer.get_stnode2(L, it);
-                        uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
-                        uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
-                        stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
-                        r.push_back(newLCPIntv);
+                        //uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
+                        //uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
+                        //stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
+                        r.push_back(it);
                     }
                     stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count());
                 }

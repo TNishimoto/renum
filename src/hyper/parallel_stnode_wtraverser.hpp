@@ -7,10 +7,12 @@
 #include <queue>
 #include <vector>
 #include <type_traits>
-#include "stnode_wtraverser.hpp"
 #include <thread>
 #include "stool/src/byte.hpp"
 #include <cmath>
+#include "stnode_wtraverser.hpp"
+#include "succinct_stnode_wtraverser.hpp"
+
 namespace stool
 {
     namespace lcp_on_rlbwt
@@ -31,6 +33,7 @@ namespace stool
                 this->width = 0;
             }
         };
+
         template <typename INDEX_SIZE, typename RLBWTDS>
         bool checkMaximalRepeat(const RInterval<INDEX_SIZE> &lcpIntv, RLBWTDS &_RLBWTDS)
         {
@@ -124,8 +127,11 @@ namespace stool
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
             using STNODE_WTRAVERSER = STNodeWTraverser<INDEX_SIZE, RLBWTDS>;
+            using SUCCINCT_STNODE_WTRAVERSER = SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS>;
 
             std::vector<STNODE_WTRAVERSER *> sub_trees;
+            std::vector<SUCCINCT_STNODE_WTRAVERSER *> succinct_sub_trees;
+
             std::vector<std::vector<STNODE_WTRAVERSER *>> new_trees;
 
             //std::stack<STNODE_WTRAVERSER> empty_trees;
@@ -150,6 +156,8 @@ namespace stool
             uint64_t thread_count = 1;
             std::stack<uint64_t> position_stack;
 
+            bool succinct_mode = false;
+
             RLBWTDS *_RLBWTDS;
             //bool is_parallel = true;
             uint64_t count_maximal_repeats()
@@ -167,12 +175,24 @@ namespace stool
             */
             uint64_t node_count() const
             {
-                uint64_t k = 0;
-                for (auto &it : this->sub_trees)
+                if (this->succinct_mode)
                 {
-                    k += it->node_count();
+                    uint64_t k = 0;
+                    for (auto &it : this->succinct_sub_trees)
+                    {
+                        k += it->node_count();
+                    }
+                    return k;
                 }
-                return k;
+                else
+                {
+                    uint64_t k = 0;
+                    for (auto &it : this->sub_trees)
+                    {
+                        k += it->node_count();
+                    }
+                    return k;
+                }
 
                 //return this->sub_tree.node_count();
             }
@@ -247,6 +267,7 @@ namespace stool
                 }
                 */
             }
+            /*
             uint64_t get_stnode2(uint64_t L, RINTERVAL &output)
             {
 
@@ -265,6 +286,47 @@ namespace stool
                     }
                 }
                 return UINT64_MAX;
+            }
+            */
+
+            uint64_t get_stnode2(uint64_t L, stool::LCPInterval<uint64_t> &output)
+            {
+                if (!this->succinct_mode)
+                {
+                    uint64_t p = 0;
+                    for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                    {
+                        uint64_t csize = this->sub_trees[i]->children_count();
+
+                        if (p <= L && L < p + csize)
+                        {
+                            return p + this->sub_trees[i]->get_stnode2(L - p, output, this->current_lcp - 1);
+                        }
+                        else
+                        {
+                            p += csize;
+                        }
+                    }
+                    return UINT64_MAX;
+                }
+                else
+                {
+                    uint64_t p = 0;
+                    for (uint64_t i = 0; i < this->succinct_sub_trees.size(); i++)
+                    {
+                        uint64_t csize = this->succinct_sub_trees[i]->children_count();
+
+                        if (p <= L && L < p + csize)
+                        {
+                            return p + this->succinct_sub_trees[i]->get_stnode2(L - p, output, this->current_lcp - 1);
+                        }
+                        else
+                        {
+                            p += csize;
+                        }
+                    }
+                    return UINT64_MAX;
+                }
             }
 
             /*
@@ -337,7 +399,8 @@ namespace stool
                         nonEmptyCount++;
                     }
                 }
-                for(uint64_t i=nonEmptyCount;i<this->sub_trees.size(); i++){
+                for (uint64_t i = nonEmptyCount; i < this->sub_trees.size(); i++)
+                {
                     delete this->sub_trees[i];
                 }
                 this->sub_trees.resize(nonEmptyCount);
@@ -371,29 +434,29 @@ namespace stool
 #if DEBUG
             uint64_t prev_child_count = 0;
 #endif
-            void process()
+            void heavyEnumerate()
             {
                 bool isSingleProcess = false;
                 if (current_lcp > 0)
                 {
-                    
+                    /*
                     if (this->child_count > this->switch_threshold())
                     {
                         kk++;
                         std::cout << "LCP " << this->current_lcp << "/" << (this->child_count) << "/" << this->switch_threshold() << "/" << this->sub_trees.size() << std::endl;
                         std::cout << "Memory: " << this->get_peak_memory() / (1000 * 1000) << "[MB]"
                                   << "/ Optimal: " << this->get_optimal_memory() / (1000 * 1000) << "[MB]" << std::endl;
-                        /*
+
+                        
                         if (kk == 3)
                         {
+
                             std::cout << "STOP" << std::endl;
                             throw -1;
                         }
-                        */
                         
                     }
-                    
-                    
+                    */
 
 #if DEBUG
                     if (prev_child_count != this->child_count)
@@ -406,7 +469,6 @@ namespace stool
                         this->print();
                     }
 #endif
-
 
                     isSingleProcess = this->child_count < minimum_child_count || this->thread_count == 1;
                     //bool b = true;
@@ -446,14 +508,47 @@ namespace stool
                     this->sub_trees.shrink_to_fit();
                 }
 
-                uint64_t current_child_count = 0;
-                uint64_t current_node_count = 0;
                 for (auto &it : this->sub_trees)
                 {
                     it->build_bits();
+                }
 
-                    current_child_count += it->children_count();
-                    current_node_count += it->node_count();
+#if DEBUG
+
+                if (this->_RLBWTDS->str_size() < 100)
+                {
+                    this->print();
+                }
+
+#endif
+                this->recompute_node_counter();
+
+                assert(total_counter <= strSize);
+
+                current_lcp++;
+                assert(this->child_count > 0);
+                assert(this->node_count() > 0);
+            }
+            void recompute_node_counter()
+            {
+                uint64_t current_child_count = 0;
+                uint64_t current_node_count = 0;
+                if (!this->succinct_mode)
+                {
+                    for (auto &it : this->sub_trees)
+                    {
+                        current_child_count += it->children_count();
+                        current_node_count += it->node_count();
+                    }
+                }
+                else
+                {
+                    for (auto &it : this->succinct_sub_trees)
+                    {
+                        current_child_count += it->children_count();
+                        current_node_count += it->node_count();
+
+                    }
                 }
 
                 total_counter += (current_child_count - current_node_count);
@@ -463,20 +558,54 @@ namespace stool
                 {
                     this->peak_child_count = current_child_count;
                 }
-#if DEBUG
+            }
+            void lightEnumerate()
+            {
+                SuccinctSTNodeWTraverserBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
+                wBuilder.initialize(0, this->node_count() - 1, this->_RLBWTDS);
+                assert(this->succinct_sub_trees.size() == 1);
 
-                if (this->_RLBWTDS->str_size() < 100)
-                {
-                    this->print();
-                }
+                wBuilder.computeNextSTNodes(*this->succinct_sub_trees[0], this->ems[0]);
+                SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS>();
+                wBuilder.buildSuccinctSTNodeWTraverser(*succ);
+                delete this->succinct_sub_trees[0];
+                this->succinct_sub_trees[0] = succ;
 
-#endif
+                this->recompute_node_counter();
 
                 assert(total_counter <= strSize);
 
                 current_lcp++;
                 assert(this->child_count > 0);
                 assert(this->node_count() > 0);
+            }
+
+            void process()
+            {
+                if (this->current_lcp == 0)
+                {
+                    this->heavyEnumerate();
+                }
+                else
+                {
+                    std::cout << "LIGHT LCP = " << current_lcp << std::endl;
+                    if (current_lcp == 1)
+                    {
+                        this->succinct_mode = true;
+                        this->build_succinct();
+                    }
+
+                    bool isHeavy = false;
+
+                    if (isHeavy)
+                    {
+                        this->heavyEnumerate();
+                    }
+                    else
+                    {
+                        this->lightEnumerate();
+                    }
+                }
             }
             bool isStop()
             {
@@ -510,9 +639,9 @@ namespace stool
             }
             void parallel_process()
             {
-                #if DEBUG
+#if DEBUG
                 std::cout << "PARALLEL PROCESS" << std::endl;
-                #endif
+#endif
                 std::vector<uint64_t> fst_pos_vec;
                 fst_pos_vec.resize(this->thread_count, UINT64_MAX);
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
@@ -613,6 +742,50 @@ namespace stool
                 */
 
                 return k;
+            }
+            void build_succinct()
+            {
+                std::cout << "BUILD SUccinct" << std::endl;
+                std::vector<std::pair<uint64_t, uint64_t>> children;
+                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                {
+                    for (uint64_t j = 0; j < this->sub_trees[i]->children_count(); j++)
+                    {
+                        children.push_back(std::pair<uint64_t, uint64_t>(i, j));
+                    }
+                }
+
+                sort(children.begin(), children.end(), [&](const std::pair<uint64_t, uint64_t> &lhs, const std::pair<uint64_t, uint64_t> &rhs) {
+                    auto &left = sub_trees[lhs.first]->childVec[lhs.second];
+                    auto &right = sub_trees[rhs.first]->childVec[rhs.second];
+                    uint64_t begin_pos1 = _RLBWTDS->_fposDS[left.beginIndex] + left.beginDiff;
+                    uint64_t begin_pos2 = _RLBWTDS->_fposDS[right.beginIndex] + right.beginDiff;
+                    return begin_pos1 < begin_pos2;
+                });
+
+                SuccinctSTNodeWTraverserBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
+                wBuilder.initialize(0, this->node_count(), this->_RLBWTDS);
+
+                for (auto &it : children)
+                {
+                    auto &item = sub_trees[it.first]->childVec[it.second];
+                    uint8_t c = this->_RLBWTDS->bwt[item.beginIndex];
+                    uint64_t begin_pos = this->_RLBWTDS->_fposDS[item.beginIndex] + item.beginDiff;
+                    uint64_t end_pos = this->_RLBWTDS->_fposDS[item.endIndex] + item.endDiff;
+                    bool isLeft = sub_trees[it.first]->w_builder[it.second];
+
+                    if (this->current_lcp == 1)
+                    {
+                        isLeft = begin_pos == 0;
+                    }
+
+                    LightweightInterval newIntv(begin_pos, end_pos, isLeft);
+                    wBuilder.push(newIntv, c);
+                }
+                SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS>();
+                wBuilder.buildSuccinctSTNodeWTraverser(*succ);
+                this->succinct_sub_trees.push_back(succ);
+                std::cout << "Memory: " << (succ->get_using_memory() / 1000) << "[KB]" << std::endl;
             }
         };
 

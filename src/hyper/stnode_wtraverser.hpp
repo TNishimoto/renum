@@ -20,7 +20,6 @@ namespace stool
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            std::deque<RINTERVAL> childVec;
 
             //sdsl::bit_vector leftmost_child_bits;
             //sdsl::bit_vector::select_1_type leftmost_child_bits_selecter;
@@ -28,6 +27,8 @@ namespace stool
             uint64_t _stnode_count = 0;
 
         public:
+            std::deque<RINTERVAL> childVec;
+
             std::deque<bool> w_builder;
             RLBWTDS *_RLBWTDS = nullptr;
             std::vector<bool> maximal_repeat_check_vec;
@@ -94,6 +95,21 @@ namespace stool
                     output.endDiff = this->_RLBWTDS->get_run(output.endIndex) - 1;
                 }
                 return R + 1;
+            }
+            uint64_t get_stnode2(uint64_t L, stool::LCPInterval<uint64_t> &output, uint64_t lcp)
+            {
+                assert(this->w_builder[L]);
+                assert(!this->w_builder[L+1]);
+
+                RINTERVAL tmp;
+                uint64_t newL = get_stnode2(L, tmp);
+                uint64_t left = this->_RLBWTDS->get_fpos(tmp.beginIndex, tmp.beginDiff);
+                uint64_t right = this->_RLBWTDS->get_fpos(tmp.endIndex, tmp.endDiff);
+                output.i = left;
+                output.j = right;
+                output.lcp = lcp;
+                return newL;
+
             }
 
             /*
@@ -326,29 +342,12 @@ namespace stool
 
                     L = this->get_stnode2(L, it);
                     it.print2(this->_RLBWTDS->_fposDS);
-                    //uint64_t beg = this->_RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
-                    //uint64_t end = this->_RLBWTDS->get_fpos(it.endIndex, it.endDiff);
-                    //std::cout << "[" << beg << ", " << end << "]" << std::flush;
-                    //stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
-                    //r.push_back(newLCPIntv);
                 }
-                /*
-                for (uint64_t i = 0; i < this->node_count(); i++)
-                {
-                    this->stnodeVec[i].print2(this->_RLBWTDS->_fposDS);
-                }
-                */
-
                 std::cout << std::endl;
             }
-
+            /*
             void add(STNodeWTraverser<INDEX_SIZE, RLBWTDS> &item)
             {
-                //assert(item.stnodeVec.size() == item._widthVec.size());
-                //assert(item.stnodeVec.size() == item.maximal_repeat_check_vec.size());
-
-                //assert(this->stnodeVec.size() == this->_widthVec.size());
-                //assert(this->stnodeVec.size() == this->maximal_repeat_check_vec.size());
                 for (uint64_t i = 0; i < item.maximal_repeat_check_vec.size(); i++)
                 {
                     this->maximal_repeat_check_vec.push_back(item.maximal_repeat_check_vec[i]);
@@ -365,6 +364,7 @@ namespace stool
 
                 item.clear();
             }
+            */
             uint64_t get_peak_memory()
             {
                 uint64_t x1 = this->childVec.size() * sizeof(RINTERVAL);
