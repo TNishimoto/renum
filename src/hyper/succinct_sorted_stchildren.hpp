@@ -49,6 +49,26 @@ namespace stool
             {
                 return this->_stnode_count;
             }
+            void print(){
+                std::cout << "@SuccinctSortedSTChildren" << std::endl;
+                for(uint64_t i=0;i<this->_stnode_count;i++){
+                    uint64_t l = this->get_stnode_left_index(i);
+                    uint64_t r = this->get_stnode_right_index(i);
+                    uint64_t left = this->get_child_node_left(l);
+                    uint64_t right = this->get_child_node_right(r);
+                    std::cout << "[" << left << ", " << right << "], c = ";
+                    for(uint64_t x = l;x<=r ;x++){
+                        left = this->get_child_node_left(x);
+                        right = this->get_child_node_right(x);
+                        std::cout << "[" << left << ", " << right << "]";
+                    }
+                    if(i + 1 < this->_stnode_count){
+                    std::cout << std::endl;
+                    }
+
+                }
+                std::cout << "[END]" << std::endl;
+            }
 
             uint64_t get_stnode_left_index(uint64_t i)
             {

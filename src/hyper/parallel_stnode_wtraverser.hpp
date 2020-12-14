@@ -547,7 +547,6 @@ namespace stool
                     {
                         current_child_count += it->children_count();
                         current_node_count += it->node_count();
-
                     }
                 }
 
@@ -561,15 +560,30 @@ namespace stool
             }
             void lightEnumerate()
             {
-                SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
-                wBuilder.initialize(0, this->node_count() - 1, this->_RLBWTDS, this->succinct_sub_trees[0]);
-                assert(this->succinct_sub_trees.size() == 1);
-                uint64_t next_child_count = wBuilder.countNextSTNodes(this->ems[0]);
-                wBuilder.set(this->_RLBWTDS->str_size(), next_child_count);
+                #if DEBUG
+                if(this->_RLBWTDS->str_size() < 100){
+                this->succinct_sub_trees[0]->print();
+                }
+                #endif
+                auto wBuilder = new SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>(); 
+                std::vector<SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>*> wBuilders;
 
-                wBuilder.computeNextSTNodes(this->ems[0]);
+                wBuilders.push_back(wBuilder);
+
+                //SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
+                wBuilder->initialize(0, this->node_count() - 1, this->_RLBWTDS, this->succinct_sub_trees[0]);
+
+                assert(this->succinct_sub_trees.size() == 1);
+
+                uint64_t next_child_count = wBuilder->countNextSTNodes(this->ems[0]);
+
+                wBuilder->set();
+
+                wBuilder->computeNextSTNodes(this->ems[0]);
                 SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>();
-                wBuilder.buildSuccinctSortedSTChildren(*succ);
+                //wBuilder->buildSuccinctSortedSTChildren(*succ);
+
+                SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>::merge(*succ, wBuilders);
                 delete this->succinct_sub_trees[0];
                 this->succinct_sub_trees[0] = succ;
 
@@ -580,6 +594,8 @@ namespace stool
                 current_lcp++;
                 assert(this->child_count > 0);
                 assert(this->node_count() > 0);
+                delete wBuilder;
+
             }
 
             void process()
@@ -763,10 +779,13 @@ namespace stool
                     uint64_t begin_pos2 = _RLBWTDS->_fposDS[right.beginIndex] + right.beginDiff;
                     return begin_pos1 < begin_pos2;
                 });
+                auto wBuilder = new SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>(); 
+                std::vector<SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>*> wBuilders;
 
-                SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
-                wBuilder.initialize(0, this->node_count(), this->_RLBWTDS, nullptr);
-                wBuilder.set(this->_RLBWTDS->str_size(), children.size());
+                wBuilders.push_back(wBuilder);
+                //SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
+                wBuilder->initialize(0, this->node_count(), this->_RLBWTDS, nullptr);
+                wBuilder->set(this->_RLBWTDS->str_size(), children.size());
 
                 for (auto &it : children)
                 {
@@ -782,13 +801,16 @@ namespace stool
                     }
 
                     LightweightInterval newIntv(begin_pos, end_pos, isLeft);
-                    wBuilder.push(newIntv, c);
+                    wBuilder->push(newIntv, c);
                 }
 
                 SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>();
-                wBuilder.buildSuccinctSortedSTChildren(*succ);
-                this->succinct_sub_trees.push_back(succ);
+
+                SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>::merge(*succ, wBuilders);
+                    //wBuilder.buildSuccinctSortedSTChildren(*succ);
+                    this->succinct_sub_trees.push_back(succ);
                 std::cout << "Memory: " << (succ->get_using_memory() / 1000) << "[KB]" << std::endl;
+                delete wBuilder;
             }
         };
 
