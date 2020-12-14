@@ -269,20 +269,7 @@ namespace stool
                             assert(it->childVec.size() <= limit);
                             it->_stnode_count++;
 
-                            /*
-                            if (isSplit)
-                            {
-                                std::cout << "PUSH3" << std::endl;
-                            }
-                            */
                         }
-                        /*
-                        if (isSplit)
-                        {
-                            std::cout << "PUSH4/" << this->w_builder.size()<< std::endl;
-                        }
-                        */
-
                         this->_stnode_count--;
 
                         x = 1;
@@ -292,14 +279,6 @@ namespace stool
                         x++;
                     }
                 }
-                /*
-                if (isSplit)
-                {
-                    
-                    std::cout << "PUSH5/" << this->w_builder.size() << std::endl;
-                    throw -1;
-                }
-                */
 
                 this->w_builder.pop_front();
                 //this->_stnode_count = tmp_count;

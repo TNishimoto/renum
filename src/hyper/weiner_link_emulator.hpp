@@ -242,13 +242,13 @@ namespace stool
             {
                 assert(this->lightDS != nullptr);
                 uint64_t count = 0;
-                if (range.endIndex - range.beginIndex > range_distinct_threshold)
+                if (range.endIndex - range.beginIndex <= range_distinct_threshold)
                 {
-                    count = this->heavyDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
+                    count = this->lightDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
                 }
                 else
                 {
-                    count = this->lightDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
+                    count = this->heavyDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
                 }
                 //check(range);
                 //uint64_t count = this->lightDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);

@@ -11,7 +11,7 @@
 #include "stool/src/byte.hpp"
 #include <cmath>
 #include "stnode_wtraverser.hpp"
-#include "succinct_stnode_wtraverser.hpp"
+#include "succinct_sorted_stchildren_builder.hpp"
 
 namespace stool
 {
@@ -127,7 +127,7 @@ namespace stool
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
             using STNODE_WTRAVERSER = STNodeWTraverser<INDEX_SIZE, RLBWTDS>;
-            using SUCCINCT_STNODE_WTRAVERSER = SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS>;
+            using SUCCINCT_STNODE_WTRAVERSER = SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>;
 
             std::vector<STNODE_WTRAVERSER *> sub_trees;
             std::vector<SUCCINCT_STNODE_WTRAVERSER *> succinct_sub_trees;
@@ -561,13 +561,15 @@ namespace stool
             }
             void lightEnumerate()
             {
-                SuccinctSTNodeWTraverserBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
-                wBuilder.initialize(0, this->node_count() - 1, this->_RLBWTDS);
+                SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
+                wBuilder.initialize(0, this->node_count() - 1, this->_RLBWTDS, this->succinct_sub_trees[0]);
                 assert(this->succinct_sub_trees.size() == 1);
+                uint64_t next_child_count = wBuilder.countNextSTNodes(this->ems[0]);
+                wBuilder.set(this->_RLBWTDS->str_size(), next_child_count);
 
-                wBuilder.computeNextSTNodes(*this->succinct_sub_trees[0], this->ems[0]);
-                SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS>();
-                wBuilder.buildSuccinctSTNodeWTraverser(*succ);
+                wBuilder.computeNextSTNodes(this->ems[0]);
+                SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>();
+                wBuilder.buildSuccinctSortedSTChildren(*succ);
                 delete this->succinct_sub_trees[0];
                 this->succinct_sub_trees[0] = succ;
 
@@ -754,7 +756,6 @@ namespace stool
                         children.push_back(std::pair<uint64_t, uint64_t>(i, j));
                     }
                 }
-
                 sort(children.begin(), children.end(), [&](const std::pair<uint64_t, uint64_t> &lhs, const std::pair<uint64_t, uint64_t> &rhs) {
                     auto &left = sub_trees[lhs.first]->childVec[lhs.second];
                     auto &right = sub_trees[rhs.first]->childVec[rhs.second];
@@ -763,8 +764,9 @@ namespace stool
                     return begin_pos1 < begin_pos2;
                 });
 
-                SuccinctSTNodeWTraverserBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
-                wBuilder.initialize(0, this->node_count(), this->_RLBWTDS);
+                SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
+                wBuilder.initialize(0, this->node_count(), this->_RLBWTDS, nullptr);
+                wBuilder.set(this->_RLBWTDS->str_size(), children.size());
 
                 for (auto &it : children)
                 {
@@ -782,8 +784,9 @@ namespace stool
                     LightweightInterval newIntv(begin_pos, end_pos, isLeft);
                     wBuilder.push(newIntv, c);
                 }
-                SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSTNodeWTraverser<INDEX_SIZE, RLBWTDS>();
-                wBuilder.buildSuccinctSTNodeWTraverser(*succ);
+
+                SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>();
+                wBuilder.buildSuccinctSortedSTChildren(*succ);
                 this->succinct_sub_trees.push_back(succ);
                 std::cout << "Memory: " << (succ->get_using_memory() / 1000) << "[KB]" << std::endl;
             }
