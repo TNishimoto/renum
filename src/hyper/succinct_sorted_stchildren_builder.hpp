@@ -115,18 +115,22 @@ namespace stool
                                 assert(x < leftmost_child_bits.size());
 
                                 leftmost_child_bits[x++] = it->next_tmp_bits[c][j];
-
                             }
                         }
                     }
                 }
-                assert(x + 1 ==  leftmost_child_bits.size());
+                assert(x + 1 == leftmost_child_bits.size());
                 leftmost_child_bits[x] = true;
-                for (uint64_t x = 0; x < leftmost_child_bits.size(); x++)
+#if DEBUG
+                if (next._RLBWTDS->str_size() < 100)
                 {
-                    std::cout << (leftmost_child_bits[x] ? "1" : "0");
+                    for (uint64_t x = 0; x < leftmost_child_bits.size(); x++)
+                    {
+                        std::cout << (leftmost_child_bits[x] ? "1" : "0");
+                    }
+                    std::cout << std::endl;
                 }
-                std::cout << std::endl;
+#endif
                 builder.finish();
                 next.build(builder, leftmost_child_bits, node_count_sum, child_count_sum);
             }

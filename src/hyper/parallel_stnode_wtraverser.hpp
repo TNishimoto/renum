@@ -561,30 +561,40 @@ namespace stool
             void lightEnumerate()
             {
                 #if DEBUG
+                std::cout << "LIGHT" << this->current_lcp << std::endl;
                 if(this->_RLBWTDS->str_size() < 100){
                 this->succinct_sub_trees[0]->print();
                 }
                 #endif
-                auto wBuilder = new SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>(); 
                 std::vector<SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>*> wBuilders;
 
-                wBuilders.push_back(wBuilder);
+                uint64_t psize = 8;
+                uint64_t px = 0;
 
-                //SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
-                wBuilder->initialize(0, this->node_count() - 1, this->_RLBWTDS, this->succinct_sub_trees[0]);
+                while(px < this->node_count()){
+                    uint64_t xsize = px + psize <= this->node_count() ? psize : this->node_count() - px;
+                    auto wBuilder = new SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>(); 
+                    wBuilder->initialize(px, px + xsize -1, this->_RLBWTDS, this->succinct_sub_trees[0]);
+                    wBuilders.push_back(wBuilder);
+                    px += xsize;
 
-                assert(this->succinct_sub_trees.size() == 1);
+                }
 
-                uint64_t next_child_count = wBuilder->countNextSTNodes(this->ems[0]);
+                uint64_t next_child_count = 0;
+                for(auto &it : wBuilders){
+                    next_child_count += it->countNextSTNodes(this->ems[0]);
+                    it->set();
+                    it->computeNextSTNodes(this->ems[0]);
+                }
 
-                wBuilder->set();
 
-                wBuilder->computeNextSTNodes(this->ems[0]);
                 SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>();
-                //wBuilder->buildSuccinctSortedSTChildren(*succ);
-
                 SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>::merge(*succ, wBuilders);
+                for(uint64_t i=0;i<wBuilders.size();i++){
+                    delete wBuilders[i];
+                }
                 delete this->succinct_sub_trees[0];
+
                 this->succinct_sub_trees[0] = succ;
 
                 this->recompute_node_counter();
@@ -594,7 +604,6 @@ namespace stool
                 current_lcp++;
                 assert(this->child_count > 0);
                 assert(this->node_count() > 0);
-                delete wBuilder;
 
             }
 
