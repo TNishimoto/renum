@@ -17,6 +17,23 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
+        class SuccinctSortedSTChildrenBuilderProfiler
+        {
+        public:
+            std::vector<std::queue<uint64_t>> characterOccurrenceQueues;
+
+            std::set<uint8_t> foundCharacters;
+            std::vector<bool> foundCharacterFlags;
+
+            void initialize()
+            {
+                this->characterOccurrenceQueues.resize(256);
+                this->foundCharacterFlags.resize(256);
+            }
+            void clear(){
+                throw -1;
+            }
+        };
         template <typename INDEX_SIZE, typename RLBWTDS>
         class SuccinctSortedSTChildrenBuilder
         {
@@ -33,14 +50,14 @@ namespace stool
             std::vector<uint64_t> minimum_counter;
             std::vector<uint64_t> maximum_counter;
 
-            std::stack<uint8_t> foundCharacters;
+            std::queue<uint8_t> foundCharacters;
             std::vector<bool> foundCharacterFlags;
 
-            std::vector<bool> rangeDistinctFlags;
+            //std::vector<bool> rangeDistinctFlags;
 
             uint64_t next_child_count = 0;
             uint64_t next_node_count = 0;
-            uint64_t nextSTChildrenCount = 0;
+            //uint64_t nextSTChildrenCount = 0;
 
             uint64_t debug = 0;
 
@@ -100,7 +117,34 @@ namespace stool
                 sdsl::bit_vector leftmost_child_bits;
                 leftmost_child_bits.resize(child_count_sum + 1);
 
+                SuccinctSortedSTChildrenBuilderProfiler profiler;
+                profiler.initialize();
+
+                for (uint64_t i = 0; i < elements.size(); i++)
+                {
+                    elements[i]->profile(profiler, i);
+                }
                 uint64_t x = 0;
+                for (auto &c : profiler.foundCharacters)
+                {
+                    uint64_t xsize = profiler.characterOccurrenceQueues[c].size();
+                    for (uint64_t i = 0; i < xsize; i++)
+                    {
+                        uint64_t top = profiler.characterOccurrenceQueues[c].front();
+                        profiler.characterOccurrenceQueues[c].pop();
+                        auto &it = elements[top];
+                        builder.merge(it->next_tmp[c], it->minimum_counter[c]);
+                        for (uint64_t j = 0; j < it->next_tmp_bits[c].size(); j++)
+                        {
+                            assert(x < leftmost_child_bits.size());
+
+                            leftmost_child_bits[x++] = it->next_tmp_bits[c][j];
+                        }
+                        profiler.characterOccurrenceQueues[c].push(top);
+                    }
+                }
+
+                /*
                 for (uint64_t c = 0; c < 256; c++)
                 {
                     for (auto &it : elements)
@@ -119,6 +163,7 @@ namespace stool
                         }
                     }
                 }
+                */
                 assert(x + 1 == leftmost_child_bits.size());
                 leftmost_child_bits[x] = true;
 #if DEBUG
@@ -134,38 +179,6 @@ namespace stool
                 builder.finish();
                 next.build(builder, leftmost_child_bits, node_count_sum, child_count_sum);
             }
-            /*
-            void buildSuccinctSortedSTChildren(SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS> &next)
-            {
-                next._RLBWTDS = this->_RLBWTDS;
-                stool::EliasFanoVectorBuilder builder;
-                builder.initialize(this->_RLBWTDS->str_size(), next_child_count * 2);
-
-                sdsl::bit_vector leftmost_child_bits;
-                leftmost_child_bits.resize(next_child_count + 1);
-
-                uint64_t x = 0;
-
-                for (uint64_t c = 0; c < this->next_tmp_bits.size(); c++)
-                {
-                    if (this->next_tmp_bits[c].size() > 0)
-                    {
-                        std::vector<uint64_t> ptmp;
-                        this->next_tmp[c].to_vector(ptmp);
-                        for (uint64_t i = 0; i < this->next_tmp_bits[c].size(); i++)
-                        {
-                            builder.push(ptmp[i * 2]);
-                            builder.push(ptmp[(i * 2) + 1]);
-                            leftmost_child_bits[x++] = this->next_tmp_bits[c][i];
-                        }
-                    }
-                }
-                leftmost_child_bits[x] = true;
-                builder.finish();
-
-                next.build(builder, leftmost_child_bits, this->next_node_count, this->next_child_count);
-            }
-            */
             void push(LightweightInterval intv, char c)
             {
                 next_tmp[c].push(intv.left);
@@ -333,6 +346,22 @@ namespace stool
                 for (uint64_t i = this->builderRangeStart; i <= this->builderRangeEnd; i++)
                 {
                     this->computeNextSTNodes(em, i);
+                }
+            }
+            void profile(SuccinctSortedSTChildrenBuilderProfiler &profiler, uint64_t builderIndex)
+            {
+                uint64_t size = this->foundCharacters.size();
+                for (uint64_t x = 0; x < size; x++)
+                {
+                    uint64_t top = this->foundCharacters.front();
+                    this->foundCharacters.pop();
+                    if (!profiler.foundCharacterFlags[top])
+                    {
+                        profiler.foundCharacters.insert(top);
+                        profiler.foundCharacterFlags[top] = true;
+                    }
+                    profiler.characterOccurrenceQueues[top].push(builderIndex);
+                    this->foundCharacters.push(top);
                 }
             }
         };

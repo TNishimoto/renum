@@ -560,37 +560,41 @@ namespace stool
             }
             void lightEnumerate()
             {
-                #if DEBUG
+#if DEBUG
                 std::cout << "LIGHT" << this->current_lcp << std::endl;
-                if(this->_RLBWTDS->str_size() < 100){
-                this->succinct_sub_trees[0]->print();
+                if (this->_RLBWTDS->str_size() < 100)
+                {
+                    this->succinct_sub_trees[0]->print();
                 }
-                #endif
-                std::vector<SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>*> wBuilders;
+#endif
+                std::vector<SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> *> wBuilders;
 
-                uint64_t psize = 8;
+                uint64_t psize = (this->node_count() / 2) + 1;
                 uint64_t px = 0;
-
-                while(px < this->node_count()){
+                while (px < this->node_count())
+                {
                     uint64_t xsize = px + psize <= this->node_count() ? psize : this->node_count() - px;
-                    auto wBuilder = new SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>(); 
-                    wBuilder->initialize(px, px + xsize -1, this->_RLBWTDS, this->succinct_sub_trees[0]);
+                    auto wBuilder = new SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>();
+                    wBuilder->initialize(px, px + xsize - 1, this->_RLBWTDS, this->succinct_sub_trees[0]);
                     wBuilders.push_back(wBuilder);
                     px += xsize;
-
                 }
 
                 uint64_t next_child_count = 0;
-                for(auto &it : wBuilders){
+                for (auto &it : wBuilders)
+                {
                     next_child_count += it->countNextSTNodes(this->ems[0]);
-                    it->set();
-                    it->computeNextSTNodes(this->ems[0]);
-                }
 
+                    it->set();
+
+                    it->computeNextSTNodes(this->ems[0]);
+
+                }
 
                 SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>();
                 SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>::merge(*succ, wBuilders);
-                for(uint64_t i=0;i<wBuilders.size();i++){
+                for (uint64_t i = 0; i < wBuilders.size(); i++)
+                {
                     delete wBuilders[i];
                 }
                 delete this->succinct_sub_trees[0];
@@ -604,7 +608,6 @@ namespace stool
                 current_lcp++;
                 assert(this->child_count > 0);
                 assert(this->node_count() > 0);
-
             }
 
             void process()
@@ -615,7 +618,19 @@ namespace stool
                 }
                 else
                 {
-                    std::cout << "LIGHT LCP = " << current_lcp << std::endl;
+                    if (this->current_lcp % 10 == 0)
+                    {
+                        std::cout << "LIGHT LCP = " << current_lcp << ", Peak = " << this->peak_child_count << std::endl;
+                    }
+                    /*
+                    if (kk == 9)
+                    {
+                        std::cout << "LIGHT LCP = " << current_lcp << ", Peak = " << this->peak_child_count << std::endl;
+                    }
+                    kk++;
+                    */
+                    
+
                     if (current_lcp == 1)
                     {
                         this->succinct_mode = true;
@@ -788,8 +803,8 @@ namespace stool
                     uint64_t begin_pos2 = _RLBWTDS->_fposDS[right.beginIndex] + right.beginDiff;
                     return begin_pos1 < begin_pos2;
                 });
-                auto wBuilder = new SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>(); 
-                std::vector<SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>*> wBuilders;
+                auto wBuilder = new SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>();
+                std::vector<SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> *> wBuilders;
 
                 wBuilders.push_back(wBuilder);
                 //SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> wBuilder;
@@ -816,8 +831,8 @@ namespace stool
                 SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>();
 
                 SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS>::merge(*succ, wBuilders);
-                    //wBuilder.buildSuccinctSortedSTChildren(*succ);
-                    this->succinct_sub_trees.push_back(succ);
+                //wBuilder.buildSuccinctSortedSTChildren(*succ);
+                this->succinct_sub_trees.push_back(succ);
                 std::cout << "Memory: " << (succ->get_using_memory() / 1000) << "[KB]" << std::endl;
                 delete wBuilder;
             }
