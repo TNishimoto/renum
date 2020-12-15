@@ -342,6 +342,15 @@ namespace stool
             {
                 return this->bwt.size();
             }
+            uint64_t get_using_memory() const {
+                uint64_t x = 0;
+
+                for(auto& it : this->efv_vec){
+                    x += it.get_using_memory();
+
+                }
+                return x;
+            }
         };
     } // namespace lcp_on_rlbwt
 } // namespace stool

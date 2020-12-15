@@ -49,7 +49,6 @@ namespace stool
             std::vector<uint64_t> occurrence_counter;
             std::vector<uint64_t> minimum_counter;
             std::vector<uint64_t> maximum_counter;
-
             std::queue<uint8_t> foundCharacters;
             std::vector<bool> foundCharacterFlags;
 

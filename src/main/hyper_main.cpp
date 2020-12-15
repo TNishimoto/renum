@@ -302,6 +302,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     {
         stool::EliasFanoVector lpos_vec;
         lpos_vec.build_from_builder(run_bits);
+        std::cout << "LPOS Vec using memory = " << lpos_vec.get_using_memory() / 1000 << "[KB]" << std::endl;
 
         //lpos_vec.build_from_bit_vector(run_bits);
         using LPOSDS = stool::EliasFanoVector;
@@ -323,9 +324,11 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
 
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
+        std::cout << "FPOS Vec using memory = " << fposds.get_using_memory() / 1000 << "[KB]" << std::endl;
 
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
+            throw -1;
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
