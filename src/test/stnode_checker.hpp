@@ -172,11 +172,11 @@ namespace stool
             }
             bool check2(uint64_t i, uint64_t j, std::vector<stool::LCPInterval<uint64_t>> &wlinks)
             {
-/*
+
 #if DEBUG
                 std::cout << "Weiner Link Check [" << i << ", " << j << "]" << std::endl;
 #endif
-*/
+
                 std::lock_guard<std::mutex> lock(std::mutex);
                 std::vector<stool::LCPInterval<uint64_t>> correctWlinks;
 

@@ -56,6 +56,7 @@ namespace stool
             }
             bool checkWeinerLink(const stool::LCPInterval<uint64_t> intv2, std::vector<RINTERVAL> &stnodeVec, std::vector<uint64_t> &indexVec, uint64_t indexCount)
             {
+                assert(intv2.i <= intv2.j);
                 if (this->stnc == nullptr)
                 {
                     std::cout << "stnc is null" << std::endl;
@@ -156,7 +157,7 @@ namespace stool
             }
             void to_rinterval(uint64_t left, uint64_t right, RINTERVAL &output) const
             {
-
+                assert(left <= right);
                 output.beginIndex = this->get_lindex_containing_the_position(left);
                 output.beginDiff = left - this->get_lpos(output.beginIndex);
                 output.endIndex = this->get_lindex_containing_the_position(right);

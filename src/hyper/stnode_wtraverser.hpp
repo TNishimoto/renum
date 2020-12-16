@@ -27,7 +27,7 @@ namespace stool
             RLBWTDS *_RLBWTDS = nullptr;
 
         public:
-
+            /*
             RINTERVAL get_child(uint64_t i){
                 RINTERVAL intv;
                 intv.beginIndex = this->childs_vec[(i*4)];
@@ -36,7 +36,25 @@ namespace stool
                 intv.endDiff = this->childs_vec[(i*4)+3];
                 return intv;
             }
-            
+            */
+
+            uint64_t get_child_start_position(uint64_t i){
+                uint64_t x = this->childs_vec[(i*4)];
+                uint64_t d = this->childs_vec[(i*4)+1];
+                return this->_RLBWTDS->get_fpos(x, d);
+            }
+            uint64_t get_child_end_position(uint64_t i){
+                uint64_t x = this->childs_vec[(i*4)+2];
+                uint64_t d = this->childs_vec[(i*4)+3];
+                return this->_RLBWTDS->get_fpos(x, d);
+            }
+            bool check_distinct_character(uint64_t L, uint64_t R){
+                uint64_t x = this->childs_vec[(L*4)];
+                uint64_t y = this->childs_vec[(R*4)+2];
+                return this->_RLBWTDS->bwt[x] != this->_RLBWTDS->bwt[y];
+            }
+
+
 
 
             STNodeWTraverser()
@@ -57,7 +75,7 @@ namespace stool
                 this->get_stnode(L, R, output);
             }
             */
-            
+            /*
             void get_stnode(uint64_t L, uint64_t R, RINTERVAL &output)
             {
                 RINTERVAL intv1 = this->get_child(L);
@@ -78,7 +96,55 @@ namespace stool
                     output.endDiff = this->_RLBWTDS->get_run(output.endIndex) - 1;
                 }
             }
-            
+            */
+            uint64_t get_stnode_start_position(uint64_t L, uint64_t R)
+            {
+                bool b = check_distinct_character(L, R);
+                if(b){
+                    uint64_t x = this->_RLBWTDS->get_end_rle_lposition();
+                    uint64_t d = 0;
+                    return this->_RLBWTDS->get_fpos(x, d);
+                }else{
+                    return get_child_start_position(L);
+                }
+                /*
+                RINTERVAL intv1 = this->get_child(L);
+                RINTERVAL intv2 = this->get_child(R);
+
+                uint64_t beg_index = intv1.beginIndex, end_index = intv2.endIndex,
+                         beg_diff = intv1.beginDiff, end_diff = intv2.endDiff;
+
+                output.beginIndex = beg_index;
+                output.beginDiff = beg_diff;
+                output.endIndex = end_index;
+                output.endDiff = end_diff;
+                if (this->_RLBWTDS->bwt[beg_index] != this->_RLBWTDS->bwt[end_index])
+                {
+                    output.beginIndex = this->_RLBWTDS->get_end_rle_lposition();
+                    output.beginDiff = 0;
+                    output.endIndex = this->_RLBWTDS->get_start_rle_lposition();
+                    output.endDiff = this->_RLBWTDS->get_run(output.endIndex) - 1;
+                }
+                */
+            }
+            uint64_t get_stnode_end_position(uint64_t L, uint64_t R)
+            {
+                bool b = check_distinct_character(L, R);
+                if(b){
+                    uint64_t x = this->_RLBWTDS->get_start_rle_lposition();
+                    uint64_t d = this->_RLBWTDS->get_run(x) - 1;
+                    return this->_RLBWTDS->get_fpos(x, d);
+                }else{
+                    return get_child_end_position(R);
+                }
+            }
+            /*
+            void get_stnodeXXX(uint64_t L, uint64_t R, RINTERVAL &output)
+            {
+                
+            }
+            */
+            /*
             uint64_t get_stnode2(uint64_t L, RINTERVAL &output)
             {
                 assert(this->first_child_flag_vec[L]);
@@ -110,18 +176,69 @@ namespace stool
                 }
                 return R + 1;
             }
+            */
+            
+            uint64_t get_stnode2_start_position(uint64_t L)
+            {
+                assert(this->first_child_flag_vec[L]);
+                assert(!this->first_child_flag_vec[L+1]);
+
+                uint64_t R = L + 1;
+                while (!this->first_child_flag_vec[R] )
+                {
+                    R++;
+                }
+                R--;
+
+                
+                return this->get_stnode_start_position(L, R);
+            }
+            uint64_t get_stnode2_end_position(uint64_t L)
+            {
+                assert(this->first_child_flag_vec[L]);
+                assert(!this->first_child_flag_vec[L+1]);
+
+                uint64_t R = L + 1;
+                while (!this->first_child_flag_vec[R] )
+                {
+                    R++;
+                }
+                R--;
+
+                
+                return this->get_stnode_end_position(L, R);
+            }
+            uint64_t increment(uint64_t L)
+            {
+                assert(this->first_child_flag_vec[L]);
+                assert(!this->first_child_flag_vec[L+1]);
+
+                uint64_t R = L + 1;
+                while (!this->first_child_flag_vec[R] )
+                {
+                    R++;
+                }
+                R--;
+
+                
+                return R + 1;
+            }
             uint64_t get_stnode2(uint64_t L, stool::LCPInterval<uint64_t> &output, uint64_t lcp)
             {
                 assert(this->first_child_flag_vec[L]);
                 assert(!this->first_child_flag_vec[L+1]);
 
                 RINTERVAL tmp;
-                uint64_t newL = get_stnode2(L, tmp);
-                uint64_t left = this->_RLBWTDS->get_fpos(tmp.beginIndex, tmp.beginDiff);
-                uint64_t right = this->_RLBWTDS->get_fpos(tmp.endIndex, tmp.endDiff);
+                uint64_t newL = increment(L);
+                uint64_t left = this->get_stnode2_start_position(L);
+                uint64_t right = this->get_stnode2_end_position(L);
+
+                //uint64_t left = this->_RLBWTDS->get_fpos(tmp.beginIndex, tmp.beginDiff);
+                //uint64_t right = this->_RLBWTDS->get_fpos(tmp.endIndex, tmp.endDiff);
                 output.i = left;
                 output.j = right;
                 output.lcp = lcp;
+
                 return newL;
 
             }
@@ -229,23 +346,31 @@ namespace stool
                 {
                     if (this->first_child_flag_vec[x])
                     {
-                        this->get_stnode(0, x - 1, intv);
+                        
+                        uint64_t left = this->get_stnode_start_position(0, x-1);
+                        uint64_t right = this->get_stnode_end_position(0, x-1);
+                        this->_RLBWTDS->to_rinterval(left, right, intv);
+                        
+                        //this->get_stnode(0, x - 1, intv);
                         em.clear();
                         #if DEBUG
                             if(this->_RLBWTDS->str_size() < 100){
                                 std::cout << "Search input = ";
-                                intv.print2(this->_RLBWTDS->_fposDS);
+                                //intv.print2(this->_RLBWTDS->_fposDS);
                                 std::cout << std::endl;
 
                             }
                         #endif
-                        em.computeSTNodeCandidates(intv);
+                        em.computeSTNodeCandidates2(intv);
 
                         for (uint64_t i = 0; i < x; i++)
                         {
-                            RINTERVAL child = this->get_child(0);
+                            RINTERVAL child;
+                            uint64_t left = this->get_child_start_position(0);
+                            uint64_t right = this->get_child_end_position(0);
+                            this->_RLBWTDS->to_rinterval(left, right, child);
                             //auto &child = this->child_vec[0];
-                            em.computeSTChildren(child);
+                            em.computeSTChildren2(child);
                             this->childs_vec.pop_front();
                             this->childs_vec.pop_front();
                             this->childs_vec.pop_front();
@@ -255,7 +380,8 @@ namespace stool
                         }
                         em.fit();
 #if DEBUG
-                        em.check2(intv);
+
+                        em.check3(left, right);
 #endif
 
                         //std::lock_guard<std::mutex> lock(test_mtx);
@@ -319,12 +445,14 @@ namespace stool
                 it.endDiff = 0;
 
                 uint64_t L = 0;
+                /*
                 for (uint64_t i = 0; i < this->node_count(); i++)
                 {
 
                     L = this->get_stnode2(L, it);
                     it.print2(this->_RLBWTDS->_fposDS);
                 }
+                */
                 std::cout << std::endl;
             }
             uint64_t get_peak_memory()

@@ -303,15 +303,26 @@ namespace stool
             }
             */
            #if DEBUG
+            /*
             void check2(const RINTERVAL &lcpIntv)
             {
                 stool::LCPInterval<uint64_t> intv2 = lcpIntv.get_lcp_interval(this->_RLBWTDS->stnc->current_lcp - 1, this->_RLBWTDS->_fposDS);
                 this->_RLBWTDS->checkWeinerLink(intv2, this->stnodeVec, this->indexVec, this->indexCount);
             }
+            */
             void check2(const LCPInterval<uint64_t> &lcpIntv)
             {
                 this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
             }
+            void check3(uint64_t left, uint64_t right)
+            {
+                LCPInterval<uint64_t> lcpIntv;
+                lcpIntv.i = left;
+                lcpIntv.j = right;
+                lcpIntv.lcp = this->_RLBWTDS->stnc->current_lcp - 1;
+                this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
+            }
+
             #endif
 
             uint64_t computeFirstLCPIntervalSet()
@@ -351,7 +362,8 @@ namespace stool
                 this->fit();
 
 #if DEBUG
-                this->check2(lcpIntv);
+                stool::LCPInterval<uint64_t> lcpIntv2 = lcpIntv.get_lcp_interval(0, this->_RLBWTDS->_fposDS);
+                this->check3(lcpIntv2.i, lcpIntv2.j);
 #endif
 
                 return 1;
@@ -370,7 +382,7 @@ namespace stool
                     if (this->_RLBWTDS->str_size() < 100)
                     {
                         std::cout << "FOUND ";
-                        this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);
+                        //this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);
                         std::cout << std::endl;
                     }
 #endif
