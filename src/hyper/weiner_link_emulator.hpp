@@ -171,9 +171,7 @@ namespace stool
 
                     this->pushLCPInterval(it, c);
                 }
-
             }
-
 
         public:
             void computeSTChildren(const RINTERVAL &w)
@@ -197,7 +195,7 @@ namespace stool
             }
             void computeSTChildren2(const RINTERVAL &w)
             {
- 
+
                 assert(w.beginIndex <= w.endIndex);
                 uint64_t resultCount = this->range_distinct(w);
 
@@ -357,6 +355,14 @@ namespace stool
                     auto c = this->indexVec[i];
                     uint64_t explicitChildrenCount = this->childrenVec[c].size();
 
+#if DEBUG
+                    if (this->_RLBWTDS->str_size() < 100)
+                    {
+                        std::cout << "FOUND ";
+                        this->stnodeVec[c].print();
+                        std::cout << std::endl;
+                    }
+#endif
                     assert(this->_RLBWTDS->checkLCPInterval(this->stnodeVec[c]) == (explicitChildrenCount > 0));
                     if (explicitChildrenCount > 0)
                     {

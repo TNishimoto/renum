@@ -129,9 +129,9 @@ namespace stool
                     if (it.lcp < bwt.size())
                     {
                         this->lcp_intervals.push_back(it);
-                        if(text.size() < 100){
-                        std::cout << it.to_string();
-
+                        if (text.size() < 100)
+                        {
+                            std::cout << it.to_string();
                         }
                     }
                     else if (bwt[it.i] == 0 || bwt[it.i] == '$')
@@ -172,6 +172,11 @@ namespace stool
             }
             bool check2(uint64_t i, uint64_t j, std::vector<stool::LCPInterval<uint64_t>> &wlinks)
             {
+/*
+#if DEBUG
+                std::cout << "Weiner Link Check [" << i << ", " << j << "]" << std::endl;
+#endif
+*/
                 std::lock_guard<std::mutex> lock(std::mutex);
                 std::vector<stool::LCPInterval<uint64_t>> correctWlinks;
 
@@ -194,6 +199,12 @@ namespace stool
                         auto it = this->maps[this->current_lcp].find(l);
                         if (it != this->maps[this->current_lcp].end())
                         {
+/*
+#if DEBUG
+                        std::cout << "Next [" << l << ", " << r << "]" << std::endl;
+#endif
+*/
+
                             correctWlinks.push_back(stool::LCPInterval<uint64_t>(l, r, this->current_lcp));
                         }
                     }
@@ -209,18 +220,21 @@ namespace stool
                     correctWlinks.end(),
                     stool::LCPIntervalPreorderComp<uint64_t>());
 
-                stool::beller::equal_check_lcp_intervals(wlinks, correctWlinks);
+                stool::beller::equal_check_lcp_intervals(wlinks, correctWlinks, "Weiner link check");
                 return true;
             }
 
-            bool check(uint64_t i, uint64_t j)
+            bool check_lcp_interval(uint64_t i, uint64_t j)
             {
                 std::lock_guard<std::mutex> lock(std::mutex);
 
                 auto it = this->maps[this->current_lcp].find(i);
                 if (it == this->maps[this->current_lcp].end())
                 {
-                    std::cout << "CHECK ERROR!" << std::endl;
+                    std::cout << "LCP Interval CHECK ERROR!(1)" << std::endl;
+                    std::cout << "Test LCP Interval = "
+                              << "[" << i << ", " << j << "]" << std::endl;
+
                     throw -1;
                 }
                 else
@@ -231,7 +245,11 @@ namespace stool
                     }
                     else
                     {
-                        std::cout << "CHECK ERROR!" << std::endl;
+                        std::cout << "LCP Interval CHECK ERROR!(2)" << std::endl;
+                        std::cout << "Test LCP Interval = "
+                                  << "[" << i << ", " << j << "]" << std::endl;
+                        std::cout << "Collect LCP Interval = "
+                                  << "[" << i << ", " << it->second << "]" << std::endl;
 
                         throw -1;
                     }

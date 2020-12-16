@@ -49,6 +49,8 @@ namespace stool
             std::vector<uint64_t> occurrence_counter;
             std::vector<uint64_t> minimum_counter;
             std::vector<uint64_t> maximum_counter;
+            std::vector<uint64_t> test_counter;
+
             std::queue<uint8_t> foundCharacters;
             std::vector<bool> foundCharacterFlags;
 
@@ -71,6 +73,8 @@ namespace stool
                 this->occurrence_counter.resize(256, 0);
                 this->minimum_counter.resize(256, UINT64_MAX);
                 this->maximum_counter.resize(256, 0);
+
+                this->test_counter.resize(256, 0);
 
                 prevSortedSTChildren = prev;
             }
@@ -132,6 +136,7 @@ namespace stool
                         uint64_t top = profiler.characterOccurrenceQueues[c].front();
                         profiler.characterOccurrenceQueues[c].pop();
                         auto &it = elements[top];
+                        
                         builder.merge(it->next_tmp[c], it->minimum_counter[c]);
                         for (uint64_t j = 0; j < it->next_tmp_bits[c].size(); j++)
                         {
@@ -219,6 +224,7 @@ namespace stool
                 {
                     uint64_t child_left = prevSortedSTChildren->get_child_node_left(i);
                     uint64_t child_right = prevSortedSTChildren->get_child_node_right(i);
+
                     this->_RLBWTDS->to_rinterval(child_left, child_right, w);
                     em.computeSTChildren2(w);
                 }
@@ -229,6 +235,7 @@ namespace stool
                 test.j = rightmost_child_right;
                 test.lcp = this->_RLBWTDS->stnc->current_lcp;
                 em.check2(test);
+
 #endif
                 /*
                 assert(this->debug >= em.indexCount);
@@ -260,6 +267,9 @@ namespace stool
                             std::cout << "FOUND: [" << w_left << ", " << w_right << "]";
                         }
 #endif
+                        assert(w_left <= w_right);
+                        assert(this->test_counter[c] <= w_left);
+                        this->test_counter[c] = w_left;
                         next_tmp[c].push(w_left - this->minimum_counter[c]);
                         next_tmp[c].push(w_right - this->minimum_counter[c]);
                         next_tmp_bits[c].push_back(x == 0);
@@ -334,6 +344,7 @@ namespace stool
                 {
                     k += this->countNextSTNodes(em, i);
                 }
+
                 return k;
             }
 
@@ -346,6 +357,14 @@ namespace stool
                 {
                     this->computeNextSTNodes(em, i);
                 }
+
+                #if DEBUG
+                for(uint64_t c=0;c<256;c++){
+                    if(this->occurrence_counter[c] > 0){
+                        this->next_tmp[c].check();
+                    }
+                }
+                #endif
             }
             void profile(SuccinctSortedSTChildrenBuilderProfiler &profiler, uint64_t builderIndex)
             {

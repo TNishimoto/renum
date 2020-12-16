@@ -176,6 +176,7 @@ namespace stool
             template <typename LPOSVEC>
             void check(const LPOSVEC &_lposvec)
             {
+
                 std::vector<uint64_t> collectVec = FPosDataStructure::construct(this->bwt, _lposvec);
                 /*
                 std::vector<uint64_t> C;
@@ -255,6 +256,7 @@ namespace stool
 
                 std::vector<uint64_t> tmp_sum;
                 tmp_sum.resize(CHARMAX, 0);
+
                 for (uint64_t i = 0; i < rle; i++)
                 {
                     uint8_t c = this->bwt[i];
@@ -264,7 +266,19 @@ namespace stool
                     uint64_t l = lposvec[i + 1] - lposvec[i];
                     tmp_sum[c] += l;
                 }
+                /*
+                for (uint64_t i = 0; i < CHARMAX; i++)
+                {
+                    if(builders[i].upper_bits.size() != 0){
+                        std::cout << "/" << builders[i].lower_bits.size() << "/" << builders[i].upper_bits.size() << ", MEM = ";
 
+                        std::cout << builders[i].get_using_memory() / 1000 << "[KB]" << std::endl;
+                        std::cout << (sdsl::size_in_bytes(builders[i].lower_bits)/1000) << "[KB] / " << ((builders[i].upper_bits.size() / 8)/1000) << " [KB] "<< std::endl;
+                        std::cout << builders[i].universe << "/" << (uint)builders[i].lower_bits.width() << "/" << (uint)builders[i].lower_bit_size << "/"  << "/" <<  std::endl;
+
+                    }
+                }
+                */
                 for (uint64_t i = 0; i < CHARMAX; i++)
                 {
                     builders[i].finish();

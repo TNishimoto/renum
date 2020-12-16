@@ -111,7 +111,7 @@ namespace stool
         }
 
         template <typename INDEX = uint64_t>
-        bool equal_check_lcp_intervals(std::vector<LCPInterval<INDEX>> &item1, std::vector<LCPInterval<INDEX>> &item2)
+        bool equal_check_lcp_intervals(std::vector<LCPInterval<INDEX>> &item1, std::vector<LCPInterval<INDEX>> &item2, string name = "")
         {
             using LCPINTV = LCPInterval<INDEX>;
 
@@ -160,6 +160,7 @@ namespace stool
             }
             if (!b)
             {
+                std::cout << name << " Error!" << std::endl;
                 if (item1.size() < 100)
                 {
                     std::cout << "Test: " << item1.size() << "/ Collect: " << item2.size() << std::endl;

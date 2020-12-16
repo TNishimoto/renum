@@ -328,9 +328,9 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
 
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
-            throw -1;
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
+            
             stnodeTraverser.initialize(thread_num, ds);
 
 

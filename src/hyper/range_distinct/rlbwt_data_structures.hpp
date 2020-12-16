@@ -51,7 +51,8 @@ namespace stool
                     throw -1;
                 }
                 stool::LCPInterval<uint64_t> intv2 = input.get_lcp_interval(this->stnc->current_lcp, this->_fposDS);
-                return this->stnc->check(intv2.i, intv2.j);
+
+                return this->stnc->check_lcp_interval(intv2.i, intv2.j);
             }
             bool checkWeinerLink(const stool::LCPInterval<uint64_t> intv2, std::vector<RINTERVAL> &stnodeVec, std::vector<uint64_t> &indexVec, uint64_t indexCount)
             {

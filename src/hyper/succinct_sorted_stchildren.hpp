@@ -117,8 +117,10 @@ namespace stool
                     R++;
                 }
                 R--;
+
                 output.i = this->get_child_node_left(L);
                 output.j = this->get_child_node_right(R);
+
                 output.lcp = lcp;
 
                 return R + 1;

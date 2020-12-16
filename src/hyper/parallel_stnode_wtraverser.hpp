@@ -328,6 +328,7 @@ namespace stool
                     return UINT64_MAX;
                 }
             }
+            uint64_t pp_time = 0;
 
             /*
             RINTERVAL &get_child(uint64_t index)
@@ -439,6 +440,11 @@ namespace stool
                 bool isSingleProcess = false;
                 if (current_lcp > 0)
                 {
+                    if (this->current_lcp % 1000 == 0)
+                    {
+                        std::cout << "LCP = " << current_lcp << ", Peak = " << this->peak_child_count << ", Current = " << this->child_count << ", time = " << pp_time << std::endl;
+                    }
+
                     /*
                     if (this->child_count > this->switch_threshold())
                     {
@@ -525,7 +531,6 @@ namespace stool
 
                 assert(total_counter <= strSize);
 
-                current_lcp++;
                 assert(this->child_count > 0);
                 assert(this->node_count() > 0);
             }
@@ -557,11 +562,12 @@ namespace stool
                 {
                     this->peak_child_count = current_child_count;
                 }
+                current_lcp++;
             }
             void lightEnumerate()
             {
 #if DEBUG
-                std::cout << "LIGHT" << this->current_lcp << std::endl;
+                std::cout << "LIGHT LCP = " << this->current_lcp << std::endl;
                 if (this->_RLBWTDS->str_size() < 100)
                 {
                     this->succinct_sub_trees[0]->print();
@@ -570,6 +576,8 @@ namespace stool
                 std::vector<SuccinctSortedSTChildrenBuilder<INDEX_SIZE, RLBWTDS> *> wBuilders;
 
                 uint64_t psize = (this->node_count() / 2) + 1;
+                //uint64_t psize = this->node_count() + 1;
+
                 uint64_t px = 0;
                 while (px < this->node_count())
                 {
@@ -583,12 +591,12 @@ namespace stool
                 uint64_t next_child_count = 0;
                 for (auto &it : wBuilders)
                 {
+
                     next_child_count += it->countNextSTNodes(this->ems[0]);
 
                     it->set();
 
                     it->computeNextSTNodes(this->ems[0]);
-
                 }
 
                 SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS> *succ = new SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>();
@@ -605,7 +613,6 @@ namespace stool
 
                 assert(total_counter <= strSize);
 
-                current_lcp++;
                 assert(this->child_count > 0);
                 assert(this->node_count() > 0);
             }
@@ -618,10 +625,6 @@ namespace stool
                 }
                 else
                 {
-                    if (this->current_lcp % 10 == 0)
-                    {
-                        std::cout << "LIGHT LCP = " << current_lcp << ", Peak = " << this->peak_child_count << std::endl;
-                    }
                     /*
                     if (kk == 9)
                     {
@@ -629,15 +632,16 @@ namespace stool
                     }
                     kk++;
                     */
-                    
 
+                    /*
                     if (current_lcp == 1)
                     {
                         this->succinct_mode = true;
                         this->build_succinct();
                     }
+                    */
 
-                    bool isHeavy = false;
+                    bool isHeavy = true;
 
                     if (isHeavy)
                     {
@@ -698,13 +702,17 @@ namespace stool
                     }
                 }
 
+    auto start = std::chrono::system_clock::now();
                 std::vector<thread> threads;
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
                     threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(new_trees[i]), this->sub_tree_limit_size, ref(ems[i])));
                 }
+
                 for (thread &t : threads)
                     t.join();
+    auto end = std::chrono::system_clock::now();
+    pp_time += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
                 assert(position_stack.size() == 0);
             }

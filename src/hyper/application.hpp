@@ -215,17 +215,17 @@ namespace stool
                     it.lcp = 0;
 
                     uint64_t L = 0;
+
                     for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
 
                         L = stnodeSequencer.get_stnode2(L, it);
-                        //uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
-                        //uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
-                        //stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
                         r.push_back(it);
                     }
+
                     stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count());
                 }
+                std::cout << "STOP" << std::endl;
                 uint64_t dx = stnodeSequencer._RLBWTDS->get_end_rle_lposition();
                 uint64_t dollerPos = stnodeSequencer._RLBWTDS->get_lpos(dx);
                 auto last = stool::LCPInterval<uint64_t>(dollerPos, dollerPos, stnodeSequencer._RLBWTDS->str_size());
