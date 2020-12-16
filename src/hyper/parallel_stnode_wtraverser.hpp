@@ -516,7 +516,7 @@ namespace stool
 
                 for (auto &it : this->sub_trees)
                 {
-                    it->build_bits();
+                    it->add_the_last_bit_into_bit_array();
                 }
 
 #if DEBUG

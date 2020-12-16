@@ -83,7 +83,7 @@ namespace stool
                 explicitChildCount = 0;
             }
 
-            void move_st_internal_nodes(std::deque<RINTERVAL> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits)
+            void move_st_internal_nodes(std::deque<uint64_t> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits)
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
@@ -100,12 +100,15 @@ namespace stool
 
                     for (uint64_t j = 0; j < count; j++)
                     {
-                        outputExplicitChildrenVec.push_back(currentVec[j]);
+                    outputExplicitChildrenVec.push_back(currentVec[j].beginIndex);
+                    outputExplicitChildrenVec.push_back(currentVec[j].beginDiff);
+                    outputExplicitChildrenVec.push_back(currentVec[j].endIndex);
+                    outputExplicitChildrenVec.push_back(currentVec[j].endDiff);
                         //output.push_weiner(currentVec[j]);
                     }
                 }
             }
-            void move_st_internal_nodes(std::deque<RINTERVAL> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, uint8_t c)
+            void move_st_internal_nodes(std::deque<uint64_t> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, uint8_t c)
             {
                 auto &currentVec = this->childrenVec[c];
                 uint64_t count = currentVec.size();
@@ -116,7 +119,11 @@ namespace stool
                 }
                 for (uint64_t j = 0; j < count; j++)
                 {
-                    outputExplicitChildrenVec.push_back(currentVec[j]);
+                    outputExplicitChildrenVec.push_back(currentVec[j].beginIndex);
+                    outputExplicitChildrenVec.push_back(currentVec[j].beginDiff);
+                    outputExplicitChildrenVec.push_back(currentVec[j].endIndex);
+                    outputExplicitChildrenVec.push_back(currentVec[j].endDiff);
+
                 }
             }
 
@@ -211,6 +218,7 @@ namespace stool
                     //}
                 }
             }
+            #if DEBUG
             bool check(const RInterval<INDEX_SIZE> &range)
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
@@ -236,6 +244,7 @@ namespace stool
                 }
                 return true;
             }
+            #endif
             uint64_t range_distinct(const RInterval<INDEX_SIZE> &range)
             {
                 assert(this->lightDS != nullptr);
@@ -293,6 +302,7 @@ namespace stool
                 return this->indexCount;
             }
             */
+           #if DEBUG
             void check2(const RINTERVAL &lcpIntv)
             {
                 stool::LCPInterval<uint64_t> intv2 = lcpIntv.get_lcp_interval(this->_RLBWTDS->stnc->current_lcp - 1, this->_RLBWTDS->_fposDS);
@@ -302,6 +312,7 @@ namespace stool
             {
                 this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
             }
+            #endif
 
             uint64_t computeFirstLCPIntervalSet()
             {
@@ -359,7 +370,7 @@ namespace stool
                     if (this->_RLBWTDS->str_size() < 100)
                     {
                         std::cout << "FOUND ";
-                        this->stnodeVec[c].print();
+                        this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);
                         std::cout << std::endl;
                     }
 #endif
