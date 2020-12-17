@@ -205,9 +205,6 @@ namespace stool
                 while (!stnodeSequencer.isStop())
                 {
                     stnodeSequencer.process();
-                    //auto tree = stnodeSequencer.get_sub_tree();
-
-                    //assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
 
                     stool::LCPInterval<uint64_t> it;
                     it.i = 0;

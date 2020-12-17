@@ -120,17 +120,11 @@ namespace stool
                 }
                 for (uint64_t j = 0; j < count; j++)
                 {
+                    
                     uint64_t left = this->_RLBWTDS->get_fpos(currentVec[j].beginIndex, currentVec[j].beginDiff);
                     uint64_t right = this->_RLBWTDS->get_fpos(currentVec[j].endIndex, currentVec[j].endDiff);
                     outputExplicitChildrenVec.push_back(left);
                     outputExplicitChildrenVec.push_back(right);
-
-                    /*
-                    outputExplicitChildrenVec.push_back(currentVec[j].beginIndex);
-                    outputExplicitChildrenVec.push_back(currentVec[j].beginDiff);
-                    outputExplicitChildrenVec.push_back(currentVec[j].endIndex);
-                    outputExplicitChildrenVec.push_back(currentVec[j].endDiff);
-                    */
                 }
             }
 

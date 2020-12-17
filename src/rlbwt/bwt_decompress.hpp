@@ -13,7 +13,7 @@ namespace stool
 {
     namespace bwt
     {
-        bool load(string &filename, string &output)
+        bool load(string &filename, std::vector<uint8_t> &output)
         {
             std::ifstream file;
             file.open(filename, std::ios::binary);
@@ -45,7 +45,7 @@ namespace stool
         std::vector<char> decompress_bwt(string filename)
         {
 
-            string bwt;
+            std::vector<uint8_t> bwt;
             load(filename, bwt);
             std::cout << "file: " << filename << std::endl;
             

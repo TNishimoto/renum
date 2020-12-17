@@ -31,7 +31,6 @@ namespace stool
             uint64_t min_char_count;
 
             uint64_t alphabet_count = 0;
-            
 
             std::vector<uint64_t> character_count_vec;
             std::vector<uint64_t> character_to_id_vec;
@@ -41,9 +40,10 @@ namespace stool
             {
                 uint64_t size = UINT8_MAX + 1;
                 this->character_count_vec.resize(size, 0);
-                 this->character_to_id_vec.resize(size, 0);
+                this->character_to_id_vec.resize(size, 0);
             }
-            uint64_t character_bit_size(){
+            uint64_t character_bit_size()
+            {
                 return 8;
                 //return std::log2(this->alphabet_count) + 1;
             }
@@ -76,7 +76,8 @@ namespace stool
 
                     for (uint64_t i = 0; i < buffer.size(); i++)
                     {
-                        uint8_t c = buffer[i];
+                        uint8_t c = (uint8_t)buffer[i];
+
                         this->character_count_vec[c]++;
                         if (c < this->min_char)
                         {
@@ -102,22 +103,30 @@ namespace stool
                 this->run_count = count_run;
                 this->str_size = x;
 
-                for(uint64_t i=0;i<this->character_count_vec.size();i++){
-                    if(this->character_count_vec[i] > 0){
+                for (uint64_t i = 0; i < this->character_count_vec.size(); i++)
+                {
+                    if (this->character_count_vec[i] > 0)
+                    {
                         this->alphabet_count++;
                     }
                 }
 
                 uint64_t xp = 0;
-                for(uint64_t i=0;i<this->character_count_vec.size();i++){
-                    if(this->character_count_vec[i] > 0){
+                for (uint64_t i = 0; i < this->character_count_vec.size(); i++)
+                {
+                    if (this->character_count_vec[i] > 0)
+                    {
                         this->id_to_character_vec.push_back(i);
                         this->character_to_id_vec[i] = xp++;
-                    }else{
+                        if(xp == 8){
+                            xp++;
+                        }
+                    }
+                    else
+                    {
                         this->character_to_id_vec[i] = UINT64_MAX;
                     }
                 }
-
             }
             void print()
             {
@@ -127,13 +136,13 @@ namespace stool
                 std::cout << "The number of runs on BWT \t\t : " << this->run_count << std::endl;
                 std::cout << "Alphabet size \t\t : " << this->alphabet_count << std::endl;
                 std::cout << "log sigma \t\t : " << this->character_bit_size() << std::endl;
-    uint64_t x = run_count * (stool::Log::log2(str_size / run_count ));
+                uint64_t x = run_count * (stool::Log::log2(str_size / run_count));
 
-                    std::cout << "r log (n/r) = " << x << std::endl;
+                std::cout << "r log (n/r) = " << x << std::endl;
 
-
-                for(uint64_t i = 0;i<this->id_to_character_vec.size();i++){
-                    std::cout << "["<< (char)id_to_character_vec[i] << "->" << i << "] ";
+                for (uint64_t i = 0; i < this->id_to_character_vec.size(); i++)
+                {
+                    std::cout << "[" << (char)id_to_character_vec[i] << "->" << i << "] ";
                 }
                 std::cout << std::endl;
 
@@ -187,8 +196,8 @@ namespace stool
 
                 for (uint64_t i = 0; i < buffer.size(); i++)
                 {
-                    assert(buffer[i] >= 0);
-                    uint8_t c = buffer[i];
+                    //assert(buffer[i] >= 0);
+                    uint8_t c = (uint8_t)buffer[i];
                     /*
                     if (c == analysisResult.min_char)
                     {
@@ -204,6 +213,8 @@ namespace stool
                         //run_bits.push_back(0);
 
                         diff_char_vec[currentRunP++] = analysisResult.character_to_id_vec[c];
+                        //diff_char_vec[currentRunP++] = c;
+
                         prevChar = c;
                     }
                     else

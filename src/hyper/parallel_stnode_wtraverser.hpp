@@ -438,12 +438,18 @@ namespace stool
             void heavyEnumerate()
             {
                 bool isSingleProcess = false;
+                if (this->current_lcp % 1000 == 0)
+                {
+                    std::cout << "LCP = " << current_lcp;
+                    std::cout << ", Peak = " << this->peak_child_count;
+                    std::cout << ", Current = " << this->child_count;
+                    std::cout << ", time = " << pp_time;
+                    std::cout << ", current_total = " << (strSize - this->total_counter);
+                    std::cout << std::endl;
+                }
+
                 if (current_lcp > 0)
                 {
-                    if (this->current_lcp % 1000 == 0)
-                    {
-                        std::cout << "LCP = " << current_lcp << ", Peak = " << this->peak_child_count << ", Current = " << this->child_count << ", time = " << pp_time << std::endl;
-                    }
 
                     /*
                     if (this->child_count > this->switch_threshold())
@@ -493,7 +499,6 @@ namespace stool
                 {
 
                     this->sub_trees[0]->first_compute(ems[0]);
-
                 }
 
                 uint64_t kp = 0;
@@ -526,7 +531,7 @@ namespace stool
 
                 if (this->_RLBWTDS->str_size() < 100)
                 {
-                    std::cout << "Enumerate END" << std::endl; 
+                    std::cout << "Enumerate END" << std::endl;
                     this->print();
                 }
 
@@ -537,6 +542,11 @@ namespace stool
 
                 assert(this->child_count > 0);
                 assert(this->node_count() > 0);
+                if (this->total_counter > strSize)
+                {
+                    std::cout << "Enumerate Error!" << std::endl;
+                    throw -1;
+                }
             }
             void recompute_node_counter()
             {

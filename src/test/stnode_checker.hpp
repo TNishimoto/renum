@@ -102,7 +102,7 @@ namespace stool
 
             void initialize(string inputFile)
             {
-                string _bwt;
+                std::vector<uint8_t> _bwt;
                 stool::bwt::load(inputFile, _bwt);
                 this->bwt.resize(_bwt.size());
                 for (uint64_t i = 0; i < _bwt.size(); i++)

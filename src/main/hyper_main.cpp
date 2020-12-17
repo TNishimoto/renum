@@ -85,6 +85,8 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
     auto bwtAnalysis = stool::rlbwt2::load_RLBWT_from_file(inputFile, diff_char_vec, run_bits);
     stool::WT wt;
     construct_im(wt, diff_char_vec);
+    std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000<< "[KB]" << std::endl;
+    std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
 
     /*
     sdsl::wt_huff_int<> wt2;
@@ -110,6 +112,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
 
     stool::lcp_on_rlbwt::STNodeChecker stnc;
     stnc.initialize(inputFile);
+
     /*
     std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
     vector<uint64_t> sa = stool::construct_suffix_array(text);    
@@ -196,6 +199,8 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
 
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
+            std::cout << "TEST" << std::endl;
+
             std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::testLCPIntervals(stnodeTraverser);
             test_Intervals.swap(tmp);
         }

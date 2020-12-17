@@ -168,10 +168,15 @@ namespace stool
                 LightFPosDataStructure::construct_C(bwt, this->C);
                 LightFPosDataStructure::construct_sorted_fpos_array(_bwt, _lposvec, this->fposSortedArray);
                 */
+#if DEBUG
+               this->rank_test();
+               #endif
                 this->build(_lposvec);
                 std::cout << "[Finished]" << std::endl;
 
-                //this->check(_lposvec);
+#if DEBUG
+                this->check(_lposvec);
+#endif
             }
             template <typename LPOSVEC>
             void check(const LPOSVEC &_lposvec)
@@ -189,13 +194,14 @@ namespace stool
                 {
                     uint8_t c = (this->bwt)[i];
                     uint64_t rank1 = wt.rank(i + 1, c);
+                    assert(rank1 < this->efv_vec[c].size());
                     uint64_t q = C2[c] + this->efv_vec[c][rank1];
 
                     uint64_t p = collectVec[i];
 
                     if (p != q)
                     {
-                        std::cout << "Error" << std::endl;
+                        std::cout << "LightFPosDataStructure Error, i = " << i << ", Collect = " << p << ", Test = " << q << std::endl;
                         throw -1;
                     }
                 }
@@ -219,9 +225,25 @@ namespace stool
                     C[i] = C[i - 1] + CK[i - 1];
                 }
             }
+            #if DEBUG
+            void rank_test(){
+                uint64_t CHARMAX = UINT8_MAX + 1;
+                std::vector<uint64_t> C_run_sum;
+                C_run_sum.resize(CHARMAX, 0);
+                uint64_t rle = this->bwt.size();
+                for (uint64_t i = 0; i < rle; i++)
+                {
+                    uint8_t c = this->bwt[i];
+                    uint64_t rank1 = wt.rank(i + 1, c);
+                    assert(C_run_sum[c] == rank1);
+                    C_run_sum[c]++;
+                }
+            }
+            #endif
             template <typename LPOSVEC>
             void build(const LPOSVEC &lposvec)
             {
+
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 std::vector<uint64_t> C_run_sum;
                 std::vector<uint64_t> numVec;
@@ -266,19 +288,6 @@ namespace stool
                     uint64_t l = lposvec[i + 1] - lposvec[i];
                     tmp_sum[c] += l;
                 }
-                /*
-                for (uint64_t i = 0; i < CHARMAX; i++)
-                {
-                    if(builders[i].upper_bits.size() != 0){
-                        std::cout << "/" << builders[i].lower_bits.size() << "/" << builders[i].upper_bits.size() << ", MEM = ";
-
-                        std::cout << builders[i].get_using_memory() / 1000 << "[KB]" << std::endl;
-                        std::cout << (sdsl::size_in_bytes(builders[i].lower_bits)/1000) << "[KB] / " << ((builders[i].upper_bits.size() / 8)/1000) << " [KB] "<< std::endl;
-                        std::cout << builders[i].universe << "/" << (uint)builders[i].lower_bits.width() << "/" << (uint)builders[i].lower_bit_size << "/"  << "/" <<  std::endl;
-
-                    }
-                }
-                */
                 for (uint64_t i = 0; i < CHARMAX; i++)
                 {
                     builders[i].finish();
@@ -310,6 +319,8 @@ namespace stool
                     C_run_sum[c] += l;
                     numVec[c]++;
                 }
+
+
                 for (uint64_t i = 1; i < CHARMAX; i++)
                 {
                     C[i] = C[i - 1] + C_run_sum[i - 1];
@@ -334,6 +345,8 @@ namespace stool
 
                 uint8_t c = (this->bwt)[i];
                 uint64_t rank1 = wt.rank(i + 1, c);
+
+                assert(rank1 < this->efv_vec[c].size());
                 uint64_t q = C2[c] + this->efv_vec[c][rank1];
                 return q;
                 /*
@@ -356,12 +369,13 @@ namespace stool
             {
                 return this->bwt.size();
             }
-            uint64_t get_using_memory() const {
+            uint64_t get_using_memory() const
+            {
                 uint64_t x = 0;
 
-                for(auto& it : this->efv_vec){
+                for (auto &it : this->efv_vec)
+                {
                     x += it.get_using_memory();
-
                 }
                 return x;
             }

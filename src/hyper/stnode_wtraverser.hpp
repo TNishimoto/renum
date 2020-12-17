@@ -95,7 +95,7 @@ namespace stool
                 }
             }
             */
-            uint64_t get_stnode_start_position(uint64_t L, uint64_t R)
+            uint64_t get_stnode_start_position(uint64_t L)
             {
                 return get_child_start_position(L);
                 /*
@@ -130,7 +130,7 @@ namespace stool
                 }
                 */
             }
-            uint64_t get_stnode_end_position(uint64_t L, uint64_t R)
+            uint64_t get_stnode_end_position(uint64_t R)
             {
                 return get_child_end_position(R);
                 /*
@@ -229,8 +229,8 @@ namespace stool
 
                 R--;
 
-                left = this->get_stnode_start_position(L, R);
-                right = this->get_stnode_end_position(L, R);
+                left = this->get_stnode_start_position(L);
+                right = this->get_stnode_end_position(R);
 
                 return R + 1;
             }
@@ -324,6 +324,7 @@ namespace stool
                 this->first_child_flag_vec.clear();
 
                 em.computeFirstLCPIntervalSet();
+
                 //em.move_st_internal_nodes(this->childs_vec, this->first_child_flag_vec);
 
                 for (uint64_t i = 0; i < em.indexCount; i++)
@@ -331,6 +332,7 @@ namespace stool
                     auto c = em.indexVec[i];
                     em.move_st_internal_nodes(this->childs_vec, this->first_child_flag_vec, c);
                     this->_stnode_count++;
+
                 }
 
                 /*
@@ -341,6 +343,7 @@ namespace stool
 
                 this->maximal_repeat_check_vec.resize(1);
                 this->maximal_repeat_check_vec[0] = true;
+
             }
             /*
             uint64_t get_child_rank(uint64_t i)
