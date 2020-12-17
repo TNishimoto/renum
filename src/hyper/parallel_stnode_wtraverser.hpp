@@ -472,6 +472,7 @@ namespace stool
                     }
                     if (this->_RLBWTDS->str_size() < 100)
                     {
+                        std::cout << "Start Enumerate" << std::endl;
                         this->print();
                     }
 #endif
@@ -492,6 +493,7 @@ namespace stool
                 {
 
                     this->sub_trees[0]->first_compute(ems[0]);
+
                 }
 
                 uint64_t kp = 0;
@@ -513,16 +515,18 @@ namespace stool
                 {
                     this->sub_trees.shrink_to_fit();
                 }
-
+                /*
                 for (auto &it : this->sub_trees)
                 {
                     it->add_the_last_bit_into_bit_array();
                 }
+                */
 
 #if DEBUG
 
                 if (this->_RLBWTDS->str_size() < 100)
                 {
+                    std::cout << "Enumerate END" << std::endl; 
                     this->print();
                 }
 
@@ -702,7 +706,7 @@ namespace stool
                     }
                 }
 
-    auto start = std::chrono::system_clock::now();
+                auto start = std::chrono::system_clock::now();
                 std::vector<thread> threads;
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
@@ -711,8 +715,8 @@ namespace stool
 
                 for (thread &t : threads)
                     t.join();
-    auto end = std::chrono::system_clock::now();
-    pp_time += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+                auto end = std::chrono::system_clock::now();
+                pp_time += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
                 assert(position_stack.size() == 0);
             }

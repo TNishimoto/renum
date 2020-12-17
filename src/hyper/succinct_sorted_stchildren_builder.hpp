@@ -228,7 +228,7 @@ namespace stool
                     this->_RLBWTDS->to_rinterval(child_left, child_right, w);
                     em.computeSTChildren2(w);
                 }
-                em.fit();
+                em.fit(false);
 #if DEBUG
                 LCPInterval<uint64_t> test;
                 test.i = leftmost_child_left;
@@ -306,7 +306,7 @@ namespace stool
                     this->_RLBWTDS->to_rinterval(child_left, child_right, w);
                     em.computeSTChildren2(w);
                 }
-                em.fit();
+                em.fit(false);
 
                 for (uint64_t i = 0; i < em.indexCount; i++)
                 {

@@ -82,7 +82,7 @@ namespace stool
                 indexCount = 0;
                 explicitChildCount = 0;
             }
-
+            /*
             void move_st_internal_nodes(std::deque<uint64_t> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits)
             {
                 for (uint64_t i = 0; i < this->indexCount; i++)
@@ -108,6 +108,7 @@ namespace stool
                     }
                 }
             }
+            */
             void move_st_internal_nodes(std::deque<uint64_t> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, uint8_t c)
             {
                 auto &currentVec = this->childrenVec[c];
@@ -119,11 +120,17 @@ namespace stool
                 }
                 for (uint64_t j = 0; j < count; j++)
                 {
+                    uint64_t left = this->_RLBWTDS->get_fpos(currentVec[j].beginIndex, currentVec[j].beginDiff);
+                    uint64_t right = this->_RLBWTDS->get_fpos(currentVec[j].endIndex, currentVec[j].endDiff);
+                    outputExplicitChildrenVec.push_back(left);
+                    outputExplicitChildrenVec.push_back(right);
+
+                    /*
                     outputExplicitChildrenVec.push_back(currentVec[j].beginIndex);
                     outputExplicitChildrenVec.push_back(currentVec[j].beginDiff);
                     outputExplicitChildrenVec.push_back(currentVec[j].endIndex);
                     outputExplicitChildrenVec.push_back(currentVec[j].endDiff);
-
+                    */
                 }
             }
 
@@ -218,7 +225,7 @@ namespace stool
                     //}
                 }
             }
-            #if DEBUG
+#if DEBUG
             bool check(const RInterval<INDEX_SIZE> &range)
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
@@ -244,7 +251,7 @@ namespace stool
                 }
                 return true;
             }
-            #endif
+#endif
             uint64_t range_distinct(const RInterval<INDEX_SIZE> &range)
             {
                 assert(this->lightDS != nullptr);
@@ -302,7 +309,7 @@ namespace stool
                 return this->indexCount;
             }
             */
-           #if DEBUG
+#if DEBUG
             /*
             void check2(const RINTERVAL &lcpIntv)
             {
@@ -323,7 +330,7 @@ namespace stool
                 this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
             }
 
-            #endif
+#endif
 
             uint64_t computeFirstLCPIntervalSet()
             {
@@ -359,7 +366,7 @@ namespace stool
 
                     counter++;
                 }
-                this->fit();
+                this->fit(true);
 
 #if DEBUG
                 stool::LCPInterval<uint64_t> lcpIntv2 = lcpIntv.get_lcp_interval(0, this->_RLBWTDS->_fposDS);
@@ -369,7 +376,7 @@ namespace stool
                 return 1;
                 //return counter;
             }
-            void fit()
+            void fit(bool first)
             {
                 uint64_t k = 0;
 
@@ -382,7 +389,7 @@ namespace stool
                     if (this->_RLBWTDS->str_size() < 100)
                     {
                         std::cout << "FOUND ";
-                        //this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);
+                        this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);
                         std::cout << std::endl;
                     }
 #endif
@@ -395,45 +402,91 @@ namespace stool
                         k++;
                     }
                 }
-                for (uint64_t i = 0; i < this->indexCount; i++)
+                this->indexCount = k;
+
+                if (!first)
                 {
-                    auto c = this->indexVec[i];
-                    uint64_t minCharIndex = 0;
-                    uint64_t maxCharIndex = 0;
 
-                    auto &currentVec = this->childrenVec[c];
-                    uint64_t count = this->childrenVec[c].size();
-                    for (uint64_t i = 0; i < count; i++)
+                    for (uint64_t i = 0; i < this->indexCount; i++)
                     {
-                        auto &it = currentVec[i];
-                        bool isLeft = it.beginIndex < currentVec[minCharIndex].beginIndex || (it.beginIndex == currentVec[minCharIndex].beginIndex && it.beginDiff < currentVec[minCharIndex].beginDiff);
-                        if (isLeft)
-                        {
-                            minCharIndex = i;
-                        }
-                        bool isRight = it.endIndex > currentVec[maxCharIndex].endIndex || (it.endIndex == currentVec[maxCharIndex].endIndex && it.endDiff > currentVec[maxCharIndex].endDiff);
-                        if (isRight)
-                        {
-                            maxCharIndex = i;
-                        }
-                    }
-                    if (minCharIndex != 0)
-                    {
-                        auto tmp = currentVec[0];
-                        currentVec[0] = currentVec[minCharIndex];
-                        currentVec[minCharIndex] = tmp;
-                    }
+                        auto c = this->indexVec[i];
+                        uint64_t minCharIndex = 0;
+                        uint64_t maxCharIndex = 0;
 
-                    if (maxCharIndex == 0)
-                        maxCharIndex = minCharIndex;
-                    if (maxCharIndex != count - 1)
-                    {
-                        auto tmp2 = currentVec[count - 1];
-                        currentVec[count - 1] = currentVec[maxCharIndex];
-                        currentVec[maxCharIndex] = tmp2;
+                        auto &currentVec = this->childrenVec[c];
+                        uint64_t count = this->childrenVec[c].size();
+                        for (uint64_t i = 0; i < count; i++)
+                        {
+                            auto &it = currentVec[i];
+                            bool isLeft = it.beginIndex < currentVec[minCharIndex].beginIndex || (it.beginIndex == currentVec[minCharIndex].beginIndex && it.beginDiff < currentVec[minCharIndex].beginDiff);
+                            if (isLeft)
+                            {
+                                minCharIndex = i;
+                            }
+                            bool isRight = it.endIndex > currentVec[maxCharIndex].endIndex || (it.endIndex == currentVec[maxCharIndex].endIndex && it.endDiff > currentVec[maxCharIndex].endDiff);
+                            if (isRight)
+                            {
+                                maxCharIndex = i;
+                            }
+                        }
+                        if (minCharIndex != 0)
+                        {
+                            auto tmp = currentVec[0];
+                            currentVec[0] = currentVec[minCharIndex];
+                            currentVec[minCharIndex] = tmp;
+                        }
+
+                        if (maxCharIndex == 0)
+                            maxCharIndex = minCharIndex;
+                        if (maxCharIndex != count - 1)
+                        {
+                            auto tmp2 = currentVec[count - 1];
+                            currentVec[count - 1] = currentVec[maxCharIndex];
+                            currentVec[maxCharIndex] = tmp2;
+                        }
                     }
                 }
-                this->indexCount = k;
+                else
+                {
+                    for (uint64_t i = 0; i < this->indexCount; i++)
+                    {
+                        auto c = this->indexVec[i];
+                        uint64_t minCharIndex = 0;
+                        uint64_t maxCharIndex = 0;
+
+                        auto &currentVec = this->childrenVec[c];
+                        uint64_t count = this->childrenVec[c].size();
+                        for (uint64_t i = 0; i < count; i++)
+                        {
+                            auto &it = currentVec[i];
+                            bool isLeft = this->_RLBWTDS->bwt[it.beginIndex] < this->_RLBWTDS->bwt[currentVec[minCharIndex].beginIndex];
+                            if (isLeft)
+                            {
+                                minCharIndex = i;
+                            }
+                            bool isRight = this->_RLBWTDS->bwt[it.beginIndex] > this->_RLBWTDS->bwt[currentVec[maxCharIndex].beginIndex];
+                            if (isRight)
+                            {
+                                maxCharIndex = i;
+                            }
+                        }
+                        if (minCharIndex != 0)
+                        {
+                            auto tmp = currentVec[0];
+                            currentVec[0] = currentVec[minCharIndex];
+                            currentVec[minCharIndex] = tmp;
+                        }
+
+                        if (maxCharIndex == 0)
+                            maxCharIndex = minCharIndex;
+                        if (maxCharIndex != count - 1)
+                        {
+                            auto tmp2 = currentVec[count - 1];
+                            currentVec[count - 1] = currentVec[maxCharIndex];
+                            currentVec[maxCharIndex] = tmp2;
+                        }
+                    }
+                }
             }
         };
 

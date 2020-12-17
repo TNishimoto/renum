@@ -162,7 +162,7 @@ namespace stool
                 if (this->maps[this->current_lcp].size() != k)
                 {
 
-                    std::cout << "INCREMENT ERROR! Collect : " << this->maps[this->current_lcp].size() << "/Test: " << k << std::endl;
+                    std::cout << "INCREMENT ERROR!" << " LCP = " << this->current_lcp << ", Collect : " << this->maps[this->current_lcp].size() << "/Test: " << k << std::endl;
                     assert(this->maps[this->current_lcp].size() == k);
 
                     throw -1;
@@ -172,10 +172,11 @@ namespace stool
             }
             bool check2(uint64_t i, uint64_t j, std::vector<stool::LCPInterval<uint64_t>> &wlinks)
             {
-
+/*
 #if DEBUG
                 std::cout << "Weiner Link Check [" << i << ", " << j << "]" << std::endl;
 #endif
+*/
 
                 std::lock_guard<std::mutex> lock(std::mutex);
                 std::vector<stool::LCPInterval<uint64_t>> correctWlinks;
