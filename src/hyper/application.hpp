@@ -119,7 +119,7 @@ namespace stool
                     stnodeSequencer.process();
                     //auto tree = stnodeSequencer.get_sub_tree();
                     //assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
-                    count += stnodeSequencer.count_maximal_repeats();
+                    count += stnodeSequencer.write_maximal_repeats(out);
                     /*
                     for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {

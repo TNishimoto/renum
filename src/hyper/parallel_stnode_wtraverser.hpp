@@ -143,6 +143,9 @@ namespace stool
             uint64_t minimum_child_count = 1000;
             uint64_t sub_tree_limit_size = 1000;
 
+            uint64_t print_interval = 100;
+            uint64_t print_interval_counter = 0;
+
         public:
             uint64_t current_lcp = 0;
             uint64_t total_counter = 0;
@@ -160,6 +163,7 @@ namespace stool
 
             RLBWTDS *_RLBWTDS;
             //bool is_parallel = true;
+            /*
             uint64_t count_maximal_repeats()
             {
                 return 0;
@@ -167,6 +171,7 @@ namespace stool
 
                 throw -1;
             }
+            */
             /*
             STNODE_WTRAVERSER *get_sub_tree()
             {
@@ -288,7 +293,38 @@ namespace stool
                 return UINT64_MAX;
             }
             */
-
+            uint64_t write_maximal_repeats(std::ofstream &out)
+            {
+                uint64_t count = 0;
+                std::vector<stool::LCPInterval<uint64_t>> buffer;
+                for (auto &it : this->sub_trees)
+                {
+                    uint64_t size = it->node_count();
+                    uint64_t L = 0;
+                    uint64_t _left = 0, _right = 0;
+                    for (uint64_t i = 0; i < size; i++)
+                    {
+                        L = it->increment(L, _left, _right);
+                        if (it->check_maximal_repeat(i))
+                        {
+                            stool::LCPInterval<uint64_t> newLCPIntv(_left, _right, this->current_lcp - 1);
+                            buffer.push_back(newLCPIntv);
+                            count++;
+                            if (buffer.size() >= 8000)
+                            {
+                                out.write(reinterpret_cast<const char *>(&buffer), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                                buffer.clear();
+                            }
+                        }
+                    }
+                }
+                if (buffer.size() >= 1)
+                {
+                    out.write(reinterpret_cast<const char *>(&buffer), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                    buffer.clear();
+                }
+                return count;
+            }
             uint64_t get_stnode2(uint64_t L, stool::LCPInterval<uint64_t> &output)
             {
                 if (!this->succinct_mode)
@@ -438,14 +474,23 @@ namespace stool
             void heavyEnumerate()
             {
                 bool isSingleProcess = false;
-                if (this->current_lcp % 1000 == 0)
+
+                if (this->total_counter > 0)
                 {
-                    std::cout << "LCP = " << current_lcp;
-                    std::cout << ", Peak = " << this->peak_child_count;
-                    std::cout << ", Current = " << this->child_count;
-                    std::cout << ", time = " << pp_time;
-                    std::cout << ", current_total = " << (strSize - this->total_counter);
-                    std::cout << std::endl;
+                    uint64_t ccc = strSize / this->print_interval;
+                    uint64_t pp_num = ccc * this->print_interval_counter;
+
+                    if (this->total_counter >= pp_num)
+                    {
+                        std::cout << "[" << (this->print_interval_counter) << "/" << this->print_interval << "] ";
+                        std::cout << "LCP = " << current_lcp;
+                        std::cout << ", Peak = " << this->peak_child_count;
+                        std::cout << ", Current = " << this->child_count;
+                        std::cout << ", time = " << pp_time;
+                        std::cout << ", current_total = " << (strSize - this->total_counter);
+                        std::cout << std::endl;
+                        this->print_interval_counter++;
+                    }
                 }
 
                 if (current_lcp > 0)

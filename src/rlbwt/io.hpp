@@ -119,6 +119,7 @@ namespace stool
                         this->id_to_character_vec.push_back(i);
                         this->character_to_id_vec[i] = xp++;
                         if(xp == 8){
+                            this->id_to_character_vec.push_back(UINT64_MAX);
                             xp++;
                         }
                     }
@@ -142,7 +143,9 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->id_to_character_vec.size(); i++)
                 {
-                    std::cout << "[" << (char)id_to_character_vec[i] << "->" << i << "] ";
+                    if(this->id_to_character_vec[i] != UINT64_MAX){
+                        std::cout << "[" << (char)id_to_character_vec[i] << "->" << i << "] ";
+                    }
                 }
                 std::cout << std::endl;
 

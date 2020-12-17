@@ -109,7 +109,7 @@ namespace stool
                 }
             }
             */
-            void move_st_internal_nodes(std::deque<uint64_t> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, uint8_t c)
+            void move_st_internal_nodes(std::deque<uint64_t> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, std::deque<bool> &maximal_repeat_check_vec, uint8_t c)
             {
                 auto &currentVec = this->childrenVec[c];
                 uint64_t count = currentVec.size();
@@ -118,14 +118,32 @@ namespace stool
                 {
                     leftmost_child_bits.push_back(false);
                 }
+                uint64_t st_left = UINT64_MAX;
+                uint64_t st_right = 0;
+
                 for (uint64_t j = 0; j < count; j++)
                 {
-                    
+
                     uint64_t left = this->_RLBWTDS->get_fpos(currentVec[j].beginIndex, currentVec[j].beginDiff);
                     uint64_t right = this->_RLBWTDS->get_fpos(currentVec[j].endIndex, currentVec[j].endDiff);
+
+                    if (left < st_left)
+                    {
+                        st_left = left;
+                    }
+                    if (right > st_right)
+                    {
+                        st_right = right;
+                    }
+
                     outputExplicitChildrenVec.push_back(left);
                     outputExplicitChildrenVec.push_back(right);
                 }
+
+                uint64_t x = this->_RLBWTDS->get_lindex_containing_the_position(st_left);
+                uint64_t d = this->_RLBWTDS->get_run(x);
+                bool isMaximalRepeat = (this->_RLBWTDS->get_lpos(x) + d) <= st_right;
+                maximal_repeat_check_vec.push_back(isMaximalRepeat);
             }
 
             bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
