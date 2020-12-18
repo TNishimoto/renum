@@ -26,19 +26,19 @@ namespace stool
             std::vector<XCHAR> cs;
             std::vector<uint64_t> cs1;
             std::vector<uint64_t> cs2;
-            std::vector<uint64_t> C;
-            void initialize(const stool::WT *_wt, const sdsl::int_vector<> *_bwt)
+            void initialize(const stool::WT *_wt, uint8_t lastchar)
             {
                 wt = _wt;
                 this->size = wt->size();
-                lastChar = (*_bwt)[_bwt->size() - 1];
+                lastChar = lastchar;
+
+                //lastChar = (*_bwt)[_bwt->size() - 1];
                 uint64_t CHARMAX = UINT8_MAX + 1;
 
                 cs.resize(CHARMAX, 0);
                 cs1.resize(CHARMAX, 0);
                 cs2.resize(CHARMAX, 0);
 
-                stool::FMIndex::constructC(*_bwt, C);
             }
             uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
             {
@@ -80,6 +80,7 @@ namespace stool
                     
                     output[k++] = CharInterval<INDEX_SIZE>(left, right, lastChar);
                 }
+                std::cout << "range [" << i << ", " << j << "]" << k << std::endl;
 
                 return k;
             }

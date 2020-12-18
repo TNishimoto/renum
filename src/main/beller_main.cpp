@@ -50,6 +50,26 @@ std::vector<uint8_t> load_bwt(std::string filename)
 
   return vec;
 }
+uint8_t get_last_char(std::string inputFile)
+{
+  sdsl::int_vector<> bwt;
+  sdsl::load_from_file(bwt, inputFile);
+  bool b = false;
+  for (uint64_t i = 0; i < bwt.size(); i++)
+  {
+    if (bwt[i] == 0)
+    {
+      b = true;
+      std::cout << i << std::endl;
+    }
+  }
+  if (!b)
+  {
+    std::cout << "Error: This bwt does not contain 0." << std::endl;
+    throw -1;
+  }
+  return bwt[bwt.size() - 1];
+}
 
 void computeLCPIntervals(std::string inputFile, bool correctCheck)
 {
@@ -61,7 +81,31 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
   sdsl::int_vector<> bwt;
   stool::FMIndex::constructBWT(text, sa, bwt);
 
-  auto test_Intervals = stool::beller::computeLCPIntervals<uint64_t>(bwt);
+  std::vector<uint64_t> C;
+  stool::FMIndex::constructC(bwt, C);
+
+  wt_huff<> wt;
+  construct_im(wt, bwt);
+
+  uint64_t lastChar = bwt[bwt.size() - 1];
+
+  stool::IntervalSearchDataStructure range;
+  range.initialize(&wt, &C, lastChar);
+  /*
+  std::cout << wt.size() << "/" << bwt.size() << std::endl;
+  for(uint64_t i=0;i<bwt.size() - 1;i++){
+    uint8_t c1 = wt[i+1];
+    uint8_t c2 = bwt[i];
+    if(c1 != c2){
+    std::cout << c1 << "/" << c2 << std::endl;
+
+    }
+
+
+  }
+  */
+
+  auto test_Intervals = stool::beller::computeLCPIntervals<uint64_t>(range);
   test_Intervals.push_back(LCPINTV(0, text.size() - 1, 0));
 
   if (correctCheck)
@@ -79,36 +123,37 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
 
   //string text = "";
   auto start = std::chrono::system_clock::now();
-
   std::cout << "Loading : " << inputFile << std::endl;
-  std::vector<uint8_t> text = stool::load_text_from_file(inputFile, true);
-  vector<INDEX> sa = stool::construct_suffix_array(text);
-  sdsl::int_vector<> bwt;
-
-  stool::FMIndex::constructBWT(text, sa, bwt);
-
-  std::vector<uint64_t> C;
-
-  stool::FMIndex::constructC(bwt, C);
-
+  uint8_t lastChar = get_last_char(inputFile);
+  std::cout << "Constructing Wavelet Tree..." << std::endl;
   wt_huff<> wt;
-  construct_im(wt, bwt);
+  construct(wt, inputFile);
+  std::vector<uint64_t> C;
+  std::cout << "Constructing array C..." << std::endl;
+
+  stool::FMIndex::constructC(wt, C);
+
   uint64_t ms_count = 0;
+
+  stool::IntervalSearchDataStructure range;
+  range.initialize(&wt, &C, lastChar);
 
   std::ofstream out(outputFile, std::ios::out | std::ios::binary);
   if (!out)
   {
     throw std::runtime_error("Cannot open the output file!");
   }
-  uint64_t input_text_size = text.size();
+  uint64_t input_text_size = wt.size();
 
-  if (bwt.size() - 10 < UINT32_MAX)
+  std::cout << "Enumerating..." << std::endl;
+
+  if (input_text_size - 10 < UINT32_MAX)
   {
-    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(bwt, out);
+    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(range, out, lastChar);
   }
   else
   {
-    ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(bwt, out);
+    ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(range, out, lastChar);
   }
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -176,9 +221,15 @@ int main(int argc, char *argv[])
   {
     wt_huff<> wt;
     construct(wt, inputFile);
-        std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+    std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
     std::cout << "Finished." << std::endl;
+    return 0;
+  }
+  else if (mode == "test")
+  {
+    computeLCPIntervals(inputFile, true);
+
     return 0;
   }
 
@@ -194,5 +245,4 @@ int main(int argc, char *argv[])
     }
   }
   computeMaximalSubstrings(inputFile, outputFile, true);
-  //computeLCPIntervals(inputFile, true);
 }

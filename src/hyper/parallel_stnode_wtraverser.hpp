@@ -193,6 +193,8 @@ namespace stool
 
                 this->new_trees.resize(size);
 
+                uint8_t lastChar = _RLBWTDS.bwt[_RLBWTDS.bwt.size()-1];
+
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
 
@@ -200,7 +202,7 @@ namespace stool
                     lightRDs[lightRDs.size() - 1].preprocess(&_RLBWTDS.bwt);
 
                     heavyRDs.push_back(SuccinctRangeDistinctDataStructure<INDEX_SIZE>());
-                    heavyRDs[heavyRDs.size() - 1].initialize(&_RLBWTDS.wt, &_RLBWTDS.bwt);
+                    heavyRDs[heavyRDs.size() - 1].initialize(&_RLBWTDS.wt, lastChar);
 
                     ems.push_back(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>());
                     ems[ems.size() - 1].initialize(&_RLBWTDS);

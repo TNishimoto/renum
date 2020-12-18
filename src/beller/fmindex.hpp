@@ -31,11 +31,34 @@ namespace stool
             return C[c] + cNum;
         }
 
+        template <typename OUTPUT>
+        static void constructC(wt_huff<> &wt, uint8_t lastChar, OUTPUT &output)
+        {
+            uint64_t CHARMAX = UINT8_MAX + 1;
+
+            vector<uint64_t> tmp;
+
+            tmp.resize(CHARMAX, 0);
+            output.resize(CHARMAX, 0);
+
+            for (uint64_t i = 0; i < wt.size()-1; i++)
+            {
+                assert(wt[i] >= 0 && wt[i] < tmp.size());
+                tmp[wt[i]]++;
+            }
+            tmp[lastChar]++;
+
+            for (uint64_t i = 1; i < output.size(); i++)
+            {
+                output[i] = output[i - 1] + tmp[i - 1];
+            }
+        }
+
         template <typename TEXT, typename OUTPUT>
         static void constructC(TEXT &text, OUTPUT &output)
         {
-            uint64_t CHARMAX = UINT8_MAX+1;
-        
+            uint64_t CHARMAX = UINT8_MAX + 1;
+
             vector<uint64_t> tmp;
 
             tmp.resize(CHARMAX, 0);
@@ -81,7 +104,7 @@ namespace stool
         {
             outputBWT.width(8);
             outputBWT.resize(text.size());
-            
+
             INDEX n = text.size();
             for (INDEX i = 0; i < n; i++)
             {

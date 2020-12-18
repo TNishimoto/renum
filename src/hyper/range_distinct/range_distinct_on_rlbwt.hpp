@@ -15,7 +15,8 @@
 namespace stool
 {
     namespace lcp_on_rlbwt
-    {
+    {   
+        /*
         template <typename INDEX_SIZE>
         class RangeDistinctDataStructureOnRLBWT
         {
@@ -88,6 +89,7 @@ namespace stool
                 return count;
             }
         };
+        */
 
     } // namespace lcp_on_rlbwt
 } // namespace stool
