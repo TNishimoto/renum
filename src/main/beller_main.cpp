@@ -15,6 +15,8 @@
 
 #include "../main/common.hpp"
 #include "../test/naive_algorithms.hpp"
+#include <sdsl/wt_algorithm.hpp>
+
 //#include "../postorder_maximal_substring_intervals.hpp"
 //#include "../forward_bwt.hpp"
 
@@ -50,24 +52,42 @@ std::vector<uint8_t> load_bwt(std::string filename)
 
   return vec;
 }
-uint8_t get_last_char(std::string inputFile)
+uint8_t get_last_char(std::string inputFile, std::vector<uint64_t> &C, sdsl::bit_vector &bv)
 {
   sdsl::int_vector<> bwt;
   sdsl::load_from_file(bwt, inputFile);
-  bool b = false;
+  uint64_t k = 0;
+  bv.resize(bwt.size());
+  bool b = true;
+  //std::cout << bwt.size() << std::endl;
   for (uint64_t i = 0; i < bwt.size(); i++)
   {
+    //std::cout << (uint) bwt[i];
     if (bwt[i] == 0)
     {
-      b = true;
+      k++;
       std::cout << i << std::endl;
     }
+    if(i > 0 && bwt[i] != bwt[i-1]){
+       b = !b;
+    }
+    bv[i] = b;
   }
-  if (!b)
+  //std::cout << std::endl;
+  if (k == 0)
   {
     std::cout << "Error: This bwt does not contain 0." << std::endl;
     throw -1;
   }
+  else if (k >= 2)
+  {
+    std::cout << "Error2: This bwt contains 0 twice or more." << std::endl;
+    throw -1;
+  }
+  std::cout << "Constructing array C..." << std::endl;
+
+  stool::FMIndex::constructC(bwt, C);
+
   return bwt[bwt.size() - 1];
 }
 
@@ -123,15 +143,27 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
 
   //string text = "";
   auto start = std::chrono::system_clock::now();
+  std::vector<uint64_t> C;
+  sdsl::bit_vector bv;
+
   std::cout << "Loading : " << inputFile << std::endl;
-  uint8_t lastChar = get_last_char(inputFile);
+  uint8_t lastChar = get_last_char(inputFile, C, bv);
+  sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
+
+
   std::cout << "Constructing Wavelet Tree..." << std::endl;
   wt_huff<> wt;
   construct(wt, inputFile);
-  std::vector<uint64_t> C;
-  std::cout << "Constructing array C..." << std::endl;
 
-  stool::FMIndex::constructC(wt, C);
+  //stool::FMIndex::constructC(wt, C);
+
+  /*
+  for(uint64_t i=0;i<wt.size();i++){
+      auto x = sdsl::symbol_lte(wt, 'c' );
+       // = wt.lex_smaller_count(i, 'c');
+       std::cout << x.first << "/" << x.second << std::endl;
+  }
+  */
 
   uint64_t ms_count = 0;
 
@@ -149,11 +181,11 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
 
   if (input_text_size - 10 < UINT32_MAX)
   {
-    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(range, out, lastChar);
+    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(range, out, lastChar, bwt_bit_rank1);
   }
   else
   {
-    ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(range, out, lastChar);
+    ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(range, out, lastChar, bwt_bit_rank1);
   }
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -206,12 +238,22 @@ int main(int argc, char *argv[])
   if (mode == "iv")
   {
     std::vector<uint8_t> text = load_bwt(inputFile);
+
     sdsl::int_vector<> bwt;
     bwt.width(8);
     bwt.resize(text.size());
+
+    uint64_t k = 0;
     for (uint64_t i = 0; i < text.size(); i++)
     {
       bwt[i] = text[i];
+      if(bwt[i] == 0){
+        k++;
+      }
+    }
+    if(k != 1){
+      std::cout << "bwt error" << std::endl;
+      throw -1;
     }
     sdsl::store_to_file(bwt, inputFile + ".iv");
     std::cout << "Finished." << std::endl;

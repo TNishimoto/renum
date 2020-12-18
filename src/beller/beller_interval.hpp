@@ -242,48 +242,57 @@ namespace stool
         */
 
         template <typename INDEX>
-        std::vector<stool::LCPInterval<INDEX>> computeMaximalSubstrings(IntervalSearchDataStructure &range, BellerComponent<INDEX> &comp, bool &isEnd, uint8_t lastChar)
+        std::vector<stool::LCPInterval<INDEX>> computeMaximalSubstrings(IntervalSearchDataStructure &range, BellerComponent<INDEX> &comp, bool &isEnd, uint8_t lastChar, sdsl::bit_vector::rank_1_type &bwt_bit_rank1)
         {
             std::vector<stool::LCPInterval<INDEX>> r;
-            uint64_t size = range.wt->size();
+            //uint64_t size = range.wt->size();
 
             auto r2 = computeLCPIntervals(range, comp, isEnd);
             for (auto it : r2)
             {
-                uint8_t fstChar = it.i == size -1 ? lastChar : (*range.wt)[it.i+1];
-
-                uint8_t lstChar = it.j == size -1 ? lastChar : (*range.wt)[it.j+1];
+                uint64_t k1 = it.i == 0 ? 0 : bwt_bit_rank1(it.i);
+                uint64_t k2 = bwt_bit_rank1(it.j + 1);
+                bool b = !((k2 - k1 == 0) || ((k2 - k1) == (it.j - it.i + 1)));
+                if (b)
+                {
+                    r.push_back(it);
+                }
+                /*
+                uint8_t fstChar = it.i == size - 1 ? lastChar : (*range.wt)[it.i + 1];
+                uint8_t lstChar = it.j == size - 1 ? lastChar : (*range.wt)[it.j + 1];
                 if (fstChar == lstChar)
                 {
                     uint64_t p1 = range.wt->rank(it.i + 1, fstChar);
                     uint64_t p2 = range.wt->rank(it.j + 1, fstChar);
+                    
+
                     //std::cout << it.to_string() << std::endl;
                     //std::cout << p1 << "/" << p2 << std::endl;
-
-                    if (p2 - p1 != it.j - it.i)
-                    {
-                        r.push_back(it);
-                    }
                 }
                 else
                 {
+                    if (!b)
+                    {
+                        throw -1;
+                    }
                     r.push_back(it);
                 }
+                */
             }
             return r;
         }
         template <typename INDEX>
-        uint64_t outputMaximalSubstrings(IntervalSearchDataStructure &range, std::ofstream &out, uint8_t lastChar)
+        uint64_t outputMaximalSubstrings(IntervalSearchDataStructure &range, std::ofstream &out, uint8_t lastChar, sdsl::bit_vector::rank_1_type &bwt_bit_rank1)
         {
             stool::beller::BellerComponent<INDEX> comp;
             uint64_t size = range.wt->size();
-            comp.initialize(size );
+            comp.initialize(size);
             bool isEnd = false;
             uint64_t count = 0;
             while (!isEnd)
             {
 
-                auto r2 = computeMaximalSubstrings(range, comp, isEnd, lastChar);
+                auto r2 = computeMaximalSubstrings(range, comp, isEnd, lastChar, bwt_bit_rank1);
                 for (auto &it : r2)
                 {
                     out.write(reinterpret_cast<const char *>(&it), sizeof(stool::LCPInterval<INDEX>));
@@ -293,11 +302,11 @@ namespace stool
             }
 
             std::cout << "Range Distinct Count = " << comp.debugCounter << "/" << size << std::endl;
-            
+
             uint64_t dx = range.wt->select(1, 0) - 1;
-            auto last = stool::LCPInterval<INDEX>(dx, dx, size );
+            auto last = stool::LCPInterval<INDEX>(dx, dx, size);
             out.write(reinterpret_cast<const char *>(&last), sizeof(stool::LCPInterval<INDEX>));
-            
+
             count += 1;
             return count;
         }
