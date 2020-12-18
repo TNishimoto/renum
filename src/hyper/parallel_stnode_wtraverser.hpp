@@ -247,7 +247,7 @@ namespace stool
             uint64_t write_maximal_repeats(std::ofstream &out)
             {
                 uint64_t count = 0;
-                std::vector<stool::LCPInterval<uint64_t>> buffer;
+                std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
                 for (auto &it : this->sub_trees)
                 {
                     uint64_t size = it->node_count();
@@ -258,12 +258,12 @@ namespace stool
                         L = it->increment(L, _left, _right);
                         if (it->check_maximal_repeat(i))
                         {
-                            stool::LCPInterval<uint64_t> newLCPIntv(_left, _right, this->current_lcp - 1);
+                            stool::LCPInterval<INDEX_SIZE> newLCPIntv(_left, _right, this->current_lcp - 1);
                             buffer.push_back(newLCPIntv);
                             count++;
                             if (buffer.size() >= 8000)
                             {
-                                out.write(reinterpret_cast<const char *>(&buffer), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                                out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
                                 buffer.clear();
                             }
                         }
@@ -271,7 +271,7 @@ namespace stool
                 }
                 if (buffer.size() >= 1)
                 {
-                    out.write(reinterpret_cast<const char *>(&buffer), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                    out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
                     buffer.clear();
                 }
                 return count;
