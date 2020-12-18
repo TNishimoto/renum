@@ -85,7 +85,18 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
     auto bwtAnalysis = stool::rlbwt2::load_RLBWT_from_file(inputFile, diff_char_vec, run_bits);
     stool::WT wt;
     construct_im(wt, diff_char_vec);
-    std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000<< "[KB]" << std::endl;
+    /*
+    for(uint64_t i=0;i<diff_char_vec.size();i++){
+        if(diff_char_vec[i] != wt[i+1]){
+            std::cout << i << "/" << (uint)diff_char_vec[i] << "/" << (uint)wt[i+1] << std::endl; 
+            //throw -1;
+        }
+    }
+    std::cout << "OK" << std::endl;
+    throw -1;
+    */
+
+    std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000 << "[KB]" << std::endl;
     std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
 
     /*
@@ -143,7 +154,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         if (FPOSMODE == '0')
         {
             using FPOSDS = std::vector<uint64_t>;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec_wrapper);
 
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
@@ -157,7 +168,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         else
         {
             using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec_wrapper, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
             ds.stnc = &stnc;
@@ -179,7 +190,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         if (FPOSMODE == '0')
         {
             using FPOSDS = std::vector<uint64_t>;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             ds.stnc = &stnc;
@@ -192,7 +203,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         else
         {
             using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             ds.stnc = &stnc;
@@ -218,13 +229,15 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     stool::EliasFanoVectorBuilder run_bits;
     //std::vector<bool> run_bits;
     auto bwtAnalysis = stool::rlbwt2::load_RLBWT_from_file(inputFile, diff_char_vec, run_bits);
-    std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000<< "[KB]" << std::endl;
+    std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000 << "[KB]" << std::endl;
     std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
 
     sdsl::store_to_file(diff_char_vec, inputFile + ".tmp");
 
     stool::WT wt;
     construct(wt, inputFile + ".tmp");
+
+    string bit_size_mode = "UINT64_t";
     //construct_im(wt, diff_char_vec);
 
     /*
@@ -235,7 +248,6 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     */
 
     std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
-
 
     //DEBUG
     if (diff_char_vec.size() < 100)
@@ -279,7 +291,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         if (FPOSMODE == '0')
         {
             using FPOSDS = std::vector<uint64_t>;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
 
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec_wrapper);
 
@@ -293,7 +305,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         else
         {
             using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec_wrapper, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
 
@@ -314,7 +326,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         if (FPOSMODE == '0')
         {
             using FPOSDS = std::vector<uint64_t>;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
@@ -326,20 +338,32 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         else
         {
             using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
-
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
-        std::cout << "FPOS Vec using memory = " << fposds.get_using_memory() / 1000 << "[KB]" << std::endl;
+            std::cout << "FPOS Vec using memory = " << fposds.get_using_memory() / 1000 << "[KB]" << std::endl;
 
-            RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
+            if (bwtAnalysis.str_size < UINT32_MAX - 10)
+            {
+                using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint32_t, LPOSDS, FPOSDS>;
+                RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
-            std::cout << "Enumerate Maximal Substrings..." << std::endl;
-            stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
-            
-            stnodeTraverser.initialize(thread_num, ds);
+                std::cout << "Enumerate Maximal Substrings..." << std::endl;
+                stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<uint32_t, RDS> stnodeTraverser;
+                stnodeTraverser.initialize(thread_num, ds);
+                ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+                bit_size_mode = "UINT32_t";
 
+            }
+            else
+            {
+                using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
+                RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
-            ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+                std::cout << "Enumerate Maximal Substrings..." << std::endl;
+                stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<uint64_t, RDS> stnodeTraverser;
+                stnodeTraverser.initialize(thread_num, ds);
+                ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+
+            }
         }
     }
 
@@ -369,6 +393,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     std::cout << "Peak children count \t\t\t : " << st_result.max_nodes_at_level << std::endl;
 
     std::cout << "Thread number \t\t\t\t : " << thread_num << std::endl;
+    std::cout << "Integer Type \t\t\t\t : " << bit_size_mode << std::endl;
 
     std::cout << "The length of the input text \t\t : " << bwtAnalysis.str_size << std::endl;
     std::cout << "The number of runs on BWT \t\t : " << bwtAnalysis.run_count << std::endl;

@@ -46,8 +46,8 @@ add_library(fn STATIC ${STOOL_SOURCES})
 target_link_libraries(fn sdsl divsufsort divsufsort64)
 
 ### Debug
-#add_executable(beller.out src/main/beller_main.cpp)
-#target_link_libraries(beller.out fn)
+add_executable(beller.out src/main/beller_main.cpp)
+target_link_libraries(beller.out fn)
 
 add_executable(hyper.out src/main/hyper_main.cpp)
 target_link_libraries(hyper.out fn)

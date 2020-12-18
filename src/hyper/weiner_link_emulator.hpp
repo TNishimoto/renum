@@ -109,7 +109,7 @@ namespace stool
                 }
             }
             */
-            void move_st_internal_nodes(std::deque<uint64_t> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, std::deque<bool> &maximal_repeat_check_vec, uint8_t c)
+            void move_st_internal_nodes(std::deque<INDEX_SIZE> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, std::deque<bool> &maximal_repeat_check_vec, uint8_t c)
             {
                 auto &currentVec = this->childrenVec[c];
                 uint64_t count = currentVec.size();
@@ -302,25 +302,6 @@ namespace stool
 
                 return count;
             }
-            /*
-            uint64_t computeNextLCPIntervalSet(const RINTERVAL &lcpIntv, const std::deque<RINTERVAL> &weinerVec, uint64_t rank, uint64_t width)
-            {
-
-                this->clear();
-
-                this->computeSTNodeCandidates(lcpIntv);
-
-                for (uint64_t j = 0; j < width; j++)
-                {
-                    this->computeSTChildren(weinerVec[rank + j]);
-                }
-                this->fit();
-
-                this->check();
-
-                return this->indexCount;
-            }
-            */
 #if DEBUG
             /*
             void check2(const RINTERVAL &lcpIntv)

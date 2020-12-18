@@ -62,10 +62,6 @@ namespace stool
         void parallel_process_stnodes(std::vector<STNodeWTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
                                       std::stack<uint64_t> &position_stack, std::vector<STNodeWTraverser<INDEX_SIZE, RLBWTDS> *> &new_trees, uint64_t limit, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
         {
-#if DEBUG
-            //std::cout << "Run " << data.start_index << ", " << data.width << ", " <<  data.rank << ", " << tree.node_count() << std::endl;
-            //tree.print2();
-#endif
             uint64_t pos = fst_position;
             bool b = false;
             while (pos != UINT64_MAX)
@@ -74,42 +70,6 @@ namespace stool
                 bool b2 = trees[pos]->computeNextLCPIntervalSet(em, new_trees, limit);
                 b = b || b2;
                 assert(trees[pos]->children_count() <= limit);
-                /*
-                std::cout << "A! " << trees.size() << std::endl;
-                if (trees.size() > 1)
-                {
-                    std::cout << "SP!" << std::endl;
-                    throw -1;
-                }
-                */
-
-                //if (data.width > 0)
-                //{
-                //for (uint64_t i = data.start_index; i < data.start_index + data.width; i++)
-                //{
-                //}
-
-                /*
-                tmp_tree.maximal_repeat_check_vec.resize(tmp_tree.node_count(), false);
-
-                uint64_t size = tmp_tree.w_builder.size();
-                RInterval<INDEX_SIZE> it;
-                uint64_t L = 0;
-                uint64_t x = 0;
-                for (uint64_t i = 1; i < size; i++)
-                {
-                    if (tmp_tree.w_builder[i])
-                    {
-                        uint64_t R = i - 1;
-                        tmp_tree.get_stnode(L, R, it);
-                        bool b = checkMaximalRepeat(it, *(em._RLBWTDS));
-                        tmp_tree.maximal_repeat_check_vec[x++] = b;
-                        L = i;
-                    }
-                }
-                */
-                //}
-
                 pos = UINT64_MAX;
                 {
                     std::lock_guard<std::mutex> lock(mtx);
@@ -141,7 +101,7 @@ namespace stool
             std::vector<LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE>> lightRDs;
             std::vector<SuccinctRangeDistinctDataStructure<INDEX_SIZE>> heavyRDs;
             uint64_t minimum_child_count = 1000;
-            uint64_t sub_tree_limit_size = 1000;
+            uint64_t sub_tree_limit_size = 2000;
 
             uint64_t print_interval = 100;
             uint64_t print_interval_counter = 0;
@@ -157,6 +117,7 @@ namespace stool
             uint64_t _expected_peak_memory_bits = 0;
             uint64_t _switch_threshold = 0;
             uint64_t thread_count = 1;
+            uint64_t debug_peak_memory = 0;
             std::stack<uint64_t> position_stack;
 
             bool succinct_mode = false;
@@ -217,6 +178,11 @@ namespace stool
                 this->strSize = _RLBWTDS.str_size();
                 this->thread_count = size;
 
+                if (this->thread_count == 1)
+                {
+                    this->sub_tree_limit_size = UINT64_MAX;
+                }
+
                 //assert(size == 1);
 
                 //this->sub_trees.resize(size);
@@ -250,28 +216,13 @@ namespace stool
                 this->_expected_peak_memory_bits = this->_RLBWTDS->rle_size() * d;
                 this->_switch_threshold = this->alpha * (this->expected_peak_memory_bits() / (sizeof(uint64_t) * 8));
             }
-
+            /*
             void get_stnode(uint64_t index, RINTERVAL &output)
             {
                 std::cout << "get ST NODE" << std::endl;
                 throw -1;
-                /*
-                uint64_t p = 0;
-                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
-                {
-                    if (p <= index && index < p + this->sub_trees[i].node_count())
-                    {
-                        this->sub_trees[i].get_stnode(index - p, output);
-
-                        break;
-                    }
-                    else
-                    {
-                        p += this->sub_trees[i].node_count();
-                    }
-                }
-                */
             }
+            */
             /*
             uint64_t get_stnode2(uint64_t L, RINTERVAL &output)
             {
@@ -428,6 +379,7 @@ namespace stool
                     {
                         if (i != nonEmptyCount)
                         {
+
                             this->sub_trees[nonEmptyCount]->swap(*this->sub_trees[i]);
 
                             //this->sub_trees[i] = STNODE_WTRAVERSER();
@@ -438,6 +390,7 @@ namespace stool
                 }
                 for (uint64_t i = nonEmptyCount; i < this->sub_trees.size(); i++)
                 {
+                    this->sub_trees[i]->clear();
                     delete this->sub_trees[i];
                 }
                 this->sub_trees.resize(nonEmptyCount);
@@ -480,6 +433,11 @@ namespace stool
                     uint64_t ccc = strSize / this->print_interval;
                     uint64_t pp_num = ccc * this->print_interval_counter;
 
+                    if (this->debug_peak_memory < this->get_using_memory())
+                    {
+                        this->debug_peak_memory = this->get_using_memory();
+                    }
+
                     if (this->total_counter >= pp_num)
                     {
                         std::cout << "[" << (this->print_interval_counter) << "/" << this->print_interval << "] ";
@@ -489,32 +447,21 @@ namespace stool
                         std::cout << ", time = " << pp_time;
                         std::cout << ", current_total = " << (strSize - this->total_counter);
                         std::cout << std::endl;
+
+                        std::cout << "Peak = " << this->debug_peak_memory / 1000 << "[KB]" << std::endl;
+                        //std::cout << "Peak = " << debug_peak_counter << "[KB]" << std::endl;
+                        /*
+                        if(this->print_interval_counter == 2){
+                            throw -1;
+                        }
+                        */
+
                         this->print_interval_counter++;
                     }
                 }
 
                 if (current_lcp > 0)
                 {
-
-                    /*
-                    if (this->child_count > this->switch_threshold())
-                    {
-                        kk++;
-                        std::cout << "LCP " << this->current_lcp << "/" << (this->child_count) << "/" << this->switch_threshold() << "/" << this->sub_trees.size() << std::endl;
-                        std::cout << "Memory: " << this->get_peak_memory() / (1000 * 1000) << "[MB]"
-                                  << "/ Optimal: " << this->get_optimal_memory() / (1000 * 1000) << "[MB]" << std::endl;
-
-                        
-                        if (kk == 3)
-                        {
-
-                            std::cout << "STOP" << std::endl;
-                            throw -1;
-                        }
-                        
-                    }
-                    */
-
 #if DEBUG
                     if (prev_child_count != this->child_count)
                     {
@@ -546,7 +493,6 @@ namespace stool
                     this->sub_trees[0]->first_compute(ems[0]);
                 }
 
-                uint64_t kp = 0;
                 for (auto &it : this->new_trees)
                 {
                     while (it.size() > 0)
@@ -554,7 +500,6 @@ namespace stool
 
                         this->sub_trees.push_back(it[it.size() - 1]);
                         it.pop_back();
-                        kp++;
                     }
                 }
 
@@ -565,12 +510,6 @@ namespace stool
                 {
                     this->sub_trees.shrink_to_fit();
                 }
-                /*
-                for (auto &it : this->sub_trees)
-                {
-                    it->add_the_last_bit_into_bit_array();
-                }
-                */
 
 #if DEBUG
 
@@ -817,7 +756,7 @@ namespace stool
                 
             }
             */
-
+            /*
             uint64_t get_peak_memory()
             {
                 uint64_t k = 0;
@@ -826,22 +765,16 @@ namespace stool
                 {
                     k += it->get_peak_memory();
                 }
-                /*
-                for (auto &it : this->sub_tmp_trees)
-                {
-                    k += it.get_peak_memory();
-                }
-                */
-
                 return k;
             }
-            uint64_t get_optimal_memory()
+            */
+            uint64_t get_using_memory()
             {
                 uint64_t k = 0;
 
                 for (auto &it : this->sub_trees)
                 {
-                    k += it->get_optimal_memory();
+                    k += it->get_using_memory();
                 }
                 /*
                 for (auto &it : this->sub_tmp_trees)

@@ -15,8 +15,8 @@
 
 #include "../main/common.hpp"
 #include "../test/naive_algorithms.hpp"
-#include "../postorder_maximal_substring_intervals.hpp"
-#include "../forward_bwt.hpp"
+//#include "../postorder_maximal_substring_intervals.hpp"
+//#include "../forward_bwt.hpp"
 
 using namespace std;
 //using namespace stool;
@@ -25,6 +25,31 @@ using namespace std;
 using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
+
+std::vector<uint8_t> load_bwt(std::string filename)
+{
+
+  std::ifstream stream;
+  stream.open(filename, std::ios::binary);
+
+  std::vector<uint8_t> vec;
+
+  if (!stream)
+  {
+    std::cerr << "error reading file " << std::endl;
+    throw -1;
+  }
+  uint64_t len;
+  stream.seekg(0, std::ios::end);
+  uint64_t n = (unsigned long)stream.tellg();
+  stream.seekg(0, std::ios::beg);
+  len = n / sizeof(uint8_t);
+
+  vec.resize(len, 0);
+  stream.read((char *)&(vec)[0], len * sizeof(char));
+
+  return vec;
+}
 
 void computeLCPIntervals(std::string inputFile, bool correctCheck)
 {
@@ -67,6 +92,9 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   stool::FMIndex::constructC(bwt, C);
 
   wt_huff<> wt;
+  construct_im(wt, bwt);
+  uint64_t ms_count = 0;
+
   std::ofstream out(outputFile, std::ios::out | std::ios::binary);
   if (!out)
   {
@@ -74,13 +102,13 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   }
   uint64_t input_text_size = text.size();
 
-  construct_im(wt, bwt);
-  uint64_t ms_count = 0;
-
-  if(bwt.size() - 10 < UINT32_MAX){
-   ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(bwt, out);
-  }else{
-   ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(bwt, out);
+  if (bwt.size() - 10 < UINT32_MAX)
+  {
+    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(bwt, out);
+  }
+  else
+  {
+    ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(bwt, out);
   }
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -128,6 +156,30 @@ int main(int argc, char *argv[])
   {
     std::cout << inputFile << " cannot open." << std::endl;
     return -1;
+  }
+
+  if (mode == "iv")
+  {
+    std::vector<uint8_t> text = load_bwt(inputFile);
+    sdsl::int_vector<> bwt;
+    bwt.width(8);
+    bwt.resize(text.size());
+    for (uint64_t i = 0; i < text.size(); i++)
+    {
+      bwt[i] = text[i];
+    }
+    sdsl::store_to_file(bwt, inputFile + ".iv");
+    std::cout << "Finished." << std::endl;
+    return 0;
+  }
+  else if (mode == "wt")
+  {
+    wt_huff<> wt;
+    construct(wt, inputFile);
+        std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+
+    std::cout << "Finished." << std::endl;
+    return 0;
   }
 
   if (outputFile.size() == 0)
