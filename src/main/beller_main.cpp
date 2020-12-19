@@ -68,8 +68,9 @@ uint8_t get_last_char(std::string inputFile, std::vector<uint64_t> &C, sdsl::bit
       k++;
       std::cout << i << std::endl;
     }
-    if(i > 0 && bwt[i] != bwt[i-1]){
-       b = !b;
+    if (i > 0 && bwt[i] != bwt[i - 1])
+    {
+      b = !b;
     }
     bv[i] = b;
   }
@@ -150,20 +151,9 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   uint8_t lastChar = get_last_char(inputFile, C, bv);
   sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
 
-
   std::cout << "Constructing Wavelet Tree..." << std::endl;
   wt_huff<> wt;
   construct(wt, inputFile);
-
-  //stool::FMIndex::constructC(wt, C);
-
-  /*
-  for(uint64_t i=0;i<wt.size();i++){
-      auto x = sdsl::symbol_lte(wt, 'c' );
-       // = wt.lex_smaller_count(i, 'c');
-       std::cout << x.first << "/" << x.second << std::endl;
-  }
-  */
 
   uint64_t ms_count = 0;
 
@@ -177,39 +167,54 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   }
   uint64_t input_text_size = wt.size();
 
+  auto mid = std::chrono::system_clock::now();
+  double construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
+  std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
+
   std::cout << "Enumerating..." << std::endl;
+  uint64_t peak_count = 0;
 
   if (input_text_size - 10 < UINT32_MAX)
   {
-    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(range, out, lastChar, bwt_bit_rank1);
+    stool::beller::OutputStructure<uint32_t> os;
+    os.is_output_maximal_substrings = true;
+    os.out = &out;
+    os.bwt_bit_rank1 = &bwt_bit_rank1;
+
+    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(range, os);
+    peak_count = os.peak;
   }
   else
   {
-    ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(range, out, lastChar, bwt_bit_rank1);
+    stool::beller::OutputStructure<uint64_t> os;
+    os.is_output_maximal_substrings = true;
+    os.out = &out;
+    os.bwt_bit_rank1 = &bwt_bit_rank1;
+
+    ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(range, os);
+    peak_count = os.peak;
+
   }
   auto end = std::chrono::system_clock::now();
+  double enumeration_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
+
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  double bps = ((double)input_text_size / ((double)elapsed / 1000)) / 1000;
 
-  /*
-  auto test_Intervals = stool::beller::computeMaximalSubstrings(bwt, C, wt);
-  test_Intervals.push_back(LCPINTV(0, text.size() - 1, 0));
-
-  if (correctCheck)
-  {
-    using BWT = stool::esaxx::ForwardBWT<char, std::vector<char>, std::vector<INDEX>>;
-    BWT bwt(&text, &sa);
-    vector<stool::LCPInterval<INDEX>> correct_intervals = stool::esaxx::naive_compute_maximal_substrings<char, INDEX>(text, sa);
-    stool::beller::equal_check_lcp_intervals(test_Intervals, correct_intervals);
-    std::cout << "OK!" << std::endl;
-  }
-  */
   std::cout << "\033[31m";
   std::cout << "______________________RESULT______________________" << std::endl;
   std::cout << "RLBWT File \t\t\t\t\t : " << inputFile << std::endl;
   std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
   std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
   std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
+  std::cout << "Peak count \t : " << peak_count << std::endl;
+
   std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
+  std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
+
+  std::cout << "\t Preprocessing time \t\t : " << construction_time << "[ms]" << std::endl;
+  std::cout << "\t Enumeration time \t\t : " << enumeration_time << "[ms]" << std::endl;
+
   std::cout << "_______________________________________________________" << std::endl;
   std::cout << "\033[39m" << std::endl;
 }
@@ -247,11 +252,13 @@ int main(int argc, char *argv[])
     for (uint64_t i = 0; i < text.size(); i++)
     {
       bwt[i] = text[i];
-      if(bwt[i] == 0){
+      if (bwt[i] == 0)
+      {
         k++;
       }
     }
-    if(k != 1){
+    if (k != 1)
+    {
       std::cout << "bwt error" << std::endl;
       throw -1;
     }
