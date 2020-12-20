@@ -448,9 +448,7 @@ namespace stool
                         std::cout << ", Current = " << this->child_count;
                         std::cout << ", time = " << pp_time;
                         std::cout << ", current_total = " << (strSize - this->total_counter);
-                        std::cout << std::endl;
-
-                        std::cout << "Peak = " << this->debug_peak_memory / 1000 << "[KB]" << std::endl;
+                        std::cout << ", Peak = " << this->debug_peak_memory / 1000 << "[KB]" << std::endl;
                         //std::cout << "Peak = " << debug_peak_counter << "[KB]" << std::endl;
                         /*
                         if(this->print_interval_counter == 2){

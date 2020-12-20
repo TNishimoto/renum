@@ -48,7 +48,6 @@ namespace stool
 
                 assert(i + 1 <= newJ);
 
-                //std::cout << i+1 << "/" << newJ << "/" << wt->size() << std::endl;
                 sdsl::interval_symbols(*wt, i + 1, newJ, k, cs, cs1, cs2);
 
                 bool b = j + 1 < this->size;
@@ -57,12 +56,8 @@ namespace stool
                     uint64_t fstRank = cs1[x] + 1;
                     uint64_t lastRank = cs2[x];
 
-                    //std::cout << "x = " << (cs[x]) << " [" << cs1[x] << "/" << cs2[x] << std::endl;
-
                     uint64_t left = wt->select(fstRank, cs[x]) - 1;
-
                     uint64_t right = wt->select(lastRank, cs[x]) - 1;
-                    //std::cout << "LR = " << (cs[x]) << " [" << left << "/" << right << std::endl;
 
                     if (j + 1 == this->size && cs[x] == lastChar)
                     {
@@ -80,7 +75,6 @@ namespace stool
                     
                     output[k++] = CharInterval<INDEX_SIZE>(left, right, lastChar);
                 }
-                std::cout << "range [" << i << ", " << j << "]" << k << std::endl;
 
                 return k;
             }

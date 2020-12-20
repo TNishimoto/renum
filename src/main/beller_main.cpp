@@ -154,6 +154,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   std::cout << "Constructing Wavelet Tree..." << std::endl;
   wt_huff<> wt;
   construct(wt, inputFile);
+  std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
   uint64_t ms_count = 0;
 
@@ -208,6 +209,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
   std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
   std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
   std::cout << "Peak count \t : " << peak_count << std::endl;
+  std::cout << "The usage of Wavelet tree : " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
   std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
   std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
