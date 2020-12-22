@@ -130,5 +130,5 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
     }
 
     stool::beller::equal_check_lcp_intervals(test_Intervals, stnc.lcp_intervals);
-    std::cout << "Maximal repeats check OK!" << std::endl;
+    std::cout << "LCP interval check OK!" << std::endl;
 }

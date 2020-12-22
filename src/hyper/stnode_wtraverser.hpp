@@ -198,8 +198,9 @@ namespace stool
 
                     em.fit(false);
 #if DEBUG
-
-                    em.check3(_left, _right);
+                    if(this->_RLBWTDS->stnc != nullptr){
+                    em.verify_next_lcp_interval(_left, _right);
+                    }
 #endif
 
                     for (uint64_t i = 0; i < em.indexCount; i++)

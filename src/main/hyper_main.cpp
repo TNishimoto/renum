@@ -179,6 +179,12 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
 
 int main(int argc, char *argv[])
 {
+    #if DEBUG
+    std::cout << "\033[31m";
+    std::cout << "DEBUG MODE" << std::endl;
+    std::cout << "\033[39m" << std::endl;
+    #endif
+
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input file name", true);
     //p.add<bool>("mode", 'm', "mode", false, false);

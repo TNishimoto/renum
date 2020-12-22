@@ -233,8 +233,9 @@ namespace stool
                 LCPInterval<uint64_t> test;
                 test.i = leftmost_child_left;
                 test.j = rightmost_child_right;
+                assert(this->_RLBWTDS->stnc != nullptr);
                 test.lcp = this->_RLBWTDS->stnc->current_lcp;
-                em.check2(test);
+                em.verify_next_lcp_interval(test.i, test.j);
 
 #endif
                 /*

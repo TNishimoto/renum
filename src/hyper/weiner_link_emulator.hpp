@@ -149,7 +149,8 @@ namespace stool
             bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
             {
                 bool isValid = this->stnodeOccFlagArray[c];
-                if(!isValid) return false;
+                if (!isValid)
+                    return false;
                 auto &lcpIntv = this->stnodeVec[c];
                 bool isLastChild = lcpIntv.endIndex == w.endIndex && lcpIntv.endDiff == w.endDiff;
                 bool isFirstChild = lcpIntv.beginIndex == w.beginIndex && lcpIntv.beginDiff == w.beginDiff;
@@ -202,10 +203,10 @@ namespace stool
                     auto &it = this->rIntervalTmpVec[i];
 
                     //this->pushLCPInterval(it, c);
-                    if(c != 0){
-                    this->stnodeVec[c] = it;
-                    this->stnodeOccFlagArray[c] = true;
-
+                    if (c != 0)
+                    {
+                        this->stnodeVec[c] = it;
+                        this->stnodeOccFlagArray[c] = true;
                     }
                 }
             }
@@ -316,22 +317,13 @@ namespace stool
                 return count;
             }
 #if DEBUG
-            /*
-            void check2(const RINTERVAL &lcpIntv)
-            {
-                stool::LCPInterval<uint64_t> intv2 = lcpIntv.get_lcp_interval(this->_RLBWTDS->stnc->current_lcp - 1, this->_RLBWTDS->_fposDS);
-                this->_RLBWTDS->checkWeinerLink(intv2, this->stnodeVec, this->indexVec, this->indexCount);
-            }
-            */
-            void check2(const LCPInterval<uint64_t> &lcpIntv)
-            {
-                this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
-            }
-            void check3(uint64_t left, uint64_t right)
+            
+            void verify_next_lcp_interval(uint64_t left, uint64_t right)
             {
                 LCPInterval<uint64_t> lcpIntv;
                 lcpIntv.i = left;
                 lcpIntv.j = right;
+                assert(this->_RLBWTDS->stnc != nullptr);
                 lcpIntv.lcp = this->_RLBWTDS->stnc->current_lcp - 1;
                 this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
             }
@@ -380,7 +372,10 @@ namespace stool
 
 #if DEBUG
                 stool::LCPInterval<uint64_t> lcpIntv2 = lcpIntv.get_lcp_interval(0, this->_RLBWTDS->_fposDS);
-                this->check3(lcpIntv2.i, lcpIntv2.j);
+                if (this->_RLBWTDS->stnc != nullptr)
+                {
+                    this->verify_next_lcp_interval(lcpIntv2.i, lcpIntv2.j);
+                }
 #endif
 
                 return 1;
@@ -402,8 +397,11 @@ namespace stool
                         this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);
                         std::cout << std::endl;
                     }
+                    if (this->_RLBWTDS->stnc != nullptr)
+                    {
+                        assert(this->_RLBWTDS->checkLCPInterval(this->stnodeVec[c]) == (explicitChildrenCount > 0));
+                    }
 #endif
-                    assert(this->_RLBWTDS->checkLCPInterval(this->stnodeVec[c]) == (explicitChildrenCount > 0));
                     if (explicitChildrenCount > 0)
                     {
 
