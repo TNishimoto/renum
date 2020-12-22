@@ -18,9 +18,8 @@ namespace stool
         /*
         int64_t debug_sum_counter = 0;
         int64_t debug_peak_counter = 0;
-
-        std::mutex mtx2;
         */
+        //std::mutex mtx2;
 
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeSubWTraverser
@@ -49,7 +48,7 @@ namespace stool
             */
 
         private:
-            inline uint64_t get_child_start_position(uint64_t i) const 
+            inline uint64_t get_child_start_position(uint64_t i) const
             {
                 return this->childs_vec[(i * 2)];
             }
@@ -58,8 +57,40 @@ namespace stool
                 return this->childs_vec[(i * 2) + 1];
             }
 
+            void add(uint8_t c, uint64_t count, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            {
+                RINTERVAL copy;
+                uint64_t st_left = UINT64_MAX;
+                uint64_t st_right = 0;
+
+                for (uint64_t j = 0; j < count; j++)
+                {
+                    em.get_child(c, j, copy);
+                    uint64_t left = this->_RLBWTDS->get_fpos(copy.beginIndex, copy.beginDiff);
+                    uint64_t right = this->_RLBWTDS->get_fpos(copy.endIndex, copy.endDiff);
+
+                    if (left < st_left)
+                    {
+                        st_left = left;
+                    }
+                    if (right > st_right)
+                    {
+                        st_right = right;
+                    }
+
+                    this->childs_vec.push_back(left);
+                    this->childs_vec.push_back(right);
+                    this->first_child_flag_vec.push_back(j == 0);
+                }
+                uint64_t x = this->_RLBWTDS->get_lindex_containing_the_position(st_left);
+                uint64_t d = this->_RLBWTDS->get_run(x);
+                bool isMaximalRepeat = (this->_RLBWTDS->get_lpos(x) + d) <= st_right;
+                this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
+                this->_stnode_count++;
+
+            }
         public:
-            bool check_maximal_repeat(uint64_t st_index) const 
+            bool check_maximal_repeat(uint64_t st_index) const
             {
                 return this->maximal_repeat_check_vec[st_index];
             }
@@ -81,7 +112,7 @@ namespace stool
 
                 return R + 1;
             }
-            uint64_t get_stnode2(uint64_t L, stool::LCPInterval<uint64_t> &output, uint64_t lcp)
+            uint64_t get_stnode(uint64_t L, stool::LCPInterval<uint64_t> &output, uint64_t lcp)
             {
                 assert(this->first_child_flag_vec[L]);
                 assert(!this->first_child_flag_vec[L + 1]);
@@ -96,7 +127,6 @@ namespace stool
 
                 return newL;
             }
-
 
             uint64_t children_count() const
             {
@@ -138,17 +168,27 @@ namespace stool
             {
                 this->first_child_flag_vec.clear();
 
-                em.computeFirstLCPIntervalSet();
+                //em.computeFirstLCPIntervalSet();
+                auto r = em.getFirstChildren();
+                for (uint64_t i = 0; i < r.size(); i++)
+                {
+                    auto &it = r[i];
+                    this->childs_vec.push_back(it.first);
+                    this->childs_vec.push_back(it.second);
+                    this->first_child_flag_vec.push_back(i == 0);
+                }
+                this->maximal_repeat_check_vec.push_back(true);
+                this->_stnode_count++;
 
                 //em.move_st_internal_nodes(this->childs_vec, this->first_child_flag_vec);
-
+                /*
                 for (uint64_t i = 0; i < em.indexCount; i++)
                 {
                     auto c = em.indexVec[i];
                     em.move_st_internal_nodes(this->childs_vec, this->first_child_flag_vec, this->maximal_repeat_check_vec, c);
                     this->_stnode_count++;
                 }
-
+                */
             }
             bool computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, std::vector<STNodeSubWTraverser *> &tmp, uint64_t limit)
             {
@@ -198,17 +238,18 @@ namespace stool
 
                     em.fit(false);
 #if DEBUG
-                    if(this->_RLBWTDS->stnc != nullptr){
-                    em.verify_next_lcp_interval(_left, _right);
+                    if (this->_RLBWTDS->stnc != nullptr)
+                    {
+                        em.verify_next_lcp_interval(_left, _right);
                     }
 #endif
-
                     for (uint64_t i = 0; i < em.indexCount; i++)
                     {
                         auto c = em.indexVec[i];
                         auto &currentVec = em.childrenVec[c];
                         uint64_t count = currentVec.size();
 
+                        //bool limitOver = false;
                         bool limitOver = ((this->children_count() + count) > limit);
                         if (limitOver)
                         {
@@ -219,11 +260,11 @@ namespace stool
                             }
                         }
                         STNodeSubWTraverser *it = limitOver ? tmp[tmp.size() - 1] : this;
+                        it->add(c, count, em);
 
-                        em.move_st_internal_nodes(it->childs_vec, it->first_child_flag_vec, it->maximal_repeat_check_vec, c);
+                        //em.move_st_internal_nodes(it->childs_vec, it->first_child_flag_vec, it->maximal_repeat_check_vec, c);
 
                         assert(it->children_count() <= limit);
-                        it->_stnode_count++;
                     }
                     this->maximal_repeat_check_vec.pop_front();
                     this->_stnode_count--;

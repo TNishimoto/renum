@@ -174,7 +174,7 @@ namespace stool
                     for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
 
-                        L = stnodeSequencer.get_stnode2(L, it);
+                        L = stnodeSequencer.get_stnode(L, it);
                         r.push_back(it);
                     }
                     if (stnodeSequencer._RLBWTDS->stnc != nullptr)

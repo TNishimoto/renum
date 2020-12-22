@@ -128,7 +128,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         {
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint32_t, LPOSDS, FPOSDS>;
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
-
+            
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<uint32_t, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);

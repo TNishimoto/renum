@@ -294,6 +294,7 @@ namespace stool
                     this->efv_vec[i].build_from_builder(builders[i]);
                 }
             }
+            /*
             template <typename LPOSVEC>
             static void construct_sorted_fpos_array(const sdsl::int_vector<> &bwt_head_chars, const LPOSVEC &lposvec, stool::EliasFanoVector &output)
             {
@@ -339,6 +340,7 @@ namespace stool
                 }
                 output.construct(&X);
             }
+            */
 
             uint64_t operator[](uint64_t i) const
             {
@@ -349,22 +351,7 @@ namespace stool
                 assert(rank1 < this->efv_vec[c].size());
                 uint64_t q = C2[c] + this->efv_vec[c][rank1];
                 return q;
-                /*
-                uint64_t rank1 = wt.rank(index + 1, (this->bwt)[index]);
-                uint64_t xx = C[(this->bwt)[index]] + rank1;
-                return this->fposSortedArray[xx];
-                */
-                //return yy;
             }
-            /*
-            uint64_t get_fpos(uint64_t index, uint64_t diff)
-            {
-                uint64_t rank1 = wt->rank(index + 1, (*this->bwt)[index]);
-                uint64_t xx = C[(*this->bwt)[index]] + rank1;
-                uint64_t begin_pos2 = this->fposSortedArray[xx] + diff;
-                return begin_pos2;
-            }
-            */
             uint64_t size() const
             {
                 return this->bwt.size();

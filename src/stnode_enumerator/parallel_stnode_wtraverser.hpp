@@ -127,11 +127,11 @@ namespace stool
             uint64_t current_lcp(){
                 return this->standard_st_traverser.get_current_lcp();
             }
-            uint64_t get_stnode2(uint64_t L, stool::LCPInterval<uint64_t> &output)
+            uint64_t get_stnode(uint64_t L, stool::LCPInterval<uint64_t> &output)
             {
                 if (!this->succinct_mode)
                 {
-                    return this->standard_st_traverser.get_stnode2(L, output);
+                    return this->standard_st_traverser.get_stnode(L, output);
                 }
                 else
                 {
@@ -234,10 +234,11 @@ namespace stool
                         std::cout << ", Peak = " << this->debug_peak_memory / 1000 << "[KB]" << std::endl;
                         //std::cout << "Peak = " << debug_peak_counter << "[KB]" << std::endl;
                         /*
-                        if(this->print_interval_counter == 2){
+                        if(this->print_interval_counter == 3){
                             throw -1;
                         }
                         */
+                        
 
                         this->print_interval_counter++;
                     }

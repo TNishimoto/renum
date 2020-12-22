@@ -109,6 +109,16 @@ namespace stool
                 }
             }
             */
+            void get_child(uint8_t c, uint64_t index, RINTERVAL &output)
+            {
+                auto& it = this->childrenVec[c][index];
+                output.beginIndex = it.beginIndex;
+                output.beginDiff = it.beginDiff;
+                output.endIndex = it.endIndex;
+                output.endDiff = it.endDiff;
+
+            }
+            /*
             void move_st_internal_nodes(std::deque<INDEX_SIZE> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, std::deque<bool> &maximal_repeat_check_vec, uint8_t c)
             {
                 auto &currentVec = this->childrenVec[c];
@@ -145,6 +155,7 @@ namespace stool
                 bool isMaximalRepeat = (this->_RLBWTDS->get_lpos(x) + d) <= st_right;
                 maximal_repeat_check_vec.push_back(isMaximalRepeat);
             }
+            */
 
             bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
             {
@@ -317,7 +328,7 @@ namespace stool
                 return count;
             }
 #if DEBUG
-            
+
             void verify_next_lcp_interval(uint64_t left, uint64_t right)
             {
                 LCPInterval<uint64_t> lcpIntv;
@@ -329,7 +340,27 @@ namespace stool
             }
 
 #endif
+            std::vector<std::pair<uint64_t, uint64_t>> getFirstChildren()
+            {
+                std::vector<std::pair<uint64_t, uint64_t>> r;
+                uint64_t count = this->heavyDS->range_distinct(0, this->_RLBWTDS->rle_size() - 1, this->charIntervalTmpVec);
+                //r.resize(count - 1);
 
+                for (uint64_t x = 0; x < count; x++)
+                {
+                    auto &it = this->charIntervalTmpVec[x];
+                    //uint8_t c = it.c;
+                    uint64_t run = this->_RLBWTDS->get_run(it.j) - 1;
+                    uint64_t i = this->_RLBWTDS->get_fpos(it.i, 0);
+                    uint64_t j = this->_RLBWTDS->get_fpos(it.j, run);
+                    r.push_back(std::pair<uint64_t, uint64_t>(i, j));
+                }
+                sort(r.begin(), r.end(), [&](const std::pair<uint64_t, uint64_t> &lhs, const std::pair<uint64_t, uint64_t> &rhs) {
+                    return lhs.first < rhs.first;
+                });
+                return r;
+            }
+            /*
             uint64_t computeFirstLCPIntervalSet()
             {
                 this->clear();
@@ -381,6 +412,7 @@ namespace stool
                 return 1;
                 //return counter;
             }
+            */
             void fit(bool first)
             {
                 uint64_t k = 0;
