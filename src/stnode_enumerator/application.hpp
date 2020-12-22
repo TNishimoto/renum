@@ -8,7 +8,7 @@
 #include <vector>
 #include <type_traits>
 //#include "next_rinterval_storage_constructor.hpp"
-#include "../rlbwt/range_distinct/rlbwt_data_structures.hpp"
+#include "../rlbwt/rlbwt_data_structures.hpp"
 
 #include "parallel_stnode_wtraverser.hpp"
 #include "weiner_link_emulator.hpp"
