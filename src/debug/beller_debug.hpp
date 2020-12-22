@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <set>
 
-#include "char_interval.hpp"
+#include "../beller/char_interval.hpp"
 
 //#include "sa_lcp.hpp"
 using namespace std;
@@ -53,68 +53,6 @@ namespace stool
                 return true;
             }
         }
-        /*
-        template <typename INDEX = uint64_t>
-        std::vector<LCPInterval<INDEX>> naive_compute_lcp_intervals(const std::vector<INDEX> &sa, const std::vector<INDEX> &lcpArray)
-        {
-            std::vector<LCPInterval<INDEX>> r;
-            for (uint64_t i = 0; i < sa.size(); i++)
-            {
-                uint64_t limit_lcp = i == 0 ? 0 : lcpArray[i];
-                uint64_t current_lcp = sa.size() - sa[i];
-                for (uint64_t x = i + 1; x <= sa.size(); x++)
-                {
-                    uint64_t lcp = x == sa.size() ? 0 : lcpArray[x];
-                    //std::cout << i << "/" << x << "/" << current_lcp << "/"<< lcp << "/" << limit_lcp<< std::endl;
-
-                    if (current_lcp > lcp)
-                    {
-                        if (i != x - 1)
-                        {
-                            r.push_back(LCPInterval<INDEX>(i, x - 1, current_lcp));
-                        }
-                        current_lcp = lcp;
-                    }
-
-                    if (current_lcp <= limit_lcp)
-                    {
-                        break;
-                    }
-                }
-            }
-            r.push_back(LCPInterval<INDEX>(0, sa.size() - 1, 0));
-            std::sort(
-                r.begin(),
-                r.end(),
-                LCPIntervalPreorderComp<INDEX>());
-
-            return r;
-        }
-        */
-        /*
-        template <typename INDEX = uint64_t>
-        std::vector<LCPInterval<INDEX>> naive_compute_complete_lcp_intervals(const std::vector<INDEX> &sa, const std::vector<INDEX> &lcpArray)
-        {
-            std::vector<LCPInterval<INDEX>> r = naive_compute_lcp_intervals(sa, lcpArray);
-
-            std::vector<LCPInterval<INDEX>> correct_lcp_intervals;
-            for (auto it : r)
-            {
-                if (it.j - it.i != 0)
-                {
-                    correct_lcp_intervals.push_back(it);
-                }
-                else
-                {
-                    it.lcp = std::numeric_limits<INDEX>::max() - 1;
-                    //correct_lcp_intervals.push_back(it);
-                }
-            }
-
-            return correct_lcp_intervals;
-        }
-        */
-
         template <typename INDEX = uint64_t>
         bool equal_check_lcp_intervals(std::vector<LCPInterval<INDEX>> &item1, std::vector<LCPInterval<INDEX>> &item2, string name = "")
         {

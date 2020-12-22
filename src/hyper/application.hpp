@@ -13,7 +13,7 @@
 #include "parallel_stnode_wtraverser.hpp"
 #include "weiner_link_emulator.hpp"
 #include <thread>
-#include "../test/stnode_checker.hpp"
+#include "../debug/stnode_checker.hpp"
 
 namespace stool
 {

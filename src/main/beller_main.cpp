@@ -11,10 +11,10 @@
 //#include "hpp/bwt.hpp"
 #include "../beller/fmindex.hpp"
 #include "../beller/beller_interval.hpp"
-#include "../beller/beller_debug.hpp"
+#include "../debug/beller_debug.hpp"
 
 #include "../main/common.hpp"
-#include "../test/naive_algorithms.hpp"
+#include "../debug/naive_algorithms.hpp"
 #include <sdsl/wt_algorithm.hpp>
 
 //#include "../postorder_maximal_substring_intervals.hpp"

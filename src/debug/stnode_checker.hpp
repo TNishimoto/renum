@@ -7,7 +7,7 @@
 #include <unordered_set>
 
 #include <queue>
-#include "../test/naive_algorithms.hpp"
+#include "naive_algorithms.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
 #include "../rlbwt/range_distinct/light_range_distinct.hpp"
 
@@ -15,7 +15,7 @@
 #include "../rlbwt/rinterval.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
 #include "../beller/fmindex.hpp"
-#include "../beller/beller_debug.hpp"
+#include "../debug/beller_debug.hpp"
 
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/wt_gmr.hpp>

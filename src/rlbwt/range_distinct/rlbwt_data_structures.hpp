@@ -8,7 +8,7 @@
 #include <vector>
 #include <type_traits>
 //#include "./rinterval_storage.hpp"
-#include "../../test/stnode_checker.hpp"
+#include "../../debug/stnode_checker.hpp"
 
 namespace stool
 {

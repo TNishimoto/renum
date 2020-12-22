@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cassert>
 #include <chrono>
 #include "../module/stool/src/io.hpp"
@@ -13,6 +15,21 @@
 #include "stool/src/io.hpp"
 #include "stool/src/cmdline.h"
 #include "stool/src/debug.hpp"
+
+#include <sdsl/bit_vectors.hpp>
+
+#include "../debug/beller_debug.hpp"
+#include "../debug/naive_algorithms.hpp"
+#include "../debug/stnode_checker.hpp"
+#include "../debug/hyper_debug.hpp"
+
+#include "../hyper/application.hpp"
+#include "../hyper/rlcp_interval_enumerator.hpp"
+#include "../rlbwt/io.hpp"
+#include "../rlbwt/fpos_data_structure.hpp"
+#include "../rlbwt/bwt_decompress.hpp"
+#include "../rlbwt/light_rlbwt.hpp"
+#include "../main/common.hpp"
 
 
 
