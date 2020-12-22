@@ -9,7 +9,7 @@
 #include <queue>
 #include "../test/naive_algorithms.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
-#include "../hyper/range_distinct/light_range_distinct.hpp"
+#include "../rlbwt/range_distinct/light_range_distinct.hpp"
 
 //#include "../weiner_interval.hpp"
 #include "../rlbwt/rinterval.hpp"
@@ -118,7 +118,7 @@ namespace stool
                 std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
                 vector<uint64_t> sa = stool::construct_suffix_array(text);
 
-                vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::naive_compute_complete_lcp_intervals<char, uint64_t>(text, sa);
+                vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::naive_compute_lcp_intervals<char, uint64_t>(text, sa);
                 std::sort(
                     correct_lcp_intervals.begin(),
                     correct_lcp_intervals.end(),

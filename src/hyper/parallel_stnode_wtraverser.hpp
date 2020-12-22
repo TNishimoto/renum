@@ -10,6 +10,8 @@
 #include <thread>
 #include "stool/src/byte.hpp"
 #include <cmath>
+#include "../rlbwt/range_distinct/succinct_range_distinct.hpp"
+
 #include "stnode_wtraverser.hpp"
 #include "succinct_sorted_stchildren_builder.hpp"
 
@@ -524,8 +526,8 @@ namespace stool
 
                 assert(total_counter <= strSize);
 
-                assert(this->child_count > 0);
-                assert(this->node_count() > 0);
+                //assert(this->child_count > 0);
+                //assert(this->node_count() > 0);
                 if (this->total_counter > strSize)
                 {
                     std::cout << "Enumerate Error!" << std::endl;
@@ -653,7 +655,8 @@ namespace stool
             }
             bool isStop()
             {
-                return total_counter == strSize - 1;
+                return this->current_lcp > 0 && this->child_count == 0;
+                //return total_counter == strSize - 1;
             }
 
             void print()

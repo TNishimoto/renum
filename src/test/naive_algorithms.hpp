@@ -16,14 +16,37 @@ namespace stool
 {
   namespace esaxx
   {
+    template <typename INDEX = uint64_t>
+    bool checkLCPInterval(const stool::LCPInterval<INDEX> &intv, const std::vector<INDEX> &sa, const std::vector<INDEX> &charMinIndexes)
+    {
+      uint64_t left = sa[intv.i];
+      uint64_t right = sa[intv.i] + intv.lcp - 1;
+      bool b = true;
+      for (auto &it : charMinIndexes)
+      {
+        if (left <= it && it <= right)
+        {
+          b = false;
+        }
+      }
+
+      return b && (intv.i < intv.j);
+    }
 
     template <typename CHAR, typename INDEX = uint64_t>
     std::vector<stool::LCPInterval<INDEX>> naive_compute_lcp_intervals(const std::vector<CHAR> &text, const std::vector<INDEX> &sa)
     {
-      
+      uint64_t minChar = *std::min_element(text.begin(), text.end());
+      std::vector<uint64_t> minCharIndexes;
+      for (uint64_t i = 0; i < text.size(); i++)
+      {
+        if (text[i] == minChar)
+        {
+          minCharIndexes.push_back(i);
+        }
+      }
 
-      std::vector<stool::LCPInterval<INDEX>>
-          r;
+      std::vector<stool::LCPInterval<INDEX>> r;
       std::vector<INDEX> lcpArray = stool::constructLCP<CHAR, INDEX>(text, sa);
       for (uint64_t i = 0; i < sa.size(); i++)
       {
@@ -36,7 +59,12 @@ namespace stool
 
           if (current_lcp > lcp)
           {
-            r.push_back(stool::LCPInterval<INDEX>(i, x - 1, current_lcp));
+            auto newIntv = stool::LCPInterval<INDEX>(i, x - 1, current_lcp);
+            if (checkLCPInterval(newIntv, sa, minCharIndexes))
+            {
+              r.push_back(newIntv);
+            }
+
             current_lcp = lcp;
           }
 
@@ -55,7 +83,7 @@ namespace stool
 
       return r;
     }
-
+    /*
     template <typename CHAR, typename INDEX = uint64_t>
     std::vector<stool::LCPInterval<INDEX>> naive_compute_complete_lcp_intervals(const std::vector<CHAR> &text, const std::vector<INDEX> &sa)
     {
@@ -77,6 +105,7 @@ namespace stool
 
       return correct_lcp_intervals;
     }
+    */
 
     template <typename CHAR, typename INDEX = uint64_t>
     std::vector<stool::LCPInterval<INDEX>> naive_compute_minimal_substrings(const std::vector<CHAR> &text, const std::vector<INDEX> &sa)
@@ -115,7 +144,6 @@ namespace stool
 
       if (text.size() > 0)
         r.push_back(stool::LCPInterval<INDEX>(0, text.size() - 1, 0));
-
 
       std::sort(
           r.begin(),

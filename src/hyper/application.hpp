@@ -8,7 +8,7 @@
 #include <vector>
 #include <type_traits>
 //#include "next_rinterval_storage_constructor.hpp"
-#include "./range_distinct/rlbwt_data_structures.hpp"
+#include "../rlbwt/range_distinct/rlbwt_data_structures.hpp"
 
 #include "parallel_stnode_wtraverser.hpp"
 #include "weiner_link_emulator.hpp"
@@ -153,11 +153,6 @@ namespace stool
                 std::cout << "Enumerated" << std::endl;
                 analysis.max_nodes_at_level = stnodeSequencer.peak_child_count;
 
-                uint64_t dx = stnodeSequencer._RLBWTDS->get_end_rle_lposition();
-                uint64_t dollerPos = stnodeSequencer._RLBWTDS->get_lpos(dx);
-                auto last = stool::LCPInterval<INDEX_SIZE>(dollerPos, dollerPos, stnodeSequencer._RLBWTDS->str_size());
-                out.write(reinterpret_cast<const char *>(&last), sizeof(stool::LCPInterval<INDEX_SIZE>));
-                count += 1;
                 return count;
             }
             /*
@@ -223,10 +218,6 @@ namespace stool
                     stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count());
                 }
                 std::cout << "STOP" << std::endl;
-                uint64_t dx = stnodeSequencer._RLBWTDS->get_end_rle_lposition();
-                uint64_t dollerPos = stnodeSequencer._RLBWTDS->get_lpos(dx);
-                auto last = stool::LCPInterval<uint64_t>(dollerPos, dollerPos, stnodeSequencer._RLBWTDS->str_size());
-                r.push_back(last);
                 return r;
             }
         };

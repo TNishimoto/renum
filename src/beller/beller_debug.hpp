@@ -35,7 +35,7 @@ namespace stool
                     std::cout << intv.to_string();
                 }
                 */
-                        std::cout << "Distinct Sizes" << std::endl;
+                std::cout << "Distinct Sizes" << std::endl;
 
                 throw -1;
             }
@@ -53,7 +53,7 @@ namespace stool
                 return true;
             }
         }
-
+        /*
         template <typename INDEX = uint64_t>
         std::vector<LCPInterval<INDEX>> naive_compute_lcp_intervals(const std::vector<INDEX> &sa, const std::vector<INDEX> &lcpArray)
         {
@@ -69,7 +69,10 @@ namespace stool
 
                     if (current_lcp > lcp)
                     {
-                        r.push_back(LCPInterval<INDEX>(i, x - 1, current_lcp));
+                        if (i != x - 1)
+                        {
+                            r.push_back(LCPInterval<INDEX>(i, x - 1, current_lcp));
+                        }
                         current_lcp = lcp;
                     }
 
@@ -87,7 +90,8 @@ namespace stool
 
             return r;
         }
-
+        */
+        /*
         template <typename INDEX = uint64_t>
         std::vector<LCPInterval<INDEX>> naive_compute_complete_lcp_intervals(const std::vector<INDEX> &sa, const std::vector<INDEX> &lcpArray)
         {
@@ -109,6 +113,7 @@ namespace stool
 
             return correct_lcp_intervals;
         }
+        */
 
         template <typename INDEX = uint64_t>
         bool equal_check_lcp_intervals(std::vector<LCPInterval<INDEX>> &item1, std::vector<LCPInterval<INDEX>> &item2, string name = "")

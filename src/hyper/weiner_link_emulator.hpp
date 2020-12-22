@@ -148,6 +148,8 @@ namespace stool
 
             bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
             {
+                bool isValid = this->stnodeOccFlagArray[c];
+                if(!isValid) return false;
                 auto &lcpIntv = this->stnodeVec[c];
                 bool isLastChild = lcpIntv.endIndex == w.endIndex && lcpIntv.endDiff == w.endDiff;
                 bool isFirstChild = lcpIntv.beginIndex == w.beginIndex && lcpIntv.beginDiff == w.beginDiff;
@@ -167,13 +169,16 @@ namespace stool
                 }
                 return b;
             }
+            /*
             void pushLCPInterval(const RINTERVAL &w, uint8_t c)
             {
                 this->stnodeVec[c] = w;
                 this->stnodeOccFlagArray[c] = true;
             }
+            */
 
             //template <typename LPOSDS, typename RANGEDS>
+            /*
             void computeSTNodeCandidates(const RINTERVAL &w)
             {
                 RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
@@ -187,7 +192,8 @@ namespace stool
                     this->pushLCPInterval(it, c);
                 }
             }
-            void computeSTNodeCandidates2(const RINTERVAL &w)
+            */
+            void computeSTNodeCandidates(const RINTERVAL &w)
             {
                 uint64_t resultCount = this->range_distinct(w);
                 for (uint64_t i = 0; i < resultCount; i++)
@@ -195,11 +201,17 @@ namespace stool
                     typename RLBWTDS::UCHAR c = this->charTmpVec[i];
                     auto &it = this->rIntervalTmpVec[i];
 
-                    this->pushLCPInterval(it, c);
+                    //this->pushLCPInterval(it, c);
+                    if(c != 0){
+                    this->stnodeVec[c] = it;
+                    this->stnodeOccFlagArray[c] = true;
+
+                    }
                 }
             }
 
         public:
+            /*
             void computeSTChildren(const RINTERVAL &w)
             {
                 RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
@@ -219,7 +231,8 @@ namespace stool
                     //}
                 }
             }
-            void computeSTChildren2(const RINTERVAL &w)
+            */
+            void computeSTChildren(const RINTERVAL &w)
             {
 
                 assert(w.beginIndex <= w.endIndex);
@@ -348,14 +361,18 @@ namespace stool
 
                 uint64_t resultCount = this->range_distinct(tmpArg);
                 uint64_t counter = 0;
-                this->pushLCPInterval(lcpIntv, 0);
+                uint8_t dummyCharacter = 8;
+                this->stnodeVec[dummyCharacter] = lcpIntv;
+                this->stnodeOccFlagArray[dummyCharacter] = true;
+
+                //this->pushLCPInterval(lcpIntv, 8);
 
                 for (uint64_t x = 0; x < resultCount; x++)
                 {
                     auto &it = this->rIntervalTmpVec[x];
                     assert(this->_RLBWTDS->get_char_by_run_index(it.beginIndex) == this->_RLBWTDS->get_char_by_run_index(it.endIndex));
                     //output.push_weiner(it);
-                    this->pushExplicitWeinerInterval(it, 0);
+                    this->pushExplicitWeinerInterval(it, dummyCharacter);
 
                     counter++;
                 }

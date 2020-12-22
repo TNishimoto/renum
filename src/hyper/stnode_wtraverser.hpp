@@ -179,7 +179,7 @@ namespace stool
                         std::cout << std::endl;
                     }
 #endif
-                    em.computeSTNodeCandidates2(intv);
+                    em.computeSTNodeCandidates(intv);
 
                     for (uint64_t i = 0; i < nextL; i++)
                     {
@@ -189,7 +189,7 @@ namespace stool
                         assert(left <= right);
 
                         this->_RLBWTDS->to_rinterval(left, right, child);
-                        em.computeSTChildren2(child);
+                        em.computeSTChildren(child);
                         this->childs_vec.pop_front();
                         this->childs_vec.pop_front();
 

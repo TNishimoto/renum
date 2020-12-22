@@ -6,7 +6,7 @@
 #include <set>
 
 #include "char_interval.hpp"
-#include "../hyper/range_distinct/succinct_range_distinct.hpp"
+#include "../rlbwt/range_distinct/succinct_range_distinct.hpp"
 
 //#include "sa_lcp.hpp"
 using namespace std;

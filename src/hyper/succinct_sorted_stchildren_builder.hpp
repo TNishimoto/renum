@@ -217,7 +217,7 @@ namespace stool
                 this->_RLBWTDS->to_rinterval(leftmost_child_left, rightmost_child_right, w);
 
                 em.clear();
-                em.computeSTNodeCandidates2(w);
+                em.computeSTNodeCandidates(w);
 
                 //uint64_t x = 0;
                 for (uint64_t i = st_left_index; i <= st_right_index; i++)
@@ -226,7 +226,7 @@ namespace stool
                     uint64_t child_right = prevSortedSTChildren->get_child_node_right(i);
 
                     this->_RLBWTDS->to_rinterval(child_left, child_right, w);
-                    em.computeSTChildren2(w);
+                    em.computeSTChildren(w);
                 }
                 em.fit(false);
 #if DEBUG
@@ -297,14 +297,14 @@ namespace stool
                 this->_RLBWTDS->to_rinterval(leftmost_child_left, rightmost_child_right, w);
 
                 em.clear();
-                em.computeSTNodeCandidates2(w);
+                em.computeSTNodeCandidates(w);
                 uint64_t k = 0;
                 for (uint64_t i = st_left_index; i <= st_right_index; i++)
                 {
                     uint64_t child_left = prevSortedSTChildren->get_child_node_left(i);
                     uint64_t child_right = prevSortedSTChildren->get_child_node_right(i);
                     this->_RLBWTDS->to_rinterval(child_left, child_right, w);
-                    em.computeSTChildren2(w);
+                    em.computeSTChildren(w);
                 }
                 em.fit(false);
 
