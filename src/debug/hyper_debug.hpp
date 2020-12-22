@@ -23,12 +23,11 @@
 #include "../debug/stnode_checker.hpp"
 #include "../debug/hyper_debug.hpp"
 
-#include "../hyper/application.hpp"
-#include "../hyper/rlcp_interval_enumerator.hpp"
+#include "../stnode_enumerator/application.hpp"
+#include "../stnode_enumerator/rlcp_interval_enumerator.hpp"
 #include "../rlbwt/io.hpp"
 #include "../rlbwt/fpos_data_structure.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
-#include "../rlbwt/light_rlbwt.hpp"
 #include "../main/common.hpp"
 
 

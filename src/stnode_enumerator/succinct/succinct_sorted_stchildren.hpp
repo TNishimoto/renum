@@ -8,7 +8,7 @@
 #include <deque>
 #include <vector>
 #include <type_traits>
-#include "weiner_link_emulator.hpp"
+#include "../weiner_link_emulator.hpp"
 #include "stool/src/elias_fano_vector.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"

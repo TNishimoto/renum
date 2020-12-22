@@ -158,6 +158,11 @@ namespace stool
             }
             void increment(uint64_t k)
             {
+                if(this->current_lcp >= this->maps.size()){
+                    std::cout << "INCREMENT ERROR!(3)" << " LCP = " << this->current_lcp << std::endl;
+
+                    throw -1;
+                }
 
                 if (this->maps[this->current_lcp].size() != k)
                 {
