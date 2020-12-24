@@ -22,7 +22,7 @@ namespace stool
         //std::mutex mtx2;
 
         template <typename INDEX_SIZE, typename RLBWTDS>
-        class STNodeSubWTraverser
+        class STNodeSubTraverser
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
@@ -33,16 +33,16 @@ namespace stool
             RLBWTDS *_RLBWTDS = nullptr;
 
         public:
-            STNodeSubWTraverser()
+            STNodeSubTraverser()
             {
                 maximal_repeat_check_vec.resize(0);
             }
-            STNodeSubWTraverser(RLBWTDS *__RLBWTDS) : _RLBWTDS(__RLBWTDS)
+            STNodeSubTraverser(RLBWTDS *__RLBWTDS) : _RLBWTDS(__RLBWTDS)
             {
                 maximal_repeat_check_vec.resize(0);
             }
             /*
-            ~STNodeSubWTraverser()
+            ~STNodeSubTraverser()
             {
             }
             */
@@ -147,7 +147,7 @@ namespace stool
 
                 //this->leftmost_child_bits.clear();
             }
-            void swap(STNodeSubWTraverser<INDEX_SIZE, RLBWTDS> &item)
+            void swap(STNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item)
             {
                 this->childs_vec.swap(item.childs_vec);
                 this->first_child_flag_vec.swap(item.first_child_flag_vec);
@@ -190,7 +190,7 @@ namespace stool
                 }
                 */
             }
-            bool computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, std::vector<STNodeSubWTraverser *> &tmp, uint64_t limit)
+            bool computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, std::vector<STNodeSubTraverser *> &tmp, uint64_t limit)
             {
 
                 bool isSplit = false;
@@ -256,10 +256,10 @@ namespace stool
                             if (tmp.size() == 0 || tmp[tmp.size() - 1]->children_count() + count > limit)
                             {
                                 isSplit = true;
-                                tmp.push_back(new STNodeSubWTraverser(this->_RLBWTDS));
+                                tmp.push_back(new STNodeSubTraverser(this->_RLBWTDS));
                             }
                         }
-                        STNodeSubWTraverser *it = limitOver ? tmp[tmp.size() - 1] : this;
+                        STNodeSubTraverser *it = limitOver ? tmp[tmp.size() - 1] : this;
                         it->add(c, count, em);
 
                         //em.move_st_internal_nodes(it->childs_vec, it->first_child_flag_vec, it->maximal_repeat_check_vec, c);
@@ -330,7 +330,7 @@ namespace stool
                 assert(this->_stnode_count == k);
             }
 #endif
-            void merge(STNodeSubWTraverser<INDEX_SIZE, RLBWTDS> &item)
+            void merge(STNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item)
             {
                 while (item.childs_vec.size() > 0)
                 {

@@ -10,7 +10,7 @@
 //#include "next_rinterval_storage_constructor.hpp"
 #include "../rlbwt/rlbwt_data_structures.hpp"
 
-#include "parallel_stnode_wtraverser.hpp"
+#include "stnode_enumerator.hpp"
 #include "weiner_link_emulator.hpp"
 #include <thread>
 #include "../debug/stnode_checker.hpp"
@@ -24,33 +24,7 @@ namespace stool
         public:
             uint64_t max_nodes_at_level;
         };
-        /*
-        template <typename INDEX_SIZE, typename RLBWTDS>
-        void find_maximal_repeats(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer, RLBWTDS &_RLBWTDS, uint64_t start_index, uint64_t size, std::vector<bool> &ms_check_vec)
-        {
-            ms_check_vec.resize(size, false);
-            uint64_t end_index = start_index + size - 1;
-            for (uint64_t i = start_index; i <= end_index; i++)
-            {
-                const RInterval<INDEX_SIZE> &it = stnodeSequencer.get_stnode(i);
-                bool b = checkMaximalRepeat(it, _RLBWTDS);
-                ms_check_vec[i] = b;
-            }
-        }
-        */
-        /*
-        template <typename INDEX_SIZE, typename RLBWTDS>
-        void find_maximal_repeats_with_multi_thread(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer, RLBWTDS &_RLBWTDS, std::vector<bool> &ms_check_vec, uint64_t )
-        {
-            ms_check_vec.resize(size, false);
-            uint64_t end_index = start_index + size - 1;
-            for(uint64_t i=start_index;i <= end_index;i++){
-                const RInterval<INDEX_SIZE> &it = stnodeSequencer.get_stnode(i);
-                bool b = checkMaximalRepeat(it, _RLBWTDS);
-                ms_check_vec[i] = b;
-            }
-        }
-        */
+
 
         template <typename RLBWTDS>
         class Application
@@ -62,53 +36,7 @@ namespace stool
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            /*
-            static std::vector<uint64_t> constructLCPArray(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
-            {
-                std::vector<uint64_t> r;
-                r.resize(stnodeSequencer.strSize, 0);
-
-                while (!stnodeSequencer.isStop())
-                {
-                    stnodeSequencer.process();
-                    for (uint64_t i = 0; i < stnodeSequencer.child_count; i++)
-                    {
-                        auto &it = stnodeSequencer.get_child(i);
-                        uint64_t pos = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff) + 1;
-                        if (pos < r.size())
-                        {
-                            assert(r[pos] == 0);
-                            r[pos] = stnodeSequencer.current_lcp - 1;
-                        }
-                    }
-                }
-                return r;
-            }
-            */
-
-            /*
-            static std::vector<stool::LCPInterval<uint64_t>> constructLCPIntervals(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
-            {
-
-                std::vector<stool::LCPInterval<uint64_t>> r;
-
-                while (!stnodeSequencer.isStop())
-                {
-                    stnodeSequencer.process();
-                    for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
-                    {
-                        auto &it = stnodeSequencer.get_stnode(i);
-                        uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
-                        uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
-                        r.push_back(stool::LCPInterval<uint64_t>(beg, end, stnodeSequencer.current_lcp - 1));
-                    }
-                }
-                return r;
-
-                //return weiner.enumerateLCPInterval();
-            }
-            */
-            static uint64_t outputMaximalSubstrings(std::ofstream &out, ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer, STTreeAnalysisResult &analysis)
+            static uint64_t outputMaximalSubstrings(std::ofstream &out, STNodeEnumerator<INDEX_SIZE, RLBWTDS> &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
 
                 uint64_t count = 0;
@@ -117,45 +45,15 @@ namespace stool
                 {
 
                     stnodeSequencer.process();
-                    //auto tree = stnodeSequencer.get_sub_tree();
-                    //assert(stnodeSequencer.node_count() == tree->maximal_repeat_check_vec.size());
                     count += stnodeSequencer.write_maximal_repeats(out);
-                    /*
-                    for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
-                    {
-                        bool b = tree->maximal_repeat_check_vec[i];
 
-                        if (b)
-                        {
-                            count++;
-                        }
-                    }
-                    */
-
-                    /*
-                                uint64_t beg = stnodeSequencer._RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
-                                uint64_t end = stnodeSequencer._RLBWTDS->get_fpos(it.endIndex, it.endDiff);
-                                //std::cout << beg << ", " << end << std::endl;
-                                stool::LCPInterval<uint64_t> newLCPIntv(beg, end, stnodeSequencer.current_lcp - 1);
-
-                                out.write(reinterpret_cast<const char *>(&newLCPIntv), sizeof(stool::LCPInterval<INDEX_SIZE>));
-                                */
-
-                    //auto end = std::chrono::system_clock::now();
-                    //double elapsed1 = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-                    /*
-                    if (elapsed1 > 10)
-                    {
-                        std::cout << "Loop Time: " << elapsed1 << std::endl;
-                    }
-                    */
                 }
                 std::cout << "Enumerated" << std::endl;
                 analysis.max_nodes_at_level = stnodeSequencer.peak_child_count;
 
                 return count;
             }
-            static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(ParallelSTNodeWTraverser<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
+            static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(STNodeEnumerator<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
             {
 
                 std::vector<stool::LCPInterval<uint64_t>> r;

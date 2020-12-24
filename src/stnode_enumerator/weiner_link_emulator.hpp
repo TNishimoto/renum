@@ -37,8 +37,11 @@ namespace stool
             std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
 
             RLBWTDS *_RLBWTDS;
-            LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> *lightDS = nullptr;
-            SuccinctRangeDistinctDataStructure<INDEX_SIZE> *heavyDS = nullptr;
+            //LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> *lightDS = nullptr;
+            //SuccinctRangeDistinctDataStructure<INDEX_SIZE> *heavyDS = nullptr;
+
+            LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> lightRangeSearcher;
+            SuccinctRangeDistinctDataStructure<INDEX_SIZE> heavyRangeSearcher;
 
             void initialize(RLBWTDS *_rlbwtds)
             {
@@ -54,6 +57,11 @@ namespace stool
                 charTmpVec.resize(CHARMAX);
 
                 charIntervalTmpVec.resize(CHARMAX);
+
+                uint8_t lastChar = _RLBWTDS->bwt[_RLBWTDS->bwt.size() - 1];
+
+                lightRangeSearcher.preprocess(&_RLBWTDS->bwt);
+                heavyRangeSearcher.initialize(&_RLBWTDS->wt, lastChar);
             }
             uint64_t get_explicit_stnode_count()
             {
@@ -111,12 +119,11 @@ namespace stool
             */
             void get_child(uint8_t c, uint64_t index, RINTERVAL &output)
             {
-                auto& it = this->childrenVec[c][index];
+                auto &it = this->childrenVec[c][index];
                 output.beginIndex = it.beginIndex;
                 output.beginDiff = it.beginDiff;
                 output.endIndex = it.endIndex;
                 output.endDiff = it.endDiff;
-
             }
             /*
             void move_st_internal_nodes(std::deque<INDEX_SIZE> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, std::deque<bool> &maximal_repeat_check_vec, uint8_t c)
@@ -273,8 +280,8 @@ namespace stool
                 DEBUGcharIntervalTmpVec2.resize(CHARMAX);
 
                 assert(range.beginIndex <= range.endIndex);
-                uint64_t count1 = heavyDS->range_distinct(range.beginIndex, range.endIndex, DEBUGcharIntervalTmpVec1);
-                uint64_t count2 = lightDS->range_distinct(range.beginIndex, range.endIndex, DEBUGcharIntervalTmpVec2);
+                uint64_t count1 = heavyRangeSearcher.range_distinct(range.beginIndex, range.endIndex, DEBUGcharIntervalTmpVec1);
+                uint64_t count2 = lightRangeSearcher.range_distinct(range.beginIndex, range.endIndex, DEBUGcharIntervalTmpVec2);
                 if (count1 != count2)
                 {
                     std::cout << "count distinct" << std::endl;
@@ -291,18 +298,15 @@ namespace stool
 #endif
             uint64_t range_distinct(const RInterval<INDEX_SIZE> &range)
             {
-                assert(this->lightDS != nullptr);
                 uint64_t count = 0;
                 if (range.endIndex - range.beginIndex <= range_distinct_threshold)
                 {
-                    count = this->lightDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
+                    count = this->lightRangeSearcher.range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
                 }
                 else
                 {
-                    count = this->heavyDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
+                    count = this->heavyRangeSearcher.range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
                 }
-                //check(range);
-                //uint64_t count = this->lightDS->range_distinct(range.beginIndex, range.endIndex, this->charIntervalTmpVec);
 
                 assert(count > 0);
 
@@ -343,7 +347,7 @@ namespace stool
             std::vector<std::pair<uint64_t, uint64_t>> getFirstChildren()
             {
                 std::vector<std::pair<uint64_t, uint64_t>> r;
-                uint64_t count = this->heavyDS->range_distinct(0, this->_RLBWTDS->rle_size() - 1, this->charIntervalTmpVec);
+                uint64_t count = this->heavyRangeSearcher.range_distinct(0, this->_RLBWTDS->rle_size() - 1, this->charIntervalTmpVec);
                 //r.resize(count - 1);
 
                 for (uint64_t x = 0; x < count; x++)

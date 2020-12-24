@@ -104,7 +104,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
 
         std::cout << "Enumerate Maximal Substrings..." << std::endl;
-        stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
+        stool::lcp_on_rlbwt::STNodeEnumerator<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds);
         ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
     }
@@ -130,7 +130,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
-            stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<uint32_t, RDS> stnodeTraverser;
+            stool::lcp_on_rlbwt::STNodeEnumerator<uint32_t, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
             ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
             bit_size_mode = "UINT32_t";
@@ -141,7 +141,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
-            stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<uint64_t, RDS> stnodeTraverser;
+            stool::lcp_on_rlbwt::STNodeEnumerator<uint64_t, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
             ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
         }

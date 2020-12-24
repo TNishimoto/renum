@@ -169,8 +169,8 @@ namespace stool
                 LightFPosDataStructure::construct_sorted_fpos_array(_bwt, _lposvec, this->fposSortedArray);
                 */
 #if DEBUG
-               this->rank_test();
-               #endif
+                this->rank_test();
+#endif
                 this->build(_lposvec);
                 std::cout << "[Finished]" << std::endl;
 
@@ -225,8 +225,9 @@ namespace stool
                     C[i] = C[i - 1] + CK[i - 1];
                 }
             }
-            #if DEBUG
-            void rank_test(){
+#if DEBUG
+            void rank_test()
+            {
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 std::vector<uint64_t> C_run_sum;
                 C_run_sum.resize(CHARMAX, 0);
@@ -239,11 +240,10 @@ namespace stool
                     C_run_sum[c]++;
                 }
             }
-            #endif
+#endif
             template <typename LPOSVEC>
             void build(const LPOSVEC &lposvec)
             {
-
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 std::vector<uint64_t> C_run_sum;
                 std::vector<uint64_t> numVec;
@@ -258,8 +258,11 @@ namespace stool
                 builders.resize(CHARMAX);
                 uint64_t rle = this->bwt.size();
 
+
+
                 for (uint64_t i = 0; i < rle; i++)
                 {
+
                     uint8_t c = this->bwt[i];
                     uint64_t l = lposvec[i + 1] - lposvec[i];
                     C_run_sum[c] += l;
@@ -288,6 +291,7 @@ namespace stool
                     uint64_t l = lposvec[i + 1] - lposvec[i];
                     tmp_sum[c] += l;
                 }
+
                 for (uint64_t i = 0; i < CHARMAX; i++)
                 {
                     builders[i].finish();

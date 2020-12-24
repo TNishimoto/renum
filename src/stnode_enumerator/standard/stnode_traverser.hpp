@@ -9,7 +9,7 @@
 #include <vector>
 #include <type_traits>
 #include "../weiner_link_emulator.hpp"
-#include "stnode_sub_wtraverser.hpp"
+#include "stnode_sub_traverser.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
@@ -59,8 +59,8 @@ namespace stool
         }
         std::mutex mtx;
         template <typename INDEX_SIZE, typename RLBWTDS>
-        void parallel_process_stnodes(std::vector<STNodeSubWTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
-                                      std::stack<uint64_t> &position_stack, std::vector<STNodeSubWTraverser<INDEX_SIZE, RLBWTDS> *> &new_trees, uint64_t limit, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+        void parallel_process_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
+                                      std::stack<uint64_t> &position_stack, std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &new_trees, uint64_t limit, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
         {
 
             uint64_t pos = fst_position;
@@ -73,7 +73,7 @@ namespace stool
                 assert(trees[pos]->children_count() <= limit);
                 pos = UINT64_MAX;
                 {
-                    //std::lock_guard<std::mutex> lock(mtx);
+                    std::lock_guard<std::mutex> lock(mtx);
                     if (position_stack.size() > 0)
                     {
                         pos = position_stack.top();
@@ -83,17 +83,15 @@ namespace stool
             }
         }
         template <typename INDEX_SIZE, typename RLBWTDS>
-        class STNodeWTraverser
+        class STNodeTraverser
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
-            using STNODE_SUB_WTRAVERSER = STNodeSubWTraverser<INDEX_SIZE, RLBWTDS>;
+            using STNODE_SUB_TRAVERSER = STNodeSubTraverser<INDEX_SIZE, RLBWTDS>;
 
-            std::vector<STNODE_SUB_WTRAVERSER *> sub_trees;
-            std::vector<std::vector<STNODE_SUB_WTRAVERSER *>> new_trees;
+            std::vector<STNODE_SUB_TRAVERSER *> sub_trees;
+            std::vector<std::vector<STNODE_SUB_TRAVERSER *>> new_trees;
 
             std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
-            std::vector<LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE>> lightRDs;
-            std::vector<SuccinctRangeDistinctDataStructure<INDEX_SIZE>> heavyRDs;
             uint64_t minimum_child_count = 1000;
             uint64_t sub_tree_limit_size = 2000;
 
@@ -140,32 +138,33 @@ namespace stool
 
                 //this->sub_trees.resize(size);
 
-                auto st = new STNODE_SUB_WTRAVERSER(this->_RLBWTDS);
+                auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
                 sub_trees.push_back(st);
                 //sub_trees.resize(256);
 
                 this->new_trees.resize(size);
 
-                uint8_t lastChar = __RLBWTDS.bwt[__RLBWTDS.bwt.size() - 1];
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-
+                    /*
                     lightRDs.push_back(LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE>());
                     lightRDs[lightRDs.size() - 1].preprocess(&__RLBWTDS.bwt);
 
                     heavyRDs.push_back(SuccinctRangeDistinctDataStructure<INDEX_SIZE>());
                     heavyRDs[heavyRDs.size() - 1].initialize(&__RLBWTDS.wt, lastChar);
-
+                    */
                     ems.push_back(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>());
                     ems[ems.size() - 1].initialize(&__RLBWTDS);
                 }
+                /*
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
 
                     ems[i].lightDS = &lightRDs[i];
                     ems[i].heavyDS = &heavyRDs[i];
                 }
+                */
                 /*
                 double ratio = (double)this->_RLBWTDS->str_size() / (double)this->_RLBWTDS->rle_size();
                 double d = std::log2(ratio);
@@ -305,6 +304,9 @@ namespace stool
                 for (thread &t : threads)
                     t.join();
                 //auto end = std::chrono::system_clock::now();
+#if DEBUG
+                std::cout << "PARALLEL PROCESS[END]" << std::endl;
+#endif
 
                 assert(position_stack.size() == 0);
             }
@@ -405,7 +407,7 @@ namespace stool
 
                             this->sub_trees[nonEmptyCount]->swap(*this->sub_trees[i]);
 
-                            //this->sub_trees[i] = STNODE_SUB_WTRAVERSER();
+                            //this->sub_trees[i] = STNODE_SUB_TRAVERSER();
                             //sub_trees[i]._RLBWTDS = this->_RLBWTDS;
                         }
                         nonEmptyCount++;
@@ -415,6 +417,7 @@ namespace stool
                 {
                     this->sub_trees[i]->clear();
                     delete this->sub_trees[i];
+                    this->sub_trees[i] = nullptr;
                 }
                 this->sub_trees.resize(nonEmptyCount);
             }

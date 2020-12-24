@@ -87,7 +87,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
 
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
             ds.stnc = &stnc;
-            stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
+            stool::lcp_on_rlbwt::STNodeEnumerator<INDEX, RDS> stnodeTraverser;
 
             stnodeTraverser.initialize(thread_num, ds);
             std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::testLCPIntervals(stnodeTraverser);
@@ -101,7 +101,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
             ds.stnc = &stnc;
 
-            stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
+            stool::lcp_on_rlbwt::STNodeEnumerator<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
             std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::testLCPIntervals(stnodeTraverser);
             test_Intervals.swap(tmp);
@@ -123,7 +123,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             ds.stnc = &stnc;
 
-            stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
+            stool::lcp_on_rlbwt::STNodeEnumerator<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
             std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::testLCPIntervals(stnodeTraverser);
             test_Intervals.swap(tmp);
@@ -136,7 +136,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             ds.stnc = &stnc;
 
-            stool::lcp_on_rlbwt::ParallelSTNodeWTraverser<INDEX, RDS> stnodeTraverser;
+            stool::lcp_on_rlbwt::STNodeEnumerator<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
             std::cout << "TEST" << std::endl;
 
