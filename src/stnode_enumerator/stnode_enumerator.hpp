@@ -24,6 +24,7 @@ namespace stool
 
         const uint SUCCINCT_MODE = 1;
         const uint STANDARD_MODE = 0;
+        const uint FAST_MODE = 2;
 
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeEnumerator
@@ -33,10 +34,9 @@ namespace stool
             using SUCCINCT_STNODE_TRAVERSER = SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>;
 
             STNodeTraverser<INDEX_SIZE, RLBWTDS> standard_st_traverser;
-            //FastSTNodeTraverser<INDEX_SIZE, RLBWTDS> fast_st_traverser;
+            FastSTNodeTraverser<INDEX_SIZE, RLBWTDS> fast_st_traverser;
 
             //std::vector<SUCCINCT_STNODE_TRAVERSER *> succinct_sub_trees;
-
 
             uint64_t print_interval = 100;
             uint64_t print_interval_counter = 0;
@@ -49,27 +49,43 @@ namespace stool
             uint64_t _switch_threshold = 0;
             uint64_t debug_peak_memory = 0;
 
-            uint mode = 0;
+            uint mode = FAST_MODE;
 
             RLBWTDS *_RLBWTDS;
 
             uint64_t node_count() const
             {
-                if (this->mode == SUCCINCT_MODE)
+                if (this->mode == STANDARD_MODE)
                 {
-                    assert(false);
-                    throw -1;
+                    return this->standard_st_traverser.node_count();
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.node_count();
                 }
                 else
                 {
-                    return this->standard_st_traverser.node_count();
+                    assert(false);
+                    throw -1;
                 }
 
                 //return this->sub_tree.node_count();
             }
             uint64_t child_count() const
             {
-                return this->standard_st_traverser.child_count();
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.child_count();
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.child_count();
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
             }
 
             uint64_t expected_peak_memory_bits()
@@ -87,7 +103,7 @@ namespace stool
                 this->_RLBWTDS = &_RLBWTDS;
                 //this->strSize = _RLBWTDS.str_size();
                 this->standard_st_traverser.initialize(size, _RLBWTDS);
-                //this->fast_st_traverser.initialize(size, _RLBWTDS);
+                this->fast_st_traverser.initialize(size, _RLBWTDS);
 
 #if DEBUG
                 if (this->_RLBWTDS->str_size() < 100)
@@ -106,11 +122,35 @@ namespace stool
             }
             uint64_t write_maximal_repeats(std::ofstream &out)
             {
-                return this->standard_st_traverser.write_maximal_repeats(out);
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.write_maximal_repeats(out);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.write_maximal_repeats(out);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
             }
             uint64_t current_lcp()
             {
-                return this->standard_st_traverser.get_current_lcp();
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.get_current_lcp();
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.get_current_lcp();
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
             }
             uint64_t get_stnode(uint64_t L, stool::LCPInterval<uint64_t> &output)
             {
@@ -118,15 +158,16 @@ namespace stool
                 {
                     return this->standard_st_traverser.get_stnode(L, output);
                 }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.get_stnode(L, output);
+                }
                 else
-                {                    
+                {
                     assert(false);
                     throw -1;
                 }
             }
-
-
-            
 
             void process()
             {
@@ -148,7 +189,7 @@ namespace stool
                     }
                 }
 #if DEBUG
-                
+
                 if (this->_RLBWTDS->str_size() < 100)
                 {
                     std::cout << "Start Enumerate" << std::endl;
@@ -158,22 +199,36 @@ namespace stool
 
                 if (this->current_lcp() == 0)
                 {
-                    this->standard_st_traverser.process();
+                    if (this->mode == STANDARD_MODE)
+                    {
+                        this->standard_st_traverser.process();
+                    }
+                    else if (this->mode == FAST_MODE)
+                    {
+                        this->fast_st_traverser.process();
+                    }
+                    else
+                    {
+                        assert(false);
+                        throw -1;
+                    }
                 }
                 else
                 {
 
-                    bool isHeavy = true;
-
-                    if (isHeavy)
+                    //bool isHeavy = true;
+                    if (this->mode == STANDARD_MODE)
                     {
                         this->standard_st_traverser.process();
                     }
+                    else if (this->mode == FAST_MODE)
+                    {
+                        this->fast_st_traverser.process();
+                    }
                     else
                     {
-                        
-                    assert(false);
-                    throw -1;
+                        assert(false);
+                        throw -1;
                     }
                 }
                 this->update_info();
@@ -198,13 +253,37 @@ namespace stool
 
             bool isStop()
             {
-                return this->standard_st_traverser.isStop();
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.isStop();
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.isStop();
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
                 //return total_counter == strSize - 1;
             }
 
             void print()
             {
-                this->standard_st_traverser.print();
+                if (this->mode == STANDARD_MODE)
+                {
+                    this->standard_st_traverser.print();
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    this->fast_st_traverser.print();
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
             }
             void print_info()
             {
@@ -225,9 +304,20 @@ namespace stool
         private:
             uint64_t get_using_memory()
             {
-                return this->standard_st_traverser.get_using_memory();
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.get_using_memory();
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.get_using_memory();
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
             }
-            
         };
 
     } // namespace lcp_on_rlbwt

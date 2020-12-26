@@ -73,6 +73,7 @@ namespace stool
                     {
 
                         L = stnodeSequencer.get_stnode(L, it);
+                        std::cout << "Add/" << it.to_string() << std::endl; 
                         r.push_back(it);
                     }
                     if (stnodeSequencer._RLBWTDS->stnc != nullptr)

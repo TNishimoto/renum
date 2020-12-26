@@ -53,6 +53,18 @@ namespace stool
                     INDEX_SIZE end_pos = fposArray[this->endIndex] + this->endDiff;
                     return stool::LCPInterval<uint64_t>(begin_pos, end_pos,lcp);
             }
+            /*
+            template <typename FPOSDS>
+            void to_lcp_interval(uint64_t lcp,const FPOSDS &fposArray, stool::LCPInterval<uint64_t> &output) const
+            {
+                    assert(this->beginIndex < fposArray.size());
+                    assert(this->endIndex < fposArray.size());
+
+                    output.i = fposArray[this->beginIndex] + this->beginDiff;
+                    output.j = fposArray[this->endIndex] + this->endDiff;
+                    output.lcp = lcp;
+            }
+            */
 
             bool is_special() const
             {
