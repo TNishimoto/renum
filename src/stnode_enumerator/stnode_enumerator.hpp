@@ -160,7 +160,13 @@ namespace stool
                 }
                 else if (this->mode == FAST_MODE)
                 {
-                    return this->fast_st_traverser.get_stnode(L, output);
+                    RINTERVAL output1;
+                    uint64_t x = this->fast_st_traverser.get_stnode(L, output1);
+                    output.i = this->_RLBWTDS->get_lpos(output1.beginIndex) + output1.beginDiff;
+                    output.j = this->_RLBWTDS->get_lpos(output1.endIndex) + output1.endDiff;
+                    output.lcp = this->fast_st_traverser.get_current_lcp() - 1;
+                    return x;
+
                 }
                 else
                 {

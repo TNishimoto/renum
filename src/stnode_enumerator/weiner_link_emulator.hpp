@@ -27,6 +27,8 @@ namespace stool
             std::vector<uint64_t> indexVec;
             std::vector<bool> stnodeOccFlagArray;
 
+            bool checker_on = false;
+
             uint64_t indexCount = 0;
             uint64_t explicitChildCount = 0;
             uint64_t range_distinct_threshold = 16;
@@ -90,33 +92,6 @@ namespace stool
                 indexCount = 0;
                 explicitChildCount = 0;
             }
-            /*
-            void move_st_internal_nodes(std::deque<uint64_t> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits)
-            {
-                for (uint64_t i = 0; i < this->indexCount; i++)
-                {
-
-                    auto character = this->indexVec[i];
-
-                    auto &currentVec = this->childrenVec[character];
-                    uint64_t count = this->childrenVec[character].size();
-                    leftmost_child_bits.push_back(true);
-                    for (uint64_t i = 1; i < count; i++)
-                    {
-                        leftmost_child_bits.push_back(false);
-                    }
-
-                    for (uint64_t j = 0; j < count; j++)
-                    {
-                    outputExplicitChildrenVec.push_back(currentVec[j].beginIndex);
-                    outputExplicitChildrenVec.push_back(currentVec[j].beginDiff);
-                    outputExplicitChildrenVec.push_back(currentVec[j].endIndex);
-                    outputExplicitChildrenVec.push_back(currentVec[j].endDiff);
-                        //output.push_weiner(currentVec[j]);
-                    }
-                }
-            }
-            */
             void get_child(uint8_t c, uint64_t index, RINTERVAL &output)
             {
                 auto &it = this->childrenVec[c][index];
@@ -125,44 +100,6 @@ namespace stool
                 output.endIndex = it.endIndex;
                 output.endDiff = it.endDiff;
             }
-            /*
-            void move_st_internal_nodes(std::deque<INDEX_SIZE> &outputExplicitChildrenVec, std::deque<bool> &leftmost_child_bits, std::deque<bool> &maximal_repeat_check_vec, uint8_t c)
-            {
-                auto &currentVec = this->childrenVec[c];
-                uint64_t count = currentVec.size();
-                leftmost_child_bits.push_back(true);
-                for (uint64_t i = 1; i < count; i++)
-                {
-                    leftmost_child_bits.push_back(false);
-                }
-                uint64_t st_left = UINT64_MAX;
-                uint64_t st_right = 0;
-
-                for (uint64_t j = 0; j < count; j++)
-                {
-
-                    uint64_t left = this->_RLBWTDS->get_fpos(currentVec[j].beginIndex, currentVec[j].beginDiff);
-                    uint64_t right = this->_RLBWTDS->get_fpos(currentVec[j].endIndex, currentVec[j].endDiff);
-
-                    if (left < st_left)
-                    {
-                        st_left = left;
-                    }
-                    if (right > st_right)
-                    {
-                        st_right = right;
-                    }
-
-                    outputExplicitChildrenVec.push_back(left);
-                    outputExplicitChildrenVec.push_back(right);
-                }
-
-                uint64_t x = this->_RLBWTDS->get_lindex_containing_the_position(st_left);
-                uint64_t d = this->_RLBWTDS->get_run(x);
-                bool isMaximalRepeat = (this->_RLBWTDS->get_lpos(x) + d) <= st_right;
-                maximal_repeat_check_vec.push_back(isMaximalRepeat);
-            }
-            */
 
             bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
             {
@@ -188,30 +125,6 @@ namespace stool
                 }
                 return b;
             }
-            /*
-            void pushLCPInterval(const RINTERVAL &w, uint8_t c)
-            {
-                this->stnodeVec[c] = w;
-                this->stnodeOccFlagArray[c] = true;
-            }
-            */
-
-            //template <typename LPOSDS, typename RANGEDS>
-            /*
-            void computeSTNodeCandidates(const RINTERVAL &w)
-            {
-                RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
-                uint64_t resultCount = this->range_distinct(frontL);
-                //this->_RLBWTDS->rangeOnRLBWT.range_distinct(frontL);
-                for (uint64_t i = 0; i < resultCount; i++)
-                {
-                    typename RLBWTDS::UCHAR c = this->charTmpVec[i];
-                    auto &it = this->rIntervalTmpVec[i];
-
-                    this->pushLCPInterval(it, c);
-                }
-            }
-            */
             void computeSTNodeCandidates(const RINTERVAL &w)
             {
                 uint64_t resultCount = this->range_distinct(w);
@@ -230,27 +143,6 @@ namespace stool
             }
 
         public:
-            /*
-            void computeSTChildren(const RINTERVAL &w)
-            {
-                RINTERVAL frontL = this->_RLBWTDS->getIntervalOnL(w);
-
-                assert(frontL.beginIndex <= frontL.endIndex);
-                uint64_t resultCount = this->range_distinct(frontL);
-
-                for (uint64_t i = 0; i < resultCount; i++)
-                {
-                    typename RLBWTDS::UCHAR c = this->charTmpVec[i];
-                    auto &it = this->rIntervalTmpVec[i];
-
-                    //auto &lcpIntv = this->stnodeVec[c];
-                    //bool isLastChild = lcpIntv.endIndex == it.endIndex && lcpIntv.endDiff == it.endDiff;
-                    //if(!isLastChild){
-                    this->pushExplicitWeinerInterval(it, c);
-                    //}
-                }
-            }
-            */
             void computeSTChildren(const RINTERVAL &w)
             {
 
@@ -364,59 +256,6 @@ namespace stool
                 });
                 return r;
             }
-            /*
-            uint64_t computeFirstLCPIntervalSet()
-            {
-                this->clear();
-                RINTERVAL lcpIntv;
-                lcpIntv.beginIndex = this->_RLBWTDS->get_end_rle_lposition();
-                lcpIntv.beginDiff = 0;
-                lcpIntv.endIndex = this->_RLBWTDS->get_start_rle_lposition();
-                lcpIntv.endDiff = this->_RLBWTDS->get_run(lcpIntv.endIndex) - 1;
-
-                uint64_t begin_lindex = 0;
-                uint64_t begin_diff = 0;
-                uint64_t end_lindex = this->_RLBWTDS->rle_size() - 1;
-                uint64_t end_diff = this->_RLBWTDS->get_run(end_lindex) - 1;
-
-                RINTERVAL tmpArg;
-                tmpArg.beginIndex = begin_lindex;
-                tmpArg.beginDiff = begin_diff;
-                tmpArg.endIndex = end_lindex;
-                tmpArg.endDiff = end_diff;
-                //std::vector<CHAR> charOutputVec;
-
-                uint64_t resultCount = this->range_distinct(tmpArg);
-                uint64_t counter = 0;
-                uint8_t dummyCharacter = 8;
-                this->stnodeVec[dummyCharacter] = lcpIntv;
-                this->stnodeOccFlagArray[dummyCharacter] = true;
-
-                //this->pushLCPInterval(lcpIntv, 8);
-
-                for (uint64_t x = 0; x < resultCount; x++)
-                {
-                    auto &it = this->rIntervalTmpVec[x];
-                    assert(this->_RLBWTDS->get_char_by_run_index(it.beginIndex) == this->_RLBWTDS->get_char_by_run_index(it.endIndex));
-                    //output.push_weiner(it);
-                    this->pushExplicitWeinerInterval(it, dummyCharacter);
-
-                    counter++;
-                }
-                this->fit(true);
-
-#if DEBUG
-                stool::LCPInterval<uint64_t> lcpIntv2 = lcpIntv.get_lcp_interval(0, this->_RLBWTDS->_fposDS);
-                if (this->_RLBWTDS->stnc != nullptr)
-                {
-                    this->verify_next_lcp_interval(lcpIntv2.i, lcpIntv2.j);
-                }
-#endif
-
-                return 1;
-                //return counter;
-            }
-            */
             void fit(bool first)
             {
                 uint64_t k = 0;
@@ -433,7 +272,7 @@ namespace stool
                         this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);
                         std::cout << std::endl;
                     }
-                    if (this->_RLBWTDS->stnc != nullptr)
+                    if (this->_RLBWTDS->stnc != nullptr && this->checker_on)
                     {
                         assert(this->_RLBWTDS->checkLCPInterval(this->stnodeVec[c]) == (explicitChildrenCount > 0));
                     }
