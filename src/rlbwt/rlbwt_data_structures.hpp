@@ -73,7 +73,7 @@ namespace stool
                     wlinks.push_back(intv);
                 }
 
-                return this->stnc->check2(intv2.i, intv2.j, wlinks);
+                return this->stnc->check_weiner_links(intv2.i, intv2.j, wlinks);
             }
 
             RLBWTDataStructures(const sdsl::int_vector<> &diff_char_vec,

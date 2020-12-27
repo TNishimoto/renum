@@ -43,6 +43,30 @@ namespace stool
                     assert(begin_pos <= end_pos);
                 }
             }
+            /*
+            template <typename LPOSDS>
+            void print_to_lcp_interval(const LPOSDS &lposArray) const
+            {
+                if (this->is_special())
+                {
+                    std::cout << "[BOTTOM]" << std::endl;
+                }
+                else
+                {
+                    assert(this->beginIndex < lposArray.size());
+                    assert(this->endIndex < fposArray.size());
+                    //stool::Printer::print(fposArray);
+
+                    INDEX_SIZE begin_pos = fposArray[this->beginIndex] + this->beginDiff;
+                    INDEX_SIZE end_pos = fposArray[this->endIndex] + this->endDiff;
+
+                    std::cout << "[(" << this->beginIndex << ", " << this->beginDiff << "), (" << this->endIndex << ", " << this->endDiff << ")]" << std::flush;
+                    std::cout << "[" << begin_pos << ", " << end_pos << "]" << std::flush;
+                    assert(begin_pos <= end_pos);
+                }
+            }
+            */
+
             template <typename FPOSDS>
             stool::LCPInterval<uint64_t> get_lcp_interval(uint64_t lcp,const FPOSDS &fposArray) const
             {

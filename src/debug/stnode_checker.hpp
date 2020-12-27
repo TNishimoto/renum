@@ -156,8 +156,9 @@ namespace stool
                 }
                 std::cout << "Construct Checker[Finished]" << std::endl;
             }
-            void increment(uint64_t k)
+            void increment(std::vector<stool::LCPInterval<uint64_t>> &testIntervals)
             {
+                uint64_t k = testIntervals.size();
                 if(this->current_lcp >= this->maps.size()){
                     std::cout << "INCREMENT ERROR!(3)" << " LCP = " << this->current_lcp << std::endl;
 
@@ -172,10 +173,13 @@ namespace stool
 
                     throw -1;
                 }
+                for(auto &it: testIntervals){
+                    check_lcp_interval(it.i, it.j);
+                }
 
                 this->current_lcp++;
             }
-            bool check2(uint64_t i, uint64_t j, std::vector<stool::LCPInterval<uint64_t>> &wlinks)
+            bool check_weiner_links(uint64_t i, uint64_t j, std::vector<stool::LCPInterval<uint64_t>> &wlinks)
             {
 /*
 #if DEBUG

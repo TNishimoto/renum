@@ -113,6 +113,7 @@ namespace stool
             {
                 return current_lcp;
             }
+
             uint64_t child_count() const
             {
                 return this->_child_count;

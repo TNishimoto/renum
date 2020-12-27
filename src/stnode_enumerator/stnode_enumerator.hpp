@@ -199,7 +199,7 @@ namespace stool
                 if (this->_RLBWTDS->str_size() < 100)
                 {
                     std::cout << "Start Enumerate" << std::endl;
-                    this->print();
+                    //this->print();
                 }
 #endif
 

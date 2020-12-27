@@ -24,12 +24,11 @@ namespace stool
             std::deque<INDEX_SIZE> childs_vec;
             std::deque<bool> first_child_flag_vec;
             std::deque<bool> maximal_repeat_check_vec;
-            //std::deque<bool> increment_lcp_vec;
-            //std::deque<uint64_t> width_vec;
             std::deque<uint64_t> child_width_vec;
             std::deque<uint64_t> stnode_count_vec;
             std::deque<bool> processed_flag_vec;
             uint64_t current_lcp = 0;
+            uint64_t parent_current_lcp = 0;
 
             RLBWTDS *_RLBWTDS = nullptr;
 
@@ -39,6 +38,10 @@ namespace stool
             }
             FastSTNodeSubTraverser(RLBWTDS *__RLBWTDS) : _RLBWTDS(__RLBWTDS)
             {
+            }
+            void set_parent_current_lcp(uint64_t lcp)
+            {
+                this->parent_current_lcp = lcp;
             }
 
         private:
@@ -69,24 +72,6 @@ namespace stool
                 this->childs_vec.push_back(output.endDiff);
                 this->first_child_flag_vec.push_back(isFirst);
             }
-            /*
-            inline void pop_child()
-            {
-                this->childs_vec.pop_front();
-                this->childs_vec.pop_front();
-                this->childs_vec.pop_front();
-                this->childs_vec.pop_front();
-                this->first_child_flag_vec.pop_front();
-            }
-            */
-            /*
-            inline void pop_st_node()
-            {
-                this->maximal_repeat_check_vec.pop_front();
-                this->processed_flag_vec.pop_front();
-                this->_stnode_count--;
-            }
-            */
             inline void call_st_node(uint64_t count)
             {
                 uint64_t endIndex = this->children_count() - 1;
@@ -130,14 +115,14 @@ namespace stool
                     }
                     this->add_child(copy, j == 0);
                 }
-                this->call_st_node(count);
                 /*
-                uint64_t x = this->_RLBWTDS->get_lindex_containing_the_position(st_left);
-                uint64_t d = this->_RLBWTDS->get_run(x);
-                bool isMaximalRepeat = (this->_RLBWTDS->get_lpos(x) + d) <= st_right;
-                this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
-                this->_stnode_count++;
+                #if DEBUG
+                if(this->debug){
+
+                }
+                #endif
                 */
+                this->call_st_node(count);
             }
 
             uint64_t children_count() const
@@ -150,11 +135,18 @@ namespace stool
             }
 
         public:
-            uint64_t get_current_lcp() const {
+            uint64_t get_current_lcp() const
+            {
                 return this->current_lcp;
             }
+            uint64_t get_last_lcp() const
+            {
+                return current_lcp + this->child_width_vec.size() - 1;
+            }
+
             void pop_level()
             {
+                assert(this->child_width_vec.size() > 0);
                 for (uint64_t i = 0; i < this->child_width_vec[0]; i++)
                 {
                     this->childs_vec.pop_front();
@@ -217,6 +209,17 @@ namespace stool
                     return this->stnode_count_vec[0];
                 }
             }
+            uint64_t last_node_count() const
+            {
+                if (this->stnode_count_vec.size() == 0)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return this->stnode_count_vec[this->stnode_count_vec.size() - 1];
+                }
+            }
 
             void clear()
             {
@@ -259,7 +262,8 @@ namespace stool
                     index += this->child_width_vec[level];
 
                     level++;
-                    if(processed_level_counter >= 1 && this->children_count() > limit){
+                    if (processed_level_counter >= 1 && this->children_count() > limit)
+                    {
                         break;
                     }
                 }
@@ -288,10 +292,15 @@ namespace stool
                     uint64_t nextL = this->read_st_node(L, intv);
                     em.clear();
 #if DEBUG
-                    if (this->_RLBWTDS->str_size() < 100)
+                    if (level_index == 0 && (this->current_lcp == this->parent_current_lcp-1))
                     {
-                        std::cout << "Search input = ";
-                        std::cout << std::endl;
+
+                        if (this->_RLBWTDS->str_size() < 100)
+                        {
+                            std::cout << "Search input = ";
+                            intv.print2(this->_RLBWTDS->lpos_vec);
+                            std::cout << std::endl;
+                        }
                     }
 #endif
                     em.computeSTNodeCandidates(intv);
@@ -306,17 +315,20 @@ namespace stool
                     assert(nextL == L);
 
                     em.fit(false);
-                    /*
-#if DEBUG
-                    if (this->_RLBWTDS->stnc != nullptr)
-                    {
-                        uint64_t _left = this->_RLBWTDS->get_lpos(intv.beginIndex) + intv.beginDiff;
-                        uint64_t _right = this->_RLBWTDS->get_lpos(intv.endIndex) + intv.endDiff;
 
-                        em.verify_next_lcp_interval(_left, _right);
+#if DEBUG
+                    if (level_index == 0 && (this->current_lcp == this->parent_current_lcp-1))
+                    {
+                        if (this->_RLBWTDS->stnc != nullptr)
+                        {
+                            uint64_t _left = this->_RLBWTDS->get_lpos(intv.beginIndex) + intv.beginDiff;
+                            uint64_t _right = this->_RLBWTDS->get_lpos(intv.endIndex) + intv.endDiff;
+
+                            em.verify_next_lcp_interval(_left, _right);
+                        }
                     }
 #endif
-*/
+
                     for (uint64_t i = 0; i < em.indexCount; i++)
                     {
                         auto c = em.indexVec[i];
@@ -341,6 +353,8 @@ namespace stool
                 stool::Printer::print_bits("processed_flag_vec", this->processed_flag_vec);
                 stool::Printer::print_bits("first_child_flag_vec", this->first_child_flag_vec);
                 stool::Printer::print_bits("maximal_repeat_check_vec", this->maximal_repeat_check_vec);
+                stool::Printer::print("child_width_vec", this->child_width_vec);
+                stool::Printer::print("stnode_count_vec", this->stnode_count_vec);
 
                 std::cout << "[" << this->node_count() << ", " << this->children_count() << "]" << std::endl;
             }
@@ -348,12 +362,12 @@ namespace stool
             {
                 uint64_t L = 0;
                 RINTERVAL intv;
-                for (uint64_t i = 0; i < this->node_count(); i++)
+                for (uint64_t i = 0; i < this->current_node_count(); i++)
                 {
                     L = read_st_node(L, intv);
-                    intv.print();
+                    intv.print2(this->_RLBWTDS->lpos_vec);
                 }
-
+                /*
                 std::cout << std::endl;
 
                 for (uint64_t i = 0; i < this->childs_vec.size(); i += 2)
@@ -361,6 +375,7 @@ namespace stool
                     assert(i + 1 < this->childs_vec.size());
                     std::cout << "[" << this->childs_vec[i] << ", " << this->childs_vec[i + 1] << "]";
                 }
+                */
 
                 std::cout << std::endl;
             }
@@ -384,7 +399,7 @@ namespace stool
                         k++;
                     }
                 }
-                assert(this->_stnode_count == k);
+                assert(this->node_count() == k);
             }
 #endif
             void swap(FastSTNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item)
@@ -398,10 +413,86 @@ namespace stool
                 this->_RLBWTDS = item._RLBWTDS;
                 item._RLBWTDS = tmp3;
             }
+            /*
+            void move(FastSTNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item){
+                while(!this->first_child_flag_vec[this->first_child_flag_vec.size()-1]){
+                    item.childs_vec.push_front(item.childs_vec.size()-1);
+                    this->childs_vec.pop_back();
+                }
+            }
+            */
+        public:
+            void split(FastSTNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item)
+            {
+                //this->print();
+
+                uint64_t size = this->stnode_count_vec[this->stnode_count_vec.size() - 1];
+                uint64_t split_size = size / 2;
+                uint64_t x = this->first_child_flag_vec.size();
+                uint64_t p = 0;
+                uint64_t c_count = 0;
+                uint64_t st_count = this->node_count();
+                while (p < split_size)
+                {
+                    x--;
+                    c_count++;
+                    if (this->first_child_flag_vec[x])
+                    {
+                        p++;
+                    }
+                }
+
+                uint64_t start = st_count - p;
+                for (uint64_t i = start; i < st_count; i++)
+                {
+                    item.maximal_repeat_check_vec.push_back(this->maximal_repeat_check_vec[i]);
+                }
+
+                for (uint64_t i = x; i < this->first_child_flag_vec.size(); i++)
+                {
+                    item.childs_vec.push_back(this->childs_vec[(i * 4)]);
+                    item.childs_vec.push_back(this->childs_vec[(i * 4) + 1]);
+                    item.childs_vec.push_back(this->childs_vec[(i * 4) + 2]);
+                    item.childs_vec.push_back(this->childs_vec[(i * 4) + 3]);
+                    item.first_child_flag_vec.push_back(this->first_child_flag_vec[i]);
+                }
+                item.child_width_vec.push_back(this->first_child_flag_vec.size() - x);
+                item.stnode_count_vec.push_back(split_size);
+                item.processed_flag_vec.push_back(false);
+                item.current_lcp = this->current_lcp + this->stnode_count_vec.size() - 1;
+
+                for (uint64_t i = start; i < st_count; i++)
+                {
+                    this->maximal_repeat_check_vec.pop_back();
+                }
+                uint64_t pop_count = this->first_child_flag_vec.size() - x;
+                for (uint64_t i = 0; i < pop_count; i++)
+                {
+                    this->childs_vec.pop_back();
+                    this->childs_vec.pop_back();
+                    this->childs_vec.pop_back();
+                    this->childs_vec.pop_back();
+                    this->first_child_flag_vec.pop_back();
+                }
+                this->child_width_vec[this->child_width_vec.size() - 1] -= c_count;
+                this->stnode_count_vec[this->stnode_count_vec.size() - 1] -= split_size;
+
+                /*
+                std::cout << "THSI" << std::endl;
+
+                this->print();
+                this->bit_check();
+                std::cout << "ITEM" << std::endl;
+                item.print();
+                */
+
+                assert(!this->first_child_flag_vec[this->first_child_flag_vec.size() - 1]);
+                assert(this->processed_flag_vec.size() == this->child_width_vec.size());
+            }
 
             void merge(FastSTNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item)
             {
-                item.print();
+                //item.print();
                 assert(false);
                 throw -1;
                 /*

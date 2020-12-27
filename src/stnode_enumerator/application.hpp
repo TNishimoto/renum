@@ -60,6 +60,8 @@ namespace stool
 
                 while (!stnodeSequencer.isStop())
                 {
+                std::vector<stool::LCPInterval<uint64_t>> r2;
+
                     stnodeSequencer.process();
 
                     stool::LCPInterval<uint64_t> it;
@@ -73,11 +75,14 @@ namespace stool
                     {
 
                         L = stnodeSequencer.get_stnode(L, it);
-                        r.push_back(it);
+                        r2.push_back(it);
                     }
                     if (stnodeSequencer._RLBWTDS->stnc != nullptr)
                     {
-                        stnodeSequencer._RLBWTDS->stnc->increment(stnodeSequencer.node_count());
+                        stnodeSequencer._RLBWTDS->stnc->increment(r2);
+                    }
+                    for(auto &it : r2){
+                        r.push_back(it);
                     }
                 }
                 std::cout << "STOP" << std::endl;
