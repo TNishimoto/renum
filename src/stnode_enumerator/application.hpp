@@ -73,9 +73,9 @@ namespace stool
 
                     for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
                     {
-
                         L = stnodeSequencer.get_stnode(L, it);
                         r2.push_back(it);
+
                     }
                     if (stnodeSequencer._RLBWTDS->stnc != nullptr)
                     {

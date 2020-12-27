@@ -47,6 +47,10 @@ namespace stool
 
             std::vector<STNODE_SUB_TRAVERSER *> sub_trees;
 
+            std::deque<std::deque<uint64_t>> children_intervals;
+            std::deque<std::deque<bool>> first_child_flag_vec;
+            std::deque<std::deque<bool>> maximal_repeat_check_vec;
+
             std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
             uint64_t minimum_child_count = 1000;
             uint64_t sub_tree_limit_size = 2000;
@@ -106,30 +110,29 @@ namespace stool
             {
                 uint64_t count = 0;
                 std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
-                for (auto &it : this->sub_trees)
-                {
-                    uint64_t size = it->current_node_count();
-                    uint64_t L = 0;
-                    RINTERVAL intv;
-                    for (uint64_t i = 0; i < size; i++)
-                    {
-                        L = it->read_st_node(L, intv);
-                        if (it->check_maximal_repeat(i))
-                        {
-                            uint64_t _left = this->_RLBWTDS->get_lpos(intv.beginIndex) + intv.beginDiff;
-                            uint64_t _right = this->_RLBWTDS->get_lpos(intv.endIndex) + intv.endDiff;
 
-                            stool::LCPInterval<INDEX_SIZE> newLCPIntv(_left, _right, this->current_lcp - 1);
-                            buffer.push_back(newLCPIntv);
-                            count++;
-                            if (buffer.size() >= 8000)
-                            {
-                                out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
-                                buffer.clear();
-                            }
+                uint64_t size = this->node_count();
+                uint64_t L = 0;
+                RINTERVAL intv;
+                for (uint64_t i = 0; i < size; i++)
+                {
+                    L = this->get_stnode(L, intv);
+                    if (this->maximal_repeat_check_vec[0][i])
+                    {
+                        uint64_t _left = this->_RLBWTDS->get_lpos(intv.beginIndex) + intv.beginDiff;
+                        uint64_t _right = this->_RLBWTDS->get_lpos(intv.endIndex) + intv.endDiff;
+
+                        stool::LCPInterval<INDEX_SIZE> newLCPIntv(_left, _right, this->current_lcp - 1);
+                        buffer.push_back(newLCPIntv);
+                        count++;
+                        if (buffer.size() >= 8000)
+                        {
+                            out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                            buffer.clear();
                         }
                     }
                 }
+
                 if (buffer.size() >= 1)
                 {
                     out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
@@ -139,41 +142,48 @@ namespace stool
             }
             uint64_t get_stnode(uint64_t L, RINTERVAL &output)
             {
-
-                uint64_t p = 0;
-                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                assert(this->first_child_flag_vec.size() > 0);
+                uint64_t R = L + 1;
+                while (R < this->first_child_flag_vec[0].size() && !this->first_child_flag_vec[0][R])
                 {
-                    if (this->sub_trees[i]->get_current_lcp() == this->current_lcp - 1)
-                    {
-                        uint64_t csize = this->sub_trees[i]->current_children_count();
-
-                        if (p <= L && L < p + csize)
-                        {
-                            return p + this->sub_trees[i]->read_st_node(L - p, output);
-                        }
-                        else
-                        {
-                            p += csize;
-                        }
-                    }
+                    R++;
                 }
-                return UINT64_MAX;
+
+                R--;
+
+                output.beginIndex = this->children_intervals[0][L * 4];
+                output.beginDiff = this->children_intervals[0][(L * 4) + 1];
+                output.endIndex = this->children_intervals[0][(R * 4) + 2];
+                output.endDiff = this->children_intervals[0][(R * 4) + 3];
+
+                return R + 1;
             }
 
             void process()
             {
                 bool isSingleProcess = false;
 
-                for (auto &it : this->sub_trees)
+                if (this->first_child_flag_vec.size() > 0)
                 {
-                    it->set_parent_current_lcp(this->current_lcp);
+                    this->children_intervals.pop_front();
+                    this->first_child_flag_vec.pop_front();
+                    this->maximal_repeat_check_vec.pop_front();
                 }
 
-                if (current_lcp > 0)
+                if (this->first_child_flag_vec.size() == 0)
                 {
+                    for (auto &it : this->sub_trees)
+                    {
+                        it->set_parent_current_lcp(this->current_lcp);
+                    }
 
-                    isSingleProcess = this->child_count() < minimum_child_count || this->thread_count == 1;
-                    //bool b = true;
+                    if (current_lcp == 0)
+                    {
+                        this->sub_trees[0]->first_compute(ems[0]);
+                    }
+
+                    isSingleProcess = this->thread_count == 1;
+
                     if (isSingleProcess)
                     {
                         this->single_process();
@@ -183,23 +193,67 @@ namespace stool
 
                         this->parallel_process();
                     }
+                    this->rep();
+                    this->remove_empty_trees();
+                    if ((double)this->sub_trees.size() * 2 < (double)this->sub_trees.capacity())
+                    {
+                        this->sub_trees.shrink_to_fit();
+                    }
+                    this->split();
+                }
+                this->recompute_node_counter();
+            }
+            void rep()
+            {
+                uint64_t k = UINT64_MAX;
+                assert(this->children_intervals.size() == 0);
+                
+                if (this->sub_trees.size() == 0)
+                    return;
+                
+                if (this->current_lcp == 0)
+                {
+                    this->children_intervals.push_back(std::deque<uint64_t>());
+                    this->first_child_flag_vec.push_back(std::deque<bool>());
+                    this->maximal_repeat_check_vec.push_back(std::deque<bool>());
+
+                    for (auto &it : this->sub_trees)
+                    {
+                        it->pop_level(this->children_intervals[0], this->first_child_flag_vec[0], this->maximal_repeat_check_vec[0]);
+                    }
                 }
                 else
                 {
-
-                    this->sub_trees[0]->first_compute(ems[0]);
+                    std::cout << "REP" << std::endl;
+                    for (auto &it : this->sub_trees)
+                    {
+                        uint64_t x = (it->get_current_lcp() - this->current_lcp) + it->finished_level_count();
+                        std::cout << x << "/" << this->current_lcp << "/" << it->get_current_lcp() << "/" << it->finished_level_count() << std::endl;
+                        if (x < k)
+                        {
+                            k = x;
+                        }
+                    }
+                    assert(k != UINT64_MAX);
+                    for (uint64_t i = 0; i < k; i++)
+                    {
+                        this->children_intervals.push_back(std::deque<uint64_t>());
+                        this->first_child_flag_vec.push_back(std::deque<bool>());
+                        this->maximal_repeat_check_vec.push_back(std::deque<bool>());
+                    }
+                    for (auto &it : this->sub_trees)
+                    {
+                        for (uint64_t i = 0; i < k; i++)
+                        {
+                            uint64_t klcp = this->current_lcp + i;
+                            if (klcp == it->get_current_lcp())
+                            {
+                                it->pop_level(this->children_intervals[i], this->first_child_flag_vec[i], this->maximal_repeat_check_vec[i]);
+                            }
+                        }
+                    }
                 }
-
-                //this->merge();
-                this->remove_empty_trees();
-
-                if ((double)this->sub_trees.size() * 2 < (double)this->sub_trees.capacity())
-                {
-                    this->sub_trees.shrink_to_fit();
-                }
-                this->split();
-
-                this->recompute_node_counter();
+                assert(this->first_child_flag_vec.size() > 0);
             }
             bool isStop()
             {
@@ -236,7 +290,7 @@ namespace stool
         private:
             void recompute_node_counter()
             {
-
+                /*
                 uint64_t current_child_count = 0;
                 uint64_t current_node_count = 0;
 
@@ -248,9 +302,17 @@ namespace stool
                         current_node_count += it->current_node_count();
                     }
                 }
-
-                _node_count = current_node_count;
-                _child_count = current_child_count;
+                */
+                if (this->first_child_flag_vec.size() == 0)
+                {
+                    _node_count = 0;
+                    _child_count = 0;
+                }
+                else
+                {
+                    _node_count = this->maximal_repeat_check_vec[0].size();
+                    _child_count = this->first_child_flag_vec[0].size();
+                }
 
                 current_lcp++;
             }
@@ -310,10 +372,23 @@ namespace stool
                 if (this->sub_trees.size() == 0)
                     return;
                 sort(this->sub_trees.begin(), this->sub_trees.end(), [&](const STNODE_SUB_TRAVERSER *lhs, const STNODE_SUB_TRAVERSER *rhs) {
-                    return lhs->get_last_lcp() < rhs->get_last_lcp();
+                    int x1 = lhs->last_node_count() == 0 ? 1 : 0;
+                    int x2 = rhs->last_node_count() == 0 ? 1 : 0;
+                    if (x1 < x2)
+                    {
+                        return true;
+                    }
+                    else if (x1 > x2)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return lhs->get_last_lcp() < rhs->get_last_lcp();
+                    }
                 });
 
-                assert(this->sub_trees[0]->last_node_count() > 0);
+                //assert(this->sub_trees[0]->last_node_count() > 0);
 
                 while (this->sub_trees[0]->last_node_count() > 1)
                 {
@@ -322,7 +397,7 @@ namespace stool
                     this->sub_trees[0]->split(*st);
                     this->sub_trees.push_back(st);
                 }
-                assert(this->sub_trees[0]->last_node_count() > 0);
+                //assert(this->sub_trees[0]->last_node_count() > 0);
             }
             /*
             void merge()
@@ -353,8 +428,10 @@ namespace stool
                 }
             }
             */
-            void remove_empty_trees()
+            void
+            remove_empty_trees()
             {
+                /*
                 for (auto &it : this->sub_trees)
                 {
                     while (it->get_current_lcp() < this->current_lcp && it->current_node_count() > 0)
@@ -362,11 +439,12 @@ namespace stool
                         it->pop_level();
                     }
                 }
+                */
 
                 uint64_t nonEmptyCount = 0;
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
-                    if (this->sub_trees[i]->current_node_count() > 0)
+                    if (!this->sub_trees[i]->is_empty())
                     {
                         if (i != nonEmptyCount)
                         {
@@ -388,7 +466,7 @@ namespace stool
                 }
                 this->sub_trees.resize(nonEmptyCount);
             }
-        };
+        }; // namespace lcp_on_rlbwt
 
     } // namespace lcp_on_rlbwt
 } // namespace stool
