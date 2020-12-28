@@ -50,6 +50,7 @@ namespace stool
             uint64_t debug_peak_memory = 0;
 
             uint mode = STANDARD_MODE;
+            //uint mode = FAST_MODE;
 
             RLBWTDS *_RLBWTDS;
 

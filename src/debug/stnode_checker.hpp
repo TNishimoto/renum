@@ -159,8 +159,19 @@ namespace stool
             void increment(std::vector<stool::LCPInterval<uint64_t>> &testIntervals)
             {
                 uint64_t k = testIntervals.size();
-                if(this->current_lcp >= this->maps.size()){
-                    std::cout << "INCREMENT ERROR!(3)" << " LCP = " << this->current_lcp << std::endl;
+                if (this->lcp_intervals.size() < 100)
+                {
+                    std::cout << "INCREMENT TEST" << std::endl;
+                    for (auto &it : testIntervals)
+                    {
+                        std::cout << it.to_string();
+                    }
+                    std::cout << std::endl;
+                }
+                if (this->current_lcp >= this->maps.size())
+                {
+                    std::cout << "INCREMENT ERROR!(3)"
+                              << " LCP = " << this->current_lcp << std::endl;
 
                     throw -1;
                 }
@@ -168,12 +179,14 @@ namespace stool
                 if (this->maps[this->current_lcp].size() != k)
                 {
 
-                    std::cout << "INCREMENT ERROR!" << " LCP = " << this->current_lcp << ", Collect : " << this->maps[this->current_lcp].size() << "/Test: " << k << std::endl;
+                    std::cout << "INCREMENT ERROR!"
+                              << " LCP = " << this->current_lcp << ", Collect : " << this->maps[this->current_lcp].size() << "/Test: " << k << std::endl;
                     assert(this->maps[this->current_lcp].size() == k);
 
                     throw -1;
                 }
-                for(auto &it: testIntervals){
+                for (auto &it : testIntervals)
+                {
                     check_lcp_interval(it.i, it.j);
                 }
 
@@ -181,7 +194,7 @@ namespace stool
             }
             bool check_weiner_links(uint64_t i, uint64_t j, std::vector<stool::LCPInterval<uint64_t>> &wlinks)
             {
-/*
+                /*
 #if DEBUG
                 std::cout << "Weiner Link Check [" << i << ", " << j << "]" << std::endl;
 #endif
@@ -209,7 +222,7 @@ namespace stool
                         auto it = this->maps[this->current_lcp].find(l);
                         if (it != this->maps[this->current_lcp].end())
                         {
-/*
+                            /*
 #if DEBUG
                         std::cout << "Next [" << l << ", " << r << "]" << std::endl;
 #endif
@@ -243,7 +256,8 @@ namespace stool
                 {
                     std::cout << "LCP Interval CHECK ERROR!(1)" << std::endl;
                     std::cout << "Test LCP Interval = "
-                              << "[" << i << ", " << j << "]" << std::endl;
+                              << "[" << i << ", " << j << "]"
+                              << "Current LCP = " << this->current_lcp << std::endl;
 
                     throw -1;
                 }

@@ -46,9 +46,11 @@ namespace stool
 
             std::vector<STNODE_SUB_TRAVERSER *> sub_trees;
 
-            std::deque<std::deque<INDEX_SIZE>> children_intervals;
-            std::deque<std::deque<bool>> first_child_flag_vec;
-            std::deque<std::deque<bool>> maximal_repeat_check_vec;
+            std::deque<INDEX_SIZE> children_intervals;
+            std::deque<bool> first_child_flag_vec;
+            std::deque<bool> maximal_repeat_check_vec;
+            std::deque<uint64_t> child_width_vec;
+            std::deque<uint64_t> st_width_vec;
 
             std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
             //uint64_t minimum_child_count = 1000;
@@ -59,8 +61,8 @@ namespace stool
             uint64_t sub_tree_max_count = 100;
 
             uint64_t current_lcp = 0;
-            uint64_t _child_count = 0;
-            uint64_t _node_count = 0;
+            //uint64_t _child_count = 0;
+            //uint64_t _node_count = 0;
 
             uint64_t thread_count = 1;
             std::stack<uint64_t> position_stack;
@@ -72,7 +74,8 @@ namespace stool
         public:
             RLBWTDS *_RLBWTDS;
 
-            void set_peak(uint64_t _peak){
+            void set_peak(uint64_t _peak)
+            {
                 this->peak_mmax = _peak;
             }
 
@@ -82,12 +85,12 @@ namespace stool
             }
             uint64_t child_count() const
             {
-                return this->_child_count;
+                return this->child_width_vec.size() == 0 ? 0 : this->child_width_vec[0];
             }
 
             uint64_t node_count() const
             {
-                return this->_node_count;
+                return this->st_width_vec.size() == 0 ? 0 : this->st_width_vec[0];
             }
 
             void initialize(uint64_t size, RLBWTDS &__RLBWTDS)
@@ -117,7 +120,7 @@ namespace stool
                 for (uint64_t i = 0; i < size; i++)
                 {
                     L = this->get_stnode(L, intv);
-                    if (this->maximal_repeat_check_vec[0][i])
+                    if (this->maximal_repeat_check_vec[i])
                     {
                         uint64_t _left = this->_RLBWTDS->get_lpos(intv.beginIndex) + intv.beginDiff;
                         uint64_t _right = this->_RLBWTDS->get_lpos(intv.endIndex) + intv.endDiff;
@@ -144,7 +147,7 @@ namespace stool
             {
                 assert(this->first_child_flag_vec.size() > 0);
                 uint64_t R = L + 1;
-                while (R < this->first_child_flag_vec[0].size() && !this->first_child_flag_vec[0][R])
+                while (R < this->first_child_flag_vec.size() && !this->first_child_flag_vec[R])
                 {
                     R++;
                 }
@@ -152,16 +155,41 @@ namespace stool
                 R--;
 
                 assert(this->children_intervals.size() > 0);
-                assert(this->children_intervals[0].size() > (R * 4) + 3);
+                assert(this->children_intervals.size() > (R * 4) + 3);
 
-                output.beginIndex = this->children_intervals[0][L * 4];
-                output.beginDiff = this->children_intervals[0][(L * 4) + 1];
-                output.endIndex = this->children_intervals[0][(R * 4) + 2];
-                output.endDiff = this->children_intervals[0][(R * 4) + 3];
+                output.beginIndex = this->children_intervals[L * 4];
+                output.beginDiff = this->children_intervals[(L * 4) + 1];
+                output.endIndex = this->children_intervals[(R * 4) + 2];
+                output.endDiff = this->children_intervals[(R * 4) + 3];
 
                 assert(output.beginIndex < this->_RLBWTDS->rle_size());
 
                 return R + 1;
+            }
+            void pop()
+            {
+                uint64_t k1 = this->node_count();
+                uint64_t k2 = this->child_count();
+
+                for (uint64_t i = 0; i < k1; i++)
+                {
+                    this->maximal_repeat_check_vec.pop_back();
+                }
+                for (uint64_t i = 0; i < k2; i++)
+                {
+                    this->children_intervals.pop_front();
+                    this->children_intervals.pop_front();
+                    this->children_intervals.pop_front();
+                    this->children_intervals.pop_front();
+                    this->first_child_flag_vec.pop_front();
+                }
+
+                mmax -= k2;
+                this->child_width_vec.pop_front();
+                this->st_width_vec.pop_front();
+                //this->children_intervals.pop_front();
+                //this->first_child_flag_vec.pop_front();
+                //this->maximal_repeat_check_vec.pop_front();
             }
 
             void process()
@@ -170,10 +198,7 @@ namespace stool
 
                 if (this->first_child_flag_vec.size() > 0)
                 {
-                    mmax -= this->first_child_flag_vec[0].size();
-                    this->children_intervals.pop_front();
-                    this->first_child_flag_vec.pop_front();
-                    this->maximal_repeat_check_vec.pop_front();
+                    this->pop();
                 }
 
                 if (this->first_child_flag_vec.size() == 0)
@@ -219,14 +244,20 @@ namespace stool
 
                 if (this->current_lcp == 0)
                 {
+                    /*
                     this->children_intervals.push_back(std::deque<INDEX_SIZE>());
                     this->first_child_flag_vec.push_back(std::deque<bool>());
                     this->maximal_repeat_check_vec.push_back(std::deque<bool>());
+                    */
 
+                    uint64_t _child_count = this->first_child_flag_vec.size();
+                    uint64_t _st_count = this->maximal_repeat_check_vec.size();
                     for (auto &it : this->sub_trees)
                     {
-                        it->pop_level(this->children_intervals[0], this->first_child_flag_vec[0], this->maximal_repeat_check_vec[0]);
+                        it->pop_level(this->children_intervals, this->first_child_flag_vec, this->maximal_repeat_check_vec);
                     }
+                    this->child_width_vec.push_back(this->first_child_flag_vec.size() - _child_count);
+                    this->st_width_vec.push_back(this->maximal_repeat_check_vec.size() - _st_count);
                 }
                 else
                 {
@@ -239,27 +270,50 @@ namespace stool
                         }
                     }
                     assert(k != UINT64_MAX);
+                    /*
                     for (uint64_t i = 0; i < k; i++)
                     {
                         this->children_intervals.push_back(std::deque<INDEX_SIZE>());
                         this->first_child_flag_vec.push_back(std::deque<bool>());
                         this->maximal_repeat_check_vec.push_back(std::deque<bool>());
                     }
-                    for (auto &it : this->sub_trees)
+                    */
+                    std::queue<uint64_t> tmp_queue;
+                    for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                     {
-                        for (uint64_t i = 0; i < k; i++)
-                        {
-                            uint64_t klcp = this->current_lcp + i;
-                            if (klcp == it->get_current_lcp())
-                            {
-                                it->pop_level(this->children_intervals[i], this->first_child_flag_vec[i], this->maximal_repeat_check_vec[i]);
-                            }
-                        }
+                        tmp_queue.push(i);
                     }
                     for (uint64_t i = 0; i < k; i++)
                     {
-                        mmax += this->first_child_flag_vec[i].size();
+                        uint64_t k = tmp_queue.size();
+                        uint64_t klcp = this->current_lcp + i;
+                        uint64_t _child_count = this->first_child_flag_vec.size();
+                        uint64_t _st_count = this->maximal_repeat_check_vec.size();
+
+                        for (uint64_t j = 0; j < k; j++)
+                        {
+                            uint64_t top = tmp_queue.front();
+                            tmp_queue.pop();
+                            auto &it = this->sub_trees[top];
+                            if (klcp == it->get_current_lcp())
+                            {
+                                it->pop_level(this->children_intervals, this->first_child_flag_vec, this->maximal_repeat_check_vec);
+                                tmp_queue.push(top);
+                            }
+                            else if (klcp < it->get_current_lcp())
+                            {
+                                tmp_queue.push(top);
+                            }
+                        }
+                        this->child_width_vec.push_back(this->first_child_flag_vec.size() - _child_count);
+                        this->st_width_vec.push_back(this->maximal_repeat_check_vec.size() - _st_count);
                     }
+                    /*
+                    for (auto &it : this->sub_trees)
+                    {
+                    }
+                    */
+                    mmax += this->first_child_flag_vec.size();
                 }
                 assert(this->first_child_flag_vec.size() > 0);
             }
@@ -272,6 +326,12 @@ namespace stool
             void print()
             {
                 std::cout << "PRINT PTREE" << std::endl;
+
+                stool::Printer::print_bits("first_child_flag_vec", this->first_child_flag_vec);
+                stool::Printer::print_bits("maximal_repeat_check_vec", this->maximal_repeat_check_vec);
+                stool::Printer::print("child_width_vec", this->child_width_vec);
+                stool::Printer::print("stnode_count_vec", this->st_width_vec);
+
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
                     if (this->sub_trees[i]->get_current_lcp() == (this->current_lcp - 1))
@@ -309,7 +369,6 @@ namespace stool
                     sub_trees.push_back(st);
                     uint64_t num = item3.size() < k ? item3.size() : k;
                     st->import(item1, item2, item3, lcp, num);
-                    
                 }
                 assert(item1.size() == 0);
                 assert(item2.size() == 0);
@@ -319,8 +378,20 @@ namespace stool
             }
 
         private:
+            uint64_t _count_st_size()
+            {
+                assert(false);
+                throw -1;
+            }
+            uint64_t _count_children_size()
+            {
+                assert(false);
+                throw -1;
+            }
+
             void recompute_node_counter()
             {
+                /*
                 if (this->first_child_flag_vec.size() == 0)
                 {
                     _node_count = 0;
@@ -328,9 +399,10 @@ namespace stool
                 }
                 else
                 {
-                    _node_count = this->maximal_repeat_check_vec[0].size();
-                    _child_count = this->first_child_flag_vec[0].size();
+                    _node_count = this->st;
+                    _child_count = _count_children_size();
                 }
+                */
 
                 current_lcp++;
             }
@@ -380,7 +452,6 @@ namespace stool
                 {
                     position_stack.push(i);
                 }
-
 
                 uint64_t limit = peak_mmax - this->mmax;
 
