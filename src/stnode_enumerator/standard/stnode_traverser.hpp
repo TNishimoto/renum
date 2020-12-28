@@ -145,7 +145,6 @@ namespace stool
 
                 this->new_trees.resize(size);
 
-
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
                     /*
@@ -260,6 +259,14 @@ namespace stool
                 return k;
             }
 
+            void move(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
+            {
+                for (auto &it : this->sub_trees)
+                {
+                    it->pop(item1, item2, item3);
+                }
+                this->remove_empty_trees();
+            }
         private:
             void recompute_node_counter()
             {
@@ -304,7 +311,7 @@ namespace stool
 
                 for (thread &t : threads)
                     t.join();
-                //auto end = std::chrono::system_clock::now();
+                    //auto end = std::chrono::system_clock::now();
 #if DEBUG
                 std::cout << "PARALLEL PROCESS[END]" << std::endl;
 #endif
@@ -422,6 +429,7 @@ namespace stool
                 }
                 this->sub_trees.resize(nonEmptyCount);
             }
+
         };
 
     } // namespace lcp_on_rlbwt

@@ -46,6 +46,27 @@ namespace stool
             {
             }
             */
+            void pop(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
+            {
+                uint64_t size = this->first_child_flag_vec.size();
+                for (uint64_t i = 0; i < size; i++)
+                {
+                    item1.push_back(this->childs_vec[0]);
+                    this->childs_vec.pop_front();
+
+                    item1.push_back(this->childs_vec[0]);
+                    this->childs_vec.pop_front();
+
+                    item2.push_back(this->first_child_flag_vec[0]);
+                    this->first_child_flag_vec.pop_front();
+                }
+                for (uint64_t i = 0; i < this->_stnode_count; i++)
+                {
+                    item3.push_back(this->maximal_repeat_check_vec[0]);
+                    this->maximal_repeat_check_vec.pop_front();
+                }
+                this->_stnode_count = 0;
+            }
 
         private:
             inline uint64_t get_child_start_position(uint64_t i) const
@@ -87,8 +108,8 @@ namespace stool
                 bool isMaximalRepeat = (this->_RLBWTDS->get_lpos(x) + d) <= st_right;
                 this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
                 this->_stnode_count++;
-
             }
+
         public:
             bool check_maximal_repeat(uint64_t st_index) const
             {

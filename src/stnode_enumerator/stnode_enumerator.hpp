@@ -49,7 +49,7 @@ namespace stool
             uint64_t _switch_threshold = 0;
             uint64_t debug_peak_memory = 0;
 
-            uint mode = FAST_MODE;
+            uint mode = STANDARD_MODE;
 
             RLBWTDS *_RLBWTDS;
 
@@ -162,11 +162,12 @@ namespace stool
                 {
                     RINTERVAL output1;
                     uint64_t x = this->fast_st_traverser.get_stnode(L, output1);
+
                     output.i = this->_RLBWTDS->get_lpos(output1.beginIndex) + output1.beginDiff;
                     output.j = this->_RLBWTDS->get_lpos(output1.endIndex) + output1.endDiff;
                     output.lcp = this->fast_st_traverser.get_current_lcp() - 1;
-                    return x;
 
+                    return x;
                 }
                 else
                 {
@@ -177,6 +178,9 @@ namespace stool
 
             void process()
             {
+                
+                
+
                 if (this->total_counter > 0)
                 {
                     uint64_t ccc = this->_RLBWTDS->str_size() / this->print_interval;
@@ -237,7 +241,25 @@ namespace stool
                         throw -1;
                     }
                 }
+
+
+
                 this->update_info();
+                if (this->mode == STANDARD_MODE && (this->child_count() * 10 < this->peak_child_count))
+                {
+                    std::cout << "Swithc" << std::endl;
+
+                    std::deque<INDEX_SIZE> childs_vec;
+                    std::deque<bool> first_child_flag_vec;
+                    std::deque<bool> maximal_repeat_check_vec;
+                    this->standard_st_traverser.move(childs_vec, first_child_flag_vec, maximal_repeat_check_vec);
+                    this->fast_st_traverser.import(childs_vec, first_child_flag_vec, maximal_repeat_check_vec, this->standard_st_traverser.get_current_lcp()-1 );
+                    this->fast_st_traverser.set_peak(this->peak_child_count);
+                    this->mode = FAST_MODE;
+                    this->fast_st_traverser.process();
+
+                }
+
 #if DEBUG
 
                 if (this->_RLBWTDS->str_size() < 100)

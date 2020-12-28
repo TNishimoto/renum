@@ -43,6 +43,44 @@ namespace stool
             {
                 this->parent_current_lcp = lcp;
             }
+            void import(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3, uint64_t lcp, uint64_t num)
+            {
+                while (true)
+                {
+                    if (this->maximal_repeat_check_vec.size() == num && (item2.size() == 0 || item2[0]))
+                    {
+                        break;
+                    }
+
+                    uint64_t left = item1[0];
+                    item1.pop_front();
+                    uint64_t right = item1[0];
+                    item1.pop_front();
+
+                    uint64_t lb = this->_RLBWTDS->get_lindex_containing_the_position(left);
+                    uint64_t ld = left - this->_RLBWTDS->get_lpos(lb);
+                    uint64_t rb = this->_RLBWTDS->get_lindex_containing_the_position(right);
+                    uint64_t rd = right - this->_RLBWTDS->get_lpos(rb);
+                    this->childs_vec.push_back(lb);
+                    this->childs_vec.push_back(ld);
+                    this->childs_vec.push_back(rb);
+                    this->childs_vec.push_back(rd);
+
+                    if (item2[0])
+                    {
+                        this->maximal_repeat_check_vec.push_back(item3[0]);
+                        item3.pop_front();
+                    }
+                    this->first_child_flag_vec.push_back(item2[0]);
+                    item2.pop_front();
+                }
+                assert(this->maximal_repeat_check_vec.size() == num);
+                this->current_lcp = lcp;
+                this->child_width_vec.push_back(this->first_child_flag_vec.size());
+                this->stnode_count_vec.push_back(num);
+                this->processed_flag_vec.push_back(false);
+
+            }
 
         private:
             inline void get_child_start_position(uint64_t i, RINTERVAL &output) const
@@ -84,10 +122,9 @@ namespace stool
             }
             inline void call_level_nodes(uint64_t stnode_count, uint64_t childnode_count)
             {
-                    this->processed_flag_vec.push_back(stnode_count == 0);
-                    this->stnode_count_vec.push_back(stnode_count);
-                    this->child_width_vec.push_back(childnode_count);
-
+                this->processed_flag_vec.push_back(stnode_count == 0);
+                this->stnode_count_vec.push_back(stnode_count);
+                this->child_width_vec.push_back(childnode_count);
             }
 
             void add(uint8_t c, uint64_t count, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
@@ -142,7 +179,7 @@ namespace stool
                 return current_lcp + this->child_width_vec.size() - 1;
             }
 
-            void pop_level(std::deque<uint64_t> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
+            void pop_level(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
             {
                 assert(this->child_width_vec.size() > 0);
                 for (uint64_t i = 0; i < this->child_width_vec[0]; i++)
@@ -228,10 +265,14 @@ namespace stool
                     return this->stnode_count_vec[this->stnode_count_vec.size() - 1];
                 }
             }
-            uint64_t finished_level_count(){
-                if(this->child_width_vec.size() == 0){
+            uint64_t finished_level_count()
+            {
+                if (this->child_width_vec.size() == 0)
+                {
                     return 0;
-                }else{
+                }
+                else
+                {
                     return this->child_width_vec.size() - 1;
                 }
             }
@@ -262,7 +303,8 @@ namespace stool
             }
             void computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t limit)
             {
-                if(this->child_width_vec.size() == 0){
+                if (this->child_width_vec.size() == 0)
+                {
                     return;
                 }
                 uint64_t level = this->child_width_vec.size() - 1;
@@ -270,12 +312,12 @@ namespace stool
 
                 uint64_t processed_level_counter = 0;
 
-
-
                 while (level < this->child_width_vec.size())
                 {
+
                     if (!this->processed_flag_vec[level])
                     {
+
                         this->computeNextLCPIntervalSet(em, index, level);
                         processed_level_counter++;
                     }
@@ -312,7 +354,7 @@ namespace stool
                     uint64_t nextL = this->read_st_node(L, intv);
                     em.clear();
 #if DEBUG
-                    if (level_index == 0 && (this->current_lcp == this->parent_current_lcp-1))
+                    if (level_index == 0 && (this->current_lcp == this->parent_current_lcp - 1))
                     {
 
                         if (this->_RLBWTDS->str_size() < 100)
@@ -337,7 +379,7 @@ namespace stool
                     em.fit(false);
 
 #if DEBUG
-                    if (level_index == 0 && (this->current_lcp == this->parent_current_lcp-1))
+                    if (level_index == 0 && (this->current_lcp == this->parent_current_lcp - 1))
                     {
                         if (this->_RLBWTDS->stnc != nullptr)
                         {
@@ -442,7 +484,8 @@ namespace stool
             }
             */
         public:
-            bool is_empty(){
+            bool is_empty()
+            {
                 return this->first_child_flag_vec.size() == 0;
             }
             void split(FastSTNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item)

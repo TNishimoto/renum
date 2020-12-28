@@ -26,7 +26,6 @@ namespace stool
             uint64_t pos = fst_position;
             while (pos != UINT64_MAX)
             {
-
                 trees[pos]->computeNextLCPIntervalSet(em, limit);
                 pos = UINT64_MAX;
                 {
@@ -47,7 +46,7 @@ namespace stool
 
             std::vector<STNODE_SUB_TRAVERSER *> sub_trees;
 
-            std::deque<std::deque<uint64_t>> children_intervals;
+            std::deque<std::deque<INDEX_SIZE>> children_intervals;
             std::deque<std::deque<bool>> first_child_flag_vec;
             std::deque<std::deque<bool>> maximal_repeat_check_vec;
 
@@ -72,6 +71,10 @@ namespace stool
 
         public:
             RLBWTDS *_RLBWTDS;
+
+            void set_peak(uint64_t _peak){
+                this->peak_mmax = _peak;
+            }
 
             uint64_t get_current_lcp() const
             {
@@ -148,10 +151,15 @@ namespace stool
 
                 R--;
 
+                assert(this->children_intervals.size() > 0);
+                assert(this->children_intervals[0].size() > (R * 4) + 3);
+
                 output.beginIndex = this->children_intervals[0][L * 4];
                 output.beginDiff = this->children_intervals[0][(L * 4) + 1];
                 output.endIndex = this->children_intervals[0][(R * 4) + 2];
                 output.endDiff = this->children_intervals[0][(R * 4) + 3];
+
+                assert(output.beginIndex < this->_RLBWTDS->rle_size());
 
                 return R + 1;
             }
@@ -181,9 +189,9 @@ namespace stool
                     }
 
                     isSingleProcess = this->thread_count == 1;
-
                     if (isSingleProcess)
                     {
+
                         this->single_process();
                     }
                     else
@@ -211,7 +219,7 @@ namespace stool
 
                 if (this->current_lcp == 0)
                 {
-                    this->children_intervals.push_back(std::deque<uint64_t>());
+                    this->children_intervals.push_back(std::deque<INDEX_SIZE>());
                     this->first_child_flag_vec.push_back(std::deque<bool>());
                     this->maximal_repeat_check_vec.push_back(std::deque<bool>());
 
@@ -222,11 +230,9 @@ namespace stool
                 }
                 else
                 {
-                    std::cout << "REP" << std::endl;
                     for (auto &it : this->sub_trees)
                     {
                         uint64_t x = (it->get_current_lcp() - this->current_lcp) + it->finished_level_count();
-                        std::cout << x << "/" << this->current_lcp << "/" << it->get_current_lcp() << "/" << it->finished_level_count() << std::endl;
                         if (x < k)
                         {
                             k = x;
@@ -235,7 +241,7 @@ namespace stool
                     assert(k != UINT64_MAX);
                     for (uint64_t i = 0; i < k; i++)
                     {
-                        this->children_intervals.push_back(std::deque<uint64_t>());
+                        this->children_intervals.push_back(std::deque<INDEX_SIZE>());
                         this->first_child_flag_vec.push_back(std::deque<bool>());
                         this->maximal_repeat_check_vec.push_back(std::deque<bool>());
                     }
@@ -287,6 +293,29 @@ namespace stool
                 }
 
                 return k;
+            }
+
+            void import(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3, uint64_t lcp)
+            {
+                uint64_t k = 1000;
+                while (this->sub_trees.size() > 0)
+                {
+                    delete this->sub_trees[this->sub_trees.size() - 1];
+                    this->sub_trees.pop_back();
+                }
+                while (item3.size() > 0)
+                {
+                    auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
+                    sub_trees.push_back(st);
+                    uint64_t num = item3.size() < k ? item3.size() : k;
+                    st->import(item1, item2, item3, lcp, num);
+                    
+                }
+                assert(item1.size() == 0);
+                assert(item2.size() == 0);
+                assert(item3.size() == 0);
+
+                this->current_lcp = lcp;
             }
 
         private:
@@ -344,7 +373,7 @@ namespace stool
             }
             void single_process()
             {
-                if (this->child_count() == 0)
+                if (this->sub_trees.size() == 0)
                     return;
                 uint64_t fst_pos = 0;
                 for (uint64_t i = 1; i < this->sub_trees.size(); i++)
@@ -352,7 +381,6 @@ namespace stool
                     position_stack.push(i);
                 }
 
-                assert(this->child_count() > 0);
 
                 uint64_t limit = peak_mmax - this->mmax;
 
@@ -383,9 +411,8 @@ namespace stool
 
                 //assert(this->sub_trees[0]->last_node_count() > 0);
 
-                while (this->sub_trees[0]->last_node_count() > 1)
+                while (this->sub_trees[0]->last_node_count() > 1 && this->sub_trees.size() < this->sub_tree_max_count)
                 {
-                    std::cout << "SPLIT" << std::endl;
                     auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
                     this->sub_trees[0]->split(*st);
                     this->sub_trees.push_back(st);
