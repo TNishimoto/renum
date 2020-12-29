@@ -40,6 +40,7 @@ namespace stool
             STNodeSubTraverser(RLBWTDS *__RLBWTDS) : _RLBWTDS(__RLBWTDS)
             {
                 maximal_repeat_check_vec.resize(0);
+
             }
             /*
             ~STNodeSubTraverser()

@@ -54,6 +54,8 @@ target_link_libraries(beller.out fn)
 add_executable(hyper.out src/main/hyper_main.cpp)
 target_link_libraries(hyper.out fn)
 
-add_executable(elias_test.out module/stool/src/test/elias_fano_test_main.cpp)
-target_link_libraries(elias_test.out fn)
+#add_executable(elias_test.out module/stool/src/test/elias_fano_test_main.cpp)
+#target_link_libraries(elias_test.out fn)
 
+add_executable(test.out src/main/test_main.cpp)
+target_link_libraries(test.out fn)

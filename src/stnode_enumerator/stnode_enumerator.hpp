@@ -246,9 +246,10 @@ namespace stool
 
 
                 this->update_info();
+                /*
                 if (this->mode == STANDARD_MODE && (this->child_count() * 10 < this->peak_child_count))
                 {
-                    std::cout << "Swithc" << std::endl;
+                    std::cout << "Switch" << std::endl;
 
                     std::deque<INDEX_SIZE> childs_vec;
                     std::deque<bool> first_child_flag_vec;
@@ -260,6 +261,7 @@ namespace stool
                     this->fast_st_traverser.process();
 
                 }
+                */
 
 #if DEBUG
 

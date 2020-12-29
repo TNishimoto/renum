@@ -67,13 +67,15 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000 << "[KB]" << std::endl;
     std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
 
+
+    uint64_t data_structure_bytes = 0;
     sdsl::store_to_file(diff_char_vec, inputFile + ".tmp");
 
     stool::WT wt;
     construct(wt, inputFile + ".tmp");
 
     string bit_size_mode = "UINT64_t";
-
+    data_structure_bytes += sdsl::size_in_bytes(wt);
     std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
     char MODE = mode[0];
@@ -113,16 +115,19 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         stool::EliasFanoVector lpos_vec;
         lpos_vec.build_from_builder(run_bits);
         std::cout << "LPOS Vec using memory = " << lpos_vec.get_using_memory() / 1000 << "[KB]" << std::endl;
+        data_structure_bytes += lpos_vec.get_using_memory();
 
         //lpos_vec.build_from_bit_vector(run_bits);
         using LPOSDS = stool::EliasFanoVector;
         using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
         FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
         std::cout << "FPOS Vec using memory = " << fposds.get_using_memory() / 1000 << "[KB]" << std::endl;
+        data_structure_bytes += fposds.get_using_memory();
 
         mid = std::chrono::system_clock::now();
         construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
         std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
+    std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes/1000) << "[KB]" << std::endl;
 
         if (bwtAnalysis.str_size < UINT32_MAX - 10)
         {
@@ -159,6 +164,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
     std::cout << "LPOS and FPos Vector type \t\t\t\t : " << (MODE == '0' ? "std::vector<uint64_t>" : "EliasFano") << std::endl;
     std::cout << "Peak children count \t\t\t : " << st_result.max_nodes_at_level << std::endl;
+    std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes/1000) << "[KB]" << std::endl;
 
     std::cout << "Thread number \t\t\t\t : " << thread_num << std::endl;
     std::cout << "Integer Type \t\t\t\t : " << bit_size_mode << std::endl;
