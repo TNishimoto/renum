@@ -326,6 +326,56 @@ namespace stool
 
                 return isSplit;
             }
+            std::pair<uint64_t, uint64_t> countNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            {
+
+                bool isSplit = false;
+                RINTERVAL intv;
+
+                uint64_t next_st_count = 0;
+                uint64_t next_children_count = 0;
+
+                assert(this->children_count() == this->first_child_flag_vec.size());
+                uint64_t size = this->_stnode_count;
+                uint64_t L = 0;
+                uint64_t _left = 0, _right = 0;
+
+                for (uint64_t i = 0; i < size; i++)
+                {
+                    assert(this->first_child_flag_vec[L]);
+
+                    uint64_t nextL = this->increment(L, _left, _right);
+                    this->_RLBWTDS->to_rinterval(_left, _right, intv);
+
+                    em.clear();
+                    em.computeSTNodeCandidates(intv);
+
+                    for (uint64_t i = L; i < nextL; i++)
+                    {
+                        RINTERVAL child;
+                        uint64_t left = this->get_child_start_position(i);
+                        uint64_t right = this->get_child_end_position(i);
+                        assert(left <= right);
+
+                        this->_RLBWTDS->to_rinterval(left, right, child);
+                        em.computeSTChildren(child);
+                    }
+
+                    em.fit(false);
+                    for (uint64_t i = 0; i < em.indexCount; i++)
+                    {
+                        auto c = em.indexVec[i];
+                        auto &currentVec = em.childrenVec[c];
+                        uint64_t count = currentVec.size();
+                        next_st_count++;
+                        next_children_count += count;
+                    }
+                    L = nextL;
+                }
+
+
+                return std::pair<uint64_t, uint64_t>(next_st_count,next_children_count);
+            }
 
             void print()
             {

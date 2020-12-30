@@ -35,10 +35,9 @@ using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
 
-void computeMaximalSubstrings(std::string inputFile, std::string dataFile, string mode, int thread_num)
+void computeMaximalSubstrings(std::string inputFile, std::string dataFile, string mode, int thread_num, bool is_count)
 {
     auto start = std::chrono::system_clock::now();
-
 
     sdsl::int_vector<> diff_char_vec;
     stool::EliasFanoVectorBuilder run_bits;
@@ -98,21 +97,33 @@ void computeMaximalSubstrings(std::string inputFile, std::string dataFile, strin
         std::ifstream inp;
         inp.open(dataFile, std::ios::binary);
         stnodeTraverser.load(inp);
-        inp.close();    
+        inp.close();
     }
+
     uint64_t input_children_count = stnodeTraverser.child_count();
-    stnodeTraverser.process();
-    uint64_t output_children_count = stnodeTraverser.child_count();
+    uint64_t output_children_count = 0;
+    if (is_count)
+    {
+        output_children_count = stnodeTraverser.parallel_count();
+    }
+    else
+    {
+        stnodeTraverser.process();
+        output_children_count = stnodeTraverser.child_count();
+    }
 
     uint64_t current_lcp = stnodeTraverser.get_current_lcp();
     std::string outputFile = inputFile + "." + std::to_string(current_lcp) + ".data";
-    std::ofstream out(outputFile, std::ios::out | std::ios::binary);
-    if (!out)
+    if (!is_count)
     {
-        throw std::runtime_error("Cannot open the output file!");
-    }
+        std::ofstream out(outputFile, std::ios::out | std::ios::binary);
+        if (!out)
+        {
+            throw std::runtime_error("Cannot open the output file!");
+        }
 
-    stnodeTraverser.write(out);
+        stnodeTraverser.write(out);
+    }
     bit_size_mode = "UINT32_t";
 
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
@@ -124,7 +135,9 @@ void computeMaximalSubstrings(std::string inputFile, std::string dataFile, strin
     std::cout << "\033[31m";
     std::cout << "______________________RESULT______________________" << std::endl;
     std::cout << "RLBWT File \t\t\t\t : " << inputFile << std::endl;
-    std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
+    if(!is_count){
+        std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
+    }
     std::cout << "Input chilren count \t\t\t : " << input_children_count << std::endl;
     std::cout << "output chilren count \t\t\t : " << output_children_count << std::endl;
 
@@ -163,12 +176,15 @@ int main(int argc, char *argv[])
     p.add<int>("thread_num", 'p', "thread number", false, -1);
 
     p.add<bool>("debug", 'd', "debug", false, false);
+    p.add<bool>("count", 'c', "count", false, false);
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");
     string dataFile = p.get<string>("data_file");
 
     bool debug = p.get<bool>("debug");
+    bool is_count = p.get<bool>("count");
+
     string mode = p.get<string>("mode");
 
     //string outputFile = p.get<string>("output_file");
@@ -188,6 +204,5 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-
-    computeMaximalSubstrings(inputFile, dataFile, mode, thread_num);
+    computeMaximalSubstrings(inputFile, dataFile, mode, thread_num, is_count);
 }

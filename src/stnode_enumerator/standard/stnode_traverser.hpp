@@ -80,15 +80,17 @@ namespace stool
                 }
             }
         }
-        /*
-        template <typename INDEX_SIZE, typename RLBWTDS>
-        void dummy_parallel_process_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
-                                      std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
-        {
 
+        template <typename INDEX_SIZE, typename RLBWTDS>
+        void parallel_count_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
+                                    std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t &output_children_count)
+        {
+            output_children_count = 0;
             uint64_t pos = fst_position;
             while (pos != UINT64_MAX)
             {
+                auto pair = trees[pos]->countNextLCPIntervalSet(em);
+                output_children_count += pair.second;
                 pos = UINT64_MAX;
                 {
                     std::lock_guard<std::mutex> lock(mtx);
@@ -100,7 +102,7 @@ namespace stool
                 }
             }
         }
-        */
+
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeTraverser
         {
@@ -210,7 +212,7 @@ namespace stool
             {
                 this->clear();
 
-                                std::cout << "\033[33m";
+                std::cout << "\033[33m";
 
                 std::cout << "LOAD" << std::endl;
                 file.seekg(0, std::ios::end);
@@ -226,8 +228,6 @@ namespace stool
                 std::cout << "lcp = " << this->current_lcp << std::endl;
                 std::cout << "sub_tree_count = " << sub_tree_count << std::endl;
 
-
-
                 for (uint64_t i = 0; i < sub_tree_count; i++)
                 {
 
@@ -236,7 +236,6 @@ namespace stool
                     this->sub_trees.push_back(st);
                     this->_child_count += st->children_count();
                     this->_node_count += st->node_count();
-
                 }
                 //this->print();
                 std::cout << "\033[39m" << std::endl;
@@ -261,6 +260,46 @@ namespace stool
                 out.close();
                 //this->print();
                 std::cout << "\033[39m" << std::endl;
+            }
+            
+            uint64_t parallel_count()
+            {
+
+                std::vector<uint64_t> fst_pos_vec;
+                std::vector<uint64_t> children_count_vec;
+
+                fst_pos_vec.resize(this->thread_count, UINT64_MAX);
+                children_count_vec.resize(this->thread_count, 0);
+
+                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
+                {
+                    if (i < this->thread_count)
+                    {
+                        fst_pos_vec[i] = i;
+                    }
+                    else
+                    {
+                        position_stack.push(i);
+                    }
+                }
+
+                //auto start = std::chrono::system_clock::now();
+                std::vector<thread> threads;
+
+                for (uint64_t i = 0; i < this->thread_count; i++)
+                {
+                    threads.push_back(thread(parallel_count_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i]) ));
+                }
+
+                for (thread &t : threads)
+                    t.join();
+
+                assert(position_stack.size() == 0);
+                uint64_t count = 0;
+                for(auto &it : children_count_vec){
+                    count += it;
+                }
+                return count;
             }
             uint64_t write_maximal_repeats(std::ofstream &out)
             {
@@ -375,6 +414,7 @@ namespace stool
 
                 current_lcp++;
             }
+
             void parallel_process()
             {
 #if DEBUG
