@@ -23,7 +23,7 @@ uint64_t u_value = 0;
 
 struct Hoge
 {
-    std::deque<uint64_t> *vec;
+    std::deque<uint64_t> vec;
 };
 
 void parallel_process_deque(std::deque<uint64_t> *vec, uint64_t size)
@@ -46,9 +46,15 @@ void parallel_process_vector(std::vector<uint64_t> *vec, uint64_t size)
     for (uint64_t i = 0; i < size; i++)
     {
         (*vec).push_back(i);
-    }
+    }    
+}
+void parallel_process_structure(Hoge *vec, uint64_t size)
+{
     
-    
+    for (uint64_t i = 0; i < size; i++)
+    {
+        vec->vec.push_back(i);
+    }    
 }
 
 void test_deque(uint64_t size, uint64_t thread_count, bool is_parallel)
@@ -173,6 +179,46 @@ void test_queue(uint64_t size, uint64_t thread_count, bool is_parallel)
     }
     std::cout << z << "/" << (y / 1000) << " KB" << std::endl;
 }
+void test_hoge(uint64_t size, uint64_t thread_count, bool is_parallel)
+{
+    std::cout << "TEST HOGE " << (is_parallel ? "PARALLEL" : "SINGLE") << std::endl;
+    std::vector<Hoge*> tmp;
+
+    for (uint64_t i = 0; i < thread_count; i++)
+    {
+        auto vec = new Hoge();
+
+        tmp.push_back(vec);
+    }
+    if (is_parallel)
+    {
+        std::vector<thread> threads;
+        for (uint64_t i = 0; i < thread_count; i++)
+        {
+            threads.push_back(thread(parallel_process_structure, tmp[i], size));
+        }
+
+        for (thread &t : threads)
+            t.join();
+    }
+    else
+    {
+        for (uint64_t i = 0; i < thread_count; i++)
+        {
+            parallel_process_structure(tmp[i], size);
+        }
+    }
+
+    uint64_t y = 0;
+    uint64_t z = 0;
+
+    for (uint64_t i = 0; i < thread_count; i++)
+    {
+        y += tmp[i]->vec.size() * 8;
+        z += tmp[i]->vec.size();
+    }
+    std::cout << z << "/" << (y / 1000) << " KB" << std::endl;
+}
 int main(int argc, char *argv[])
 {
 
@@ -214,6 +260,14 @@ int main(int argc, char *argv[])
     else if (mode == "VP")
     {
         test_vector(usize, thread, true);
+    }
+    else if (mode == "HS")
+    {
+        test_hoge(usize, thread, false);
+    }
+    else if (mode == "HP")
+    {
+        test_hoge(usize, thread, true);
     }
     else
     {

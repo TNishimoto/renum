@@ -150,13 +150,6 @@ namespace stool
                     }
                     this->add_child(copy, j == 0);
                 }
-                /*
-                #if DEBUG
-                if(this->debug){
-
-                }
-                #endif
-                */
                 this->call_st_node(count);
             }
 

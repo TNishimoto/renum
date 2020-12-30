@@ -57,5 +57,5 @@ target_link_libraries(hyper.out fn)
 #add_executable(elias_test.out module/stool/src/test/elias_fano_test_main.cpp)
 #target_link_libraries(elias_test.out fn)
 
-add_executable(test.out src/main/test_main.cpp)
-target_link_libraries(test.out fn)
+add_executable(ptest.out src/main/ptest_main.cpp)
+target_link_libraries(ptest.out fn)
