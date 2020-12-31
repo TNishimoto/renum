@@ -62,12 +62,12 @@ namespace stool
         void parallel_process_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
                                       std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
         {
-
+            STNodeVector<INDEX_SIZE> tmp;
             uint64_t pos = fst_position;
             while (pos != UINT64_MAX)
             {
 
-                trees[pos]->computeNextLCPIntervalSetForParallelProcessing(em);
+                trees[pos]->computeNextLCPIntervalSetForParallelProcessing(em, tmp);
                 //assert(trees[pos]->children_count() <= limit);
                 pos = UINT64_MAX;
                 {
@@ -525,6 +525,10 @@ namespace stool
             {
                 bool isSingleProcess = false;
 
+                if(current_lcp == 13){
+                    throw -1;
+                }
+
                 if (current_lcp > 0)
                 {
 
@@ -545,17 +549,6 @@ namespace stool
 
                     this->sub_trees[0]->first_compute(ems[0]);
                 }
-                /*
-                for (auto &it : this->new_trees)
-                {
-                    while (it.size() > 0)
-                    {
-
-                        this->sub_trees.push_back(it[it.size() - 1]);
-                        it.pop_back();
-                    }
-                }
-                */
 
                 this->merge();
                 this->remove_empty_trees();
