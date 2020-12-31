@@ -56,14 +56,14 @@ void computeMaximalSubstrings(std::string inputFile, std::string dataFile, strin
     data_structure_bytes += sdsl::size_in_bytes(wt);
     std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
-    char MODE = mode[0];
+    //char MODE = mode[0];
     //char FPOSMODE = mode[1];
 
     //std::cout << "LPOS Data Structure: " << MODE << std::endl;
     //std::cout << "FPOS Data Structure: " << FPOSMODE << std::endl;
 
-    uint64_t ms_count = 0;
-    stool::lcp_on_rlbwt::STTreeAnalysisResult st_result;
+    //uint64_t ms_count = 0;
+    //stool::lcp_on_rlbwt::STTreeAnalysisResult st_result;
 
     double construction_time = 0;
     std::chrono::system_clock::time_point mid;
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     string inputFile = p.get<string>("input_file");
     string dataFile = p.get<string>("data_file");
 
-    bool debug = p.get<bool>("debug");
+    //bool debug = p.get<bool>("debug");
     bool is_count = p.get<bool>("count");
 
     string mode = p.get<string>("mode");

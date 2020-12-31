@@ -261,7 +261,7 @@ namespace stool
                 //this->print();
                 std::cout << "\033[39m" << std::endl;
             }
-            
+
             uint64_t parallel_count()
             {
 
@@ -288,7 +288,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    threads.push_back(thread(parallel_count_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i]) ));
+                    threads.push_back(thread(parallel_count_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i])));
                 }
 
                 for (thread &t : threads)
@@ -296,7 +296,8 @@ namespace stool
 
                 assert(position_stack.size() == 0);
                 uint64_t count = 0;
-                for(auto &it : children_count_vec){
+                for (auto &it : children_count_vec)
+                {
                     count += it;
                 }
                 return count;
@@ -305,8 +306,23 @@ namespace stool
             {
                 uint64_t count = 0;
                 std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
+                std::vector<stool::LCPInterval<uint64_t>> tmp;
                 for (auto &it : this->sub_trees)
                 {
+                    it->get_lcp_intervals(this->current_lcp - 1, tmp);
+
+                    for (auto &intv : tmp)
+                    {
+                        stool::LCPInterval<INDEX_SIZE> newLCPIntv(intv.i, intv.j, intv.lcp);
+                        buffer.push_back(newLCPIntv);
+                        tmp.clear();
+                        if (buffer.size() >= 8000)
+                        {
+                            out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                            buffer.clear();
+                        }
+                    }
+                    /*
                     uint64_t size = it->node_count();
                     uint64_t L = 0;
                     uint64_t _left = 0, _right = 0;
@@ -325,6 +341,7 @@ namespace stool
                             }
                         }
                     }
+                    */
                 }
                 if (buffer.size() >= 1)
                 {
@@ -333,6 +350,14 @@ namespace stool
                 }
                 return count;
             }
+            void get_lcp_intervals(std::vector<stool::LCPInterval<uint64_t>> &output)
+            {
+                for (auto &it : this->sub_trees)
+                {
+                    it->get_lcp_intervals(this->current_lcp - 1, output);
+                }
+            }
+            /*
             uint64_t get_stnode(uint64_t L, stool::LCPInterval<uint64_t> &output)
             {
                 uint64_t p = 0;
@@ -351,6 +376,7 @@ namespace stool
                 }
                 return UINT64_MAX;
             }
+            */
 
             void process()
             {

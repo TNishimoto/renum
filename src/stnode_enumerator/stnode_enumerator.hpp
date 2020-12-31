@@ -153,6 +153,25 @@ namespace stool
                     throw -1;
                 }
             }
+
+            void get_lcp_intervals(std::vector<stool::LCPInterval<uint64_t>> &output)
+            {
+                if (this->mode == STANDARD_MODE)
+                {
+                    this->standard_st_traverser.get_lcp_intervals(output);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    assert(false);
+                    throw -1;
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+            }
+            /*
             uint64_t get_stnode(uint64_t L, stool::LCPInterval<uint64_t> &output)
             {
                 if (this->mode == STANDARD_MODE)
@@ -176,11 +195,10 @@ namespace stool
                     throw -1;
                 }
             }
+            */
 
             void process()
             {
-                
-                
 
                 if (this->total_counter > 0)
                 {
@@ -242,8 +260,6 @@ namespace stool
                         throw -1;
                     }
                 }
-
-
 
                 this->update_info();
                 /*

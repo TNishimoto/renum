@@ -111,13 +111,40 @@ namespace stool
                 this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
                 this->_stnode_count++;
             }
+            uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
+            {
+                assert(this->first_child_flag_vec[L]);
+                assert(!this->first_child_flag_vec[L + 1]);
+
+                uint64_t R = L + 1;
+                while (R < this->first_child_flag_vec.size() && !this->first_child_flag_vec[R])
+                {
+                    R++;
+                }
+
+                R--;
+
+                left = this->get_child_start_position(L);
+                right = this->get_child_end_position(R);
+
+                return R + 1;
+            }
 
         public:
+            void get_lcp_intervals(uint64_t lcp, std::vector<stool::LCPInterval<uint64_t>> &output){
+                uint64_t size = this->maximal_repeat_check_vec.size();
+                uint64_t L = 0;
+                uint64_t left;
+                uint64_t right;
+                for(uint64_t i=0;i<size;i++){
+                    L = this->increment(L, left, right);
+                    output.push_back(stool::LCPInterval<uint64_t>(left, right, lcp));
+                }
+
+            }
             void load(std::ifstream &file)
             {
-                uint64_t _children_count = 0, _node_count = 0;
-                file.read((char *)&_node_count, sizeof(uint64_t));
-                this->_stnode_count = _node_count;
+                file.read((char *)&this->_stnode_count, sizeof(uint64_t));
 
                 stool::IO::load_deque(file, this->childs_vec);
                 stool::IO::load_bits(file, this->first_child_flag_vec);
@@ -139,24 +166,7 @@ namespace stool
             {
                 return this->maximal_repeat_check_vec[st_index];
             }
-            uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
-            {
-                assert(this->first_child_flag_vec[L]);
-                assert(!this->first_child_flag_vec[L + 1]);
-
-                uint64_t R = L + 1;
-                while (R < this->first_child_flag_vec.size() && !this->first_child_flag_vec[R])
-                {
-                    R++;
-                }
-
-                R--;
-
-                left = this->get_child_start_position(L);
-                right = this->get_child_end_position(R);
-
-                return R + 1;
-            }
+            /*
             uint64_t get_stnode(uint64_t L, stool::LCPInterval<uint64_t> &output, uint64_t lcp)
             {
                 if (!this->first_child_flag_vec[L])
@@ -177,6 +187,7 @@ namespace stool
 
                 return newL;
             }
+            */
 
             uint64_t children_count() const
             {
@@ -329,7 +340,6 @@ namespace stool
             std::pair<uint64_t, uint64_t> countNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
             {
 
-                bool isSplit = false;
                 RINTERVAL intv;
 
                 uint64_t next_st_count = 0;

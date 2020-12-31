@@ -25,7 +25,6 @@ namespace stool
             uint64_t max_nodes_at_level;
         };
 
-
         template <typename RLBWTDS>
         class Application
         {
@@ -46,7 +45,6 @@ namespace stool
 
                     stnodeSequencer.process();
                     count += stnodeSequencer.write_maximal_repeats(out);
-
                 }
                 std::cout << "Enumerated" << std::endl;
                 analysis.max_nodes_at_level = stnodeSequencer.peak_child_count;
@@ -60,7 +58,7 @@ namespace stool
 
                 while (!stnodeSequencer.isStop())
                 {
-                std::vector<stool::LCPInterval<uint64_t>> r2;
+                    std::vector<stool::LCPInterval<uint64_t>> r2;
 
                     stnodeSequencer.process();
 
@@ -69,21 +67,14 @@ namespace stool
                     it.j = 0;
                     it.lcp = 0;
 
-                    uint64_t L = 0;
-
-                    for (uint64_t i = 0; i < stnodeSequencer.node_count(); i++)
-                    {
-                        L = stnodeSequencer.get_stnode(L, it);
-                        //std::cout << "Add " << it.to_string() << std::endl;
-                        r2.push_back(it);
-
-                    }
+                    stnodeSequencer.get_lcp_intervals(r2);
 
                     if (stnodeSequencer._RLBWTDS->stnc != nullptr)
                     {
                         stnodeSequencer._RLBWTDS->stnc->increment(r2);
                     }
-                    for(auto &it : r2){
+                    for (auto &it : r2)
+                    {
                         r.push_back(it);
                     }
                 }
