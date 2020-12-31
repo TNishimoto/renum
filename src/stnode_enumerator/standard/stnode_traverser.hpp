@@ -64,7 +64,7 @@ namespace stool
                 }
             }
         }
-        /*
+        
         template <typename INDEX_SIZE, typename RLBWTDS>
         void parallel_test_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
                                     std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t &output_children_count)
@@ -86,7 +86,7 @@ namespace stool
                 }
             }
         }
-        */
+        
 
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeTraverser
@@ -245,7 +245,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    threads.push_back(thread(parallel_count_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i])));
+                    threads.push_back(thread(parallel_test_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i])));
                 }
 
                 for (thread &t : threads)
