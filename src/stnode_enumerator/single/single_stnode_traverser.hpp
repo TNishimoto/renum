@@ -10,6 +10,7 @@
 #include <type_traits>
 #include "../weiner_link_emulator.hpp"
 #include "../../../module/stool/src/io.h"
+#include "../stnode_vector.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
@@ -29,6 +30,7 @@ namespace stool
             int64_t lcp = -1;
             RLBWTDS *_RLBWTDS = nullptr;
             ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> em;
+
         public:
             SingleSTNodeTraverser()
             {
@@ -36,7 +38,8 @@ namespace stool
             SingleSTNodeTraverser(RLBWTDS *__RLBWTDS) : _RLBWTDS(__RLBWTDS)
             {
             }
-            void initialize(RLBWTDS *__RLBWTDS){
+            void initialize(RLBWTDS *__RLBWTDS)
+            {
                 this->_RLBWTDS = __RLBWTDS;
                 this->lcp = -1;
                 this->em.initialize(__RLBWTDS);
@@ -132,7 +135,6 @@ namespace stool
                 stool::IO::write_bits(out, this->maximal_repeat_check_vec);
             }
 
-
             int64_t get_current_lcp() const
             {
                 return lcp;
@@ -152,12 +154,15 @@ namespace stool
                 this->childs_vec.clear();
                 this->maximal_repeat_check_vec.clear();
                 this->first_child_flag_vec.clear();
-
             }
-            void process(){
-                if(this->lcp == -1){
+            void process()
+            {
+                if (this->lcp == -1)
+                {
                     this->first_compute();
-                }else{
+                }
+                else
+                {
                     this->computeNextLCPIntervalSet();
                 }
             }
@@ -319,7 +324,29 @@ namespace stool
                 uint64_t x4 = (maximal_repeat_check_vec.size() * 1) / 8;
                 return x1 + x2 + x4;
             }
+            void convert_to_vector(STNodeVector<INDEX_SIZE> &output)
+            {
+                output.childs_vec.reserve(this->childs_vec.size());
+                while (this->childs_vec.size() > 0)
+                {
+                    output.childs_vec.push_back(this->childs_vec[0]);
+                    this->childs_vec.pop_front();
+                }
 
+                output.first_child_flag_vec.reserve(this->first_child_flag_vec.size());
+                while (this->first_child_flag_vec.size() > 0)
+                {
+                    output.first_child_flag_vec.push_back(this->first_child_flag_vec[0]);
+                    this->first_child_flag_vec.pop_front();
+                }
+                output.maximal_repeat_check_vec.reserve(this->maximal_repeat_check_vec.size());
+
+                while (this->maximal_repeat_check_vec.size() > 0)
+                {
+                    output.maximal_repeat_check_vec.push_back(this->maximal_repeat_check_vec[0]);
+                    this->maximal_repeat_check_vec.pop_front();
+                }
+            }
         };
 
     } // namespace lcp_on_rlbwt

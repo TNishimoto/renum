@@ -51,6 +51,7 @@ namespace stool
             uint64_t _expected_peak_memory_bits = 0;
             uint64_t _switch_threshold = 0;
             uint64_t debug_peak_memory = 0;
+            uint64_t thread_count = 1;
 
             uint mode = SINGLE_MODE;
             //uint mode = FAST_MODE;
@@ -110,13 +111,14 @@ namespace stool
                 return this->_switch_threshold;
             }
 
-            void initialize(uint64_t size, RLBWTDS &_RLBWTDS)
+            void initialize(uint64_t _thread_count, RLBWTDS &_RLBWTDS)
             {
                 this->_RLBWTDS = &_RLBWTDS;
                 //this->strSize = _RLBWTDS.str_size();
-                this->standard_st_traverser.initialize(size, _RLBWTDS);
-                this->fast_st_traverser.initialize(size, _RLBWTDS);
+                this->standard_st_traverser.initialize(_thread_count, _RLBWTDS);
+                this->fast_st_traverser.initialize(_thread_count, _RLBWTDS);
                 this->single_st_traverser.initialize(&_RLBWTDS);
+                this->thread_count = _thread_count;
 
 #if DEBUG
                 if (this->_RLBWTDS->str_size() < 100)
@@ -268,6 +270,14 @@ namespace stool
                 }
 
                 this->update_info();
+                if(this->mode == SINGLE_MODE && this->thread_count > 1){
+                    std::cout << "Switch -> STANDARD" << std::endl;
+                    this->mode = STANDARD_MODE;
+                    STNodeVector<INDEX_SIZE> tmp;
+                    this->single_st_traverser.convert_to_vector(tmp);
+                    this->standard_st_traverser.import(this->single_st_traverser.get_current_lcp(),tmp);
+
+                }
                 /*
                 if (this->mode == STANDARD_MODE && (this->child_count() * 10 < this->peak_child_count))
                 {

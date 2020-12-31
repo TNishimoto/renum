@@ -10,6 +10,7 @@
 #include <type_traits>
 #include "../weiner_link_emulator.hpp"
 #include "../../../module/stool/src/io.h"
+#include "../stnode_vector.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
@@ -17,67 +18,6 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        /*
-        int64_t debug_sum_counter = 0;
-        int64_t debug_peak_counter = 0;
-        */
-        //std::mutex mtx2;
-
-        template <typename INDEX_SIZE>
-        class STNodeVector
-        {
-        public:
-            std::vector<INDEX_SIZE> childs_vec;
-            std::vector<bool> first_child_flag_vec;
-            std::vector<bool> maximal_repeat_check_vec;
-
-            STNodeVector()
-            {
-            }
-            void clear()
-            {
-                this->childs_vec.clear();
-                this->first_child_flag_vec.clear();
-                this->maximal_repeat_check_vec.clear();
-            }
-            void move(std::deque<INDEX_SIZE> &_childs_vec, std::deque<bool> &_first_child_flag_vec, std::deque<bool> &_maximal_repeat_check_vec)
-            {
-                uint64_t minSize = std::min(this->first_child_flag_vec.size(), _first_child_flag_vec.size());
-                for (uint64_t i = 0; i < minSize; i++)
-                {
-                    _childs_vec[(i * 2)] = this->childs_vec[(i * 2)];
-                    _childs_vec[(i * 2) + 1] = this->childs_vec[(i * 2) + 1];
-                    _first_child_flag_vec[i] = this->first_child_flag_vec[i];
-                }
-                for (uint64_t i = minSize; i < this->first_child_flag_vec.size(); i++)
-                {
-                    _childs_vec.push_back(this->childs_vec[(i * 2)]);
-                    _childs_vec.push_back(this->childs_vec[(i * 2) + 1]);
-                    _first_child_flag_vec.push_back(this->first_child_flag_vec[i]);
-                }
-                while (_first_child_flag_vec.size() > this->first_child_flag_vec.size())
-                {
-                    _childs_vec.pop_back();
-                    _childs_vec.pop_back();
-                    _first_child_flag_vec.pop_back();
-                }
-
-                uint64_t minSTSize = std::min(this->maximal_repeat_check_vec.size(), _maximal_repeat_check_vec.size());
-                for (uint64_t i = 0; i < minSTSize; i++)
-                {
-                    _maximal_repeat_check_vec[i] = this->maximal_repeat_check_vec[i];
-                }
-                for (uint64_t i = minSTSize; i < this->maximal_repeat_check_vec.size(); i++)
-                {
-                    _maximal_repeat_check_vec.push_back(this->maximal_repeat_check_vec[i]);
-                }
-                while (_maximal_repeat_check_vec.size() > this->maximal_repeat_check_vec.size())
-                {
-                    _maximal_repeat_check_vec.pop_back();
-                }
-                this->clear();
-            }
-        };
 
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeSubTraverser
@@ -225,6 +165,7 @@ namespace stool
                 uint64_t L = 0;
                 uint64_t left;
                 uint64_t right;
+
                 for (uint64_t i = 0; i < size; i++)
                 {
                     L = this->increment(L, left, right);
@@ -316,32 +257,6 @@ namespace stool
                 auto tmp3 = this->_RLBWTDS;
                 this->_RLBWTDS = item._RLBWTDS;
                 item._RLBWTDS = tmp3;
-            }
-            void first_compute(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
-            {
-                this->first_child_flag_vec.clear();
-
-                //em.computeFirstLCPIntervalSet();
-                auto r = em.getFirstChildren();
-                for (uint64_t i = 0; i < r.size(); i++)
-                {
-                    auto &it = r[i];
-                    this->childs_vec.push_back(it.first);
-                    this->childs_vec.push_back(it.second);
-                    this->first_child_flag_vec.push_back(i == 0);
-                }
-                this->maximal_repeat_check_vec.push_back(true);
-                this->_stnode_count++;
-
-                //em.move_st_internal_nodes(this->childs_vec, this->first_child_flag_vec);
-                /*
-                for (uint64_t i = 0; i < em.indexCount; i++)
-                {
-                    auto c = em.indexVec[i];
-                    em.move_st_internal_nodes(this->childs_vec, this->first_child_flag_vec, this->maximal_repeat_check_vec, c);
-                    this->_stnode_count++;
-                }
-                */
             }
             bool computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
             {
@@ -500,9 +415,7 @@ namespace stool
                     }
                     L = nextL;
                 }
-                std::cout << this->first_child_flag_vec.size() << "/" << tmp.first_child_flag_vec.size() << std::endl;
                 tmp.move(this->childs_vec, this->first_child_flag_vec, this->maximal_repeat_check_vec);
-                
 
                 this->_stnode_count = this->maximal_repeat_check_vec.size();
 
@@ -685,6 +598,22 @@ namespace stool
                 }
                 item._stnode_count += k;
                 this->_stnode_count -= k;
+            }
+            void import(STNodeVector<INDEX_SIZE> &item)
+            {
+                for (auto &it : item.childs_vec)
+                {
+                    this->childs_vec.push_back(it);
+                }
+                for (uint64_t i = 0; i < item.first_child_flag_vec.size(); i++)
+                {
+                    this->first_child_flag_vec.push_back(item.first_child_flag_vec[i]);
+                }
+                for (uint64_t i = 0; i < item.maximal_repeat_check_vec.size(); i++)
+                {
+                    this->maximal_repeat_check_vec.push_back(item.maximal_repeat_check_vec[i]);
+                }
+                this->_stnode_count = this->maximal_repeat_check_vec.size();
             }
         };
 
