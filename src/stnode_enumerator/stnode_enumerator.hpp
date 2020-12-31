@@ -225,7 +225,6 @@ namespace stool
 
             void process()
             {
-
                 if (this->total_counter > 0)
                 {
                     uint64_t ccc = this->_RLBWTDS->str_size() / this->print_interval;

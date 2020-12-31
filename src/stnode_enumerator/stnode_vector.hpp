@@ -38,7 +38,7 @@ namespace stool
                 this->first_child_flag_vec.clear();
                 this->maximal_repeat_check_vec.clear();
             }
-            void move(std::deque<INDEX_SIZE> &_childs_vec, std::deque<bool> &_first_child_flag_vec, std::deque<bool> &_maximal_repeat_check_vec)
+            void move(std::vector<INDEX_SIZE> &_childs_vec, std::vector<bool> &_first_child_flag_vec, std::vector<bool> &_maximal_repeat_check_vec)
             {
                 uint64_t minSize = std::min(this->first_child_flag_vec.size(), _first_child_flag_vec.size());
                 for (uint64_t i = 0; i < minSize; i++)
@@ -46,6 +46,10 @@ namespace stool
                     _childs_vec[(i * 2)] = this->childs_vec[(i * 2)];
                     _childs_vec[(i * 2) + 1] = this->childs_vec[(i * 2) + 1];
                     _first_child_flag_vec[i] = this->first_child_flag_vec[i];
+                }
+                if(_childs_vec.size() < this->childs_vec.size()){
+                    _childs_vec.reserve(this->childs_vec.size());
+                    _first_child_flag_vec.reserve(this->first_child_flag_vec.size());
                 }
                 for (uint64_t i = minSize; i < this->first_child_flag_vec.size(); i++)
                 {

@@ -10,6 +10,7 @@
 #include <type_traits>
 #include "../weiner_link_emulator.hpp"
 #include "stnode_sub_traverser.hpp"
+#include "../single/single_stnode_traverser.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
@@ -87,7 +88,6 @@ namespace stool
         }
         */
 
-
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeTraverser
         {
@@ -101,7 +101,7 @@ namespace stool
             uint64_t minimum_child_count = 1000;
             uint64_t sub_tree_limit_size = 2000;
 
-            int64_t current_lcp = 0;
+            int64_t current_lcp = -1;
             uint64_t _child_count = 0;
             uint64_t _node_count = 0;
 
@@ -115,7 +115,7 @@ namespace stool
         public:
             RLBWTDS *_RLBWTDS;
 
-            uint64_t get_current_lcp() const
+            int64_t get_current_lcp() const
             {
                 return current_lcp;
             }
@@ -139,7 +139,7 @@ namespace stool
                     this->sub_trees[i] = nullptr;
                 }
                 this->sub_trees.clear();
-                this->current_lcp = 0;
+                this->current_lcp = -1;
                 this->_child_count = 0;
                 this->_node_count = 0;
             }
@@ -155,42 +155,14 @@ namespace stool
                     this->sub_tree_limit_size = UINT64_MAX;
                 }
 
-                //assert(size == 1);
-
-                //this->sub_trees.resize(size);
-
                 auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
                 sub_trees.push_back(st);
-                //sub_trees.resize(256);
-
-                //this->new_trees.resize(size);
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    /*
-                    lightRDs.push_back(LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE>());
-                    lightRDs[lightRDs.size() - 1].preprocess(&__RLBWTDS.bwt);
-
-                    heavyRDs.push_back(SuccinctRangeDistinctDataStructure<INDEX_SIZE>());
-                    heavyRDs[heavyRDs.size() - 1].initialize(&__RLBWTDS.wt, lastChar);
-                    */
                     ems.push_back(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>());
                     ems[ems.size() - 1].initialize(&__RLBWTDS);
                 }
-                /*
-                for (uint64_t i = 0; i < this->thread_count; i++)
-                {
-
-                    ems[i].lightDS = &lightRDs[i];
-                    ems[i].heavyDS = &heavyRDs[i];
-                }
-                */
-                /*
-                double ratio = (double)this->_RLBWTDS->str_size() / (double)this->_RLBWTDS->rle_size();
-                double d = std::log2(ratio);
-                this->_expected_peak_memory_bits = this->_RLBWTDS->rle_size() * d;
-                this->_switch_threshold = this->alpha * (this->expected_peak_memory_bits() / (sizeof(uint64_t) * 8));
-                */
             }
 
             void load(std::ifstream &file)
@@ -274,7 +246,6 @@ namespace stool
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
                     threads.push_back(thread(parallel_count_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i])));
-
                 }
 
                 for (thread &t : threads)
@@ -327,8 +298,17 @@ namespace stool
 
             void process()
             {
+                if(this->current_lcp >= 0){
                 this->heavyEnumerate();
                 this->recompute_node_counter();
+                }else{                    
+                    SingleSTNodeTraverser<INDEX_SIZE, RLBWTDS> tmp_traverser;
+                    tmp_traverser.initialize(this->_RLBWTDS);
+                    tmp_traverser.process();
+                    STNodeVector<INDEX_SIZE> tmp;
+                    tmp_traverser.convert_to_vector(tmp);
+                    this->import(tmp_traverser.get_current_lcp(), tmp);
+                }
             }
             bool isStop()
             {
@@ -370,7 +350,8 @@ namespace stool
                 }
                 this->remove_empty_trees();
             }
-            void import(uint64_t lcp, STNodeVector<INDEX_SIZE> &item){
+            void import(uint64_t lcp, STNodeVector<INDEX_SIZE> &item)
+            {
                 assert(this->sub_trees.size() == 1);
                 this->current_lcp = lcp;
                 this->sub_trees[0]->import(item);
@@ -438,9 +419,10 @@ namespace stool
                     return;
                 uint64_t fst_pos = 0;
                 */
+                STNodeVector<INDEX_SIZE> tmp;
                 for (auto &it : this->sub_trees)
                 {
-                    it->computeNextLCPIntervalSet(ems[0]);
+                    it->computeNextLCPIntervalSetForParallelProcessing(ems[0], tmp);
                 }
                 /*
                 for (uint64_t i = 1; i < this->sub_trees.size(); i++)
@@ -458,11 +440,10 @@ namespace stool
             {
                 bool isSingleProcess = false;
 
-                /*
-                if(current_lcp == 13){
+                if (current_lcp == 12)
+                {
                     throw -1;
                 }
-                */
 
                 if (current_lcp >= 0)
                 {
