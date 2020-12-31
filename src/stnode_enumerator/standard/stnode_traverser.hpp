@@ -67,7 +67,7 @@ namespace stool
             while (pos != UINT64_MAX)
             {
 
-                trees[pos]->computeNextLCPIntervalSet(em);
+                trees[pos]->computeNextLCPIntervalSetForParallelProcessing(em);
                 //assert(trees[pos]->children_count() <= limit);
                 pos = UINT64_MAX;
                 {
@@ -102,6 +102,30 @@ namespace stool
                 }
             }
         }
+        /*
+        template <typename INDEX_SIZE, typename RLBWTDS>
+        void parallel_test_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
+                                    std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t &output_children_count)
+        {
+            output_children_count = 0;
+            uint64_t pos = fst_position;
+            while (pos != UINT64_MAX)
+            {
+                auto pair = trees[pos]->test(em);
+                output_children_count += pair.second;
+                pos = UINT64_MAX;
+                {
+                    std::lock_guard<std::mutex> lock(mtx);
+                    if (position_stack.size() > 0)
+                    {
+                        pos = position_stack.top();
+                        position_stack.pop();
+                    }
+                }
+            }
+        }
+        */
+
 
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeTraverser
@@ -114,7 +138,7 @@ namespace stool
 
             std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
             uint64_t minimum_child_count = 1000;
-            uint64_t sub_tree_limit_size = 20000;
+            uint64_t sub_tree_limit_size = 2000;
 
             uint64_t current_lcp = 0;
             uint64_t _child_count = 0;
@@ -289,6 +313,7 @@ namespace stool
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
                     threads.push_back(thread(parallel_count_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i])));
+
                 }
 
                 for (thread &t : threads)
@@ -305,10 +330,10 @@ namespace stool
             uint64_t write_maximal_repeats(std::ofstream &out)
             {
                 uint64_t count = 0;
-                std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
-                std::vector<stool::LCPInterval<uint64_t>> tmp;
                 for (auto &it : this->sub_trees)
                 {
+                    count += it->write_maximal_repeats(this->current_lcp - 1, out);
+                    /*
                     it->get_lcp_intervals(this->current_lcp - 1, tmp);
 
                     for (auto &intv : tmp)
@@ -322,6 +347,7 @@ namespace stool
                             buffer.clear();
                         }
                     }
+                    */
                     /*
                     uint64_t size = it->node_count();
                     uint64_t L = 0;
@@ -342,11 +368,6 @@ namespace stool
                         }
                     }
                     */
-                }
-                if (buffer.size() >= 1)
-                {
-                    out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
-                    buffer.clear();
                 }
                 return count;
             }
@@ -479,9 +500,16 @@ namespace stool
             }
             void single_process()
             {
+                /*
                 if (this->child_count() == 0)
                     return;
                 uint64_t fst_pos = 0;
+                */
+                for (auto &it : this->sub_trees)
+                {
+                    it->computeNextLCPIntervalSet(ems[0]);
+                }
+                /*
                 for (uint64_t i = 1; i < this->sub_trees.size(); i++)
                 {
                     position_stack.push(i);
@@ -491,6 +519,7 @@ namespace stool
 
                 parallel_process_stnodes<INDEX_SIZE, RLBWTDS>(ref(sub_trees), fst_pos, ref(position_stack), ref(ems[0]));
                 assert(position_stack.size() == 0);
+                */
             }
             void heavyEnumerate()
             {
