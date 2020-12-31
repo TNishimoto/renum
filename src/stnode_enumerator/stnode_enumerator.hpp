@@ -14,6 +14,7 @@
 
 #include "standard/stnode_traverser.hpp"
 #include "fast/fast_stnode_traverser.hpp"
+#include "single/single_stnode_traverser.hpp"
 
 #include "succinct/succinct_sorted_stchildren_builder.hpp"
 
@@ -25,6 +26,7 @@ namespace stool
         const uint SUCCINCT_MODE = 1;
         const uint STANDARD_MODE = 0;
         const uint FAST_MODE = 2;
+        const uint SINGLE_MODE = 3;
 
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeEnumerator
@@ -35,6 +37,7 @@ namespace stool
 
             STNodeTraverser<INDEX_SIZE, RLBWTDS> standard_st_traverser;
             FastSTNodeTraverser<INDEX_SIZE, RLBWTDS> fast_st_traverser;
+            SingleSTNodeTraverser<INDEX_SIZE, RLBWTDS> single_st_traverser;
 
             //std::vector<SUCCINCT_STNODE_TRAVERSER *> succinct_sub_trees;
 
@@ -49,7 +52,7 @@ namespace stool
             uint64_t _switch_threshold = 0;
             uint64_t debug_peak_memory = 0;
 
-            uint mode = STANDARD_MODE;
+            uint mode = SINGLE_MODE;
             //uint mode = FAST_MODE;
 
             RLBWTDS *_RLBWTDS;
@@ -63,6 +66,10 @@ namespace stool
                 else if (this->mode == FAST_MODE)
                 {
                     return this->fast_st_traverser.node_count();
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.node_count();
                 }
                 else
                 {
@@ -81,6 +88,10 @@ namespace stool
                 else if (this->mode == FAST_MODE)
                 {
                     return this->fast_st_traverser.child_count();
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.child_count();
                 }
                 else
                 {
@@ -105,6 +116,7 @@ namespace stool
                 //this->strSize = _RLBWTDS.str_size();
                 this->standard_st_traverser.initialize(size, _RLBWTDS);
                 this->fast_st_traverser.initialize(size, _RLBWTDS);
+                this->single_st_traverser.initialize(&_RLBWTDS);
 
 #if DEBUG
                 if (this->_RLBWTDS->str_size() < 100)
@@ -131,13 +143,17 @@ namespace stool
                 {
                     return this->fast_st_traverser.write_maximal_repeats(out);
                 }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.write_maximal_repeats(out);
+                }
                 else
                 {
                     assert(false);
                     throw -1;
                 }
             }
-            uint64_t current_lcp()
+            int64_t current_lcp()
             {
                 if (this->mode == STANDARD_MODE)
                 {
@@ -146,6 +162,10 @@ namespace stool
                 else if (this->mode == FAST_MODE)
                 {
                     return this->fast_st_traverser.get_current_lcp();
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.get_current_lcp();
                 }
                 else
                 {
@@ -164,6 +184,10 @@ namespace stool
                 {
                     assert(false);
                     throw -1;
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    this->single_st_traverser.get_lcp_intervals(output);
                 }
                 else
                 {
@@ -226,39 +250,21 @@ namespace stool
                 }
 #endif
 
-                if (this->current_lcp() == 0)
+                if (this->mode == STANDARD_MODE)
                 {
-                    if (this->mode == STANDARD_MODE)
-                    {
-                        this->standard_st_traverser.process();
-                    }
-                    else if (this->mode == FAST_MODE)
-                    {
-                        this->fast_st_traverser.process();
-                    }
-                    else
-                    {
-                        assert(false);
-                        throw -1;
-                    }
+                    this->standard_st_traverser.process();
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    this->fast_st_traverser.process();
+                }else if (this->mode == SINGLE_MODE)
+                {
+                    this->single_st_traverser.process();
                 }
                 else
                 {
-
-                    //bool isHeavy = true;
-                    if (this->mode == STANDARD_MODE)
-                    {
-                        this->standard_st_traverser.process();
-                    }
-                    else if (this->mode == FAST_MODE)
-                    {
-                        this->fast_st_traverser.process();
-                    }
-                    else
-                    {
-                        assert(false);
-                        throw -1;
-                    }
+                    assert(false);
+                    throw -1;
                 }
 
                 this->update_info();
@@ -307,6 +313,9 @@ namespace stool
                 else if (this->mode == FAST_MODE)
                 {
                     return this->fast_st_traverser.isStop();
+                }else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.get_current_lcp() >= 0 && this->single_st_traverser.node_count() == 0;
                 }
                 else
                 {
@@ -325,6 +334,9 @@ namespace stool
                 else if (this->mode == FAST_MODE)
                 {
                     this->fast_st_traverser.print();
+                }else if (this->mode == SINGLE_MODE)
+                {
+                    this->single_st_traverser.print();
                 }
                 else
                 {
@@ -358,6 +370,9 @@ namespace stool
                 else if (this->mode == FAST_MODE)
                 {
                     return this->fast_st_traverser.get_using_memory();
+                }else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.get_using_memory();
                 }
                 else
                 {

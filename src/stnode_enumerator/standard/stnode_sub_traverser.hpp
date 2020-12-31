@@ -500,6 +500,7 @@ namespace stool
                     }
                     L = nextL;
                 }
+                std::cout << this->first_child_flag_vec.size() << "/" << tmp.first_child_flag_vec.size() << std::endl;
                 tmp.move(this->childs_vec, this->first_child_flag_vec, this->maximal_repeat_check_vec);
                 
 
