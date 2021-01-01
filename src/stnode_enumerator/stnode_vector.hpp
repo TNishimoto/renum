@@ -38,7 +38,35 @@ namespace stool
                 this->first_child_flag_vec.clear();
                 this->maximal_repeat_check_vec.clear();
             }
-            
+            uint64_t size(){
+                return this->maximal_repeat_check_vec.size();
+            }
+
+            //void move_push(std::vector<INDEX_SIZE> &_childs_vec, std::vector<bool> &_first_child_flag_vec, std::vector<bool> &_maximal_repeat_check_vec){
+            void move_push(std::deque<INDEX_SIZE> &_childs_vec, std::deque<bool> &_first_child_flag_vec, std::deque<bool> &_maximal_repeat_check_vec){
+                uint64_t p = UINT64_MAX;
+                for(int64_t i = this->first_child_flag_vec.size() -1; i >= 0;i--){
+                    if(this->first_child_flag_vec[i]){
+                        p = i;
+                        break;
+                    }
+                }
+                uint64_t fsize = this->first_child_flag_vec.size();
+                for(uint64_t i = p;i<fsize;i++){
+                    _childs_vec.push_back(this->childs_vec[(i*2)]);
+                    _childs_vec.push_back(this->childs_vec[(i*2)+1]);
+                    _first_child_flag_vec.push_back(this->first_child_flag_vec[i]);
+                }
+                for(uint64_t i = p;i<fsize;i++){
+                    this->childs_vec.pop_back();
+                    this->childs_vec.pop_back();
+                    this->first_child_flag_vec.pop_back();
+                }
+                _maximal_repeat_check_vec.push_back(this->maximal_repeat_check_vec[this->maximal_repeat_check_vec.size()-1]);
+                this->maximal_repeat_check_vec.pop_back();
+            }
+
+
             void move(std::deque<INDEX_SIZE> &_childs_vec, std::deque<bool> &_first_child_flag_vec, std::deque<bool> &_maximal_repeat_check_vec)
             {
                 uint64_t minSize = std::min(this->first_child_flag_vec.size(), _first_child_flag_vec.size());

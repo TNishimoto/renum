@@ -289,7 +289,7 @@ namespace stool
                 }
                 return count;
             }
-            bool computeNextLCPIntervalSetForParallelProcessing(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, STNodeVector<INDEX_SIZE> &tmp)
+            bool computeNextLCPIntervalSetForParallelProcessing(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, STNodeVector<INDEX_SIZE> &tmp, std::queue<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &uqueue, uint64_t limit)
             {
                 tmp.clear();
                 std::vector<INDEX_SIZE> _child_vec;
@@ -348,7 +348,25 @@ namespace stool
                     }
                     L = nextL;
                 }
-                tmp.move(this->childs_vec, this->first_child_flag_vec, this->maximal_repeat_check_vec);
+                //tmp.move(this->childs_vec, this->first_child_flag_vec, this->maximal_repeat_check_vec);
+
+                this->clear();
+                while(tmp.size() > 0){
+                    if(uqueue.size() > 0){
+                        auto top = uqueue.front();
+                        if(top->children_count() < limit - 1){
+                        tmp.move_push(top->childs_vec, top->first_child_flag_vec, top->maximal_repeat_check_vec);
+                        top->_stnode_count++;
+
+                        }else{
+                            uqueue.pop();
+
+                        }
+                    }else{
+                        tmp.move_push(this->childs_vec, this->first_child_flag_vec, this->maximal_repeat_check_vec);
+                        this->_stnode_count++;
+                    }
+                }
                 
 
 
@@ -514,7 +532,7 @@ namespace stool
                 assert(this->_stnode_count == k);
             }
 #endif
-
+            
             void merge(STNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item)
             {
                 while (item.childs_vec.size() > 0)
@@ -568,6 +586,7 @@ namespace stool
                 item._stnode_count += k;
                 this->_stnode_count -= k;
             }
+            
             /*
             void merge(STNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item)
             {
@@ -627,6 +646,7 @@ namespace stool
 
             }
             */
+            
             void import(STNodeVector<INDEX_SIZE> &item)
             {
                 for (auto &it : item.childs_vec)

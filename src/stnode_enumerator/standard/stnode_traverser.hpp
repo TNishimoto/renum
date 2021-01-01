@@ -22,14 +22,20 @@ namespace stool
         std::mutex mtx;
         template <typename INDEX_SIZE, typename RLBWTDS>
         void parallel_process_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
-                                      std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+                                      std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t limit)
         {
             STNodeVector<INDEX_SIZE> tmp;
+            std::queue<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> uqueue;
             uint64_t pos = fst_position;
             while (pos != UINT64_MAX)
             {
 
-                trees[pos]->computeNextLCPIntervalSetForParallelProcessing(em, tmp);
+                trees[pos]->computeNextLCPIntervalSetForParallelProcessing(em, tmp, uqueue, limit);
+                if(trees[pos]->children_count() < limit){
+                    uqueue.push(trees[pos]);
+                }
+
+
                 //assert(trees[pos]->children_count() <= limit);
                 pos = UINT64_MAX;
                 {
@@ -95,6 +101,8 @@ namespace stool
             using STNODE_SUB_TRAVERSER = STNodeSubTraverser<INDEX_SIZE, RLBWTDS>;
 
             std::vector<STNODE_SUB_TRAVERSER *> sub_trees;
+            std::stack<STNODE_SUB_TRAVERSER *> recycle_sub_trees;
+
             //std::vector<std::vector<STNODE_SUB_TRAVERSER *>> new_trees;
 
             std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
@@ -400,7 +408,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i])));
+                    threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), this->sub_tree_limit_size));
                 }
 
                 for (thread &t : threads)
@@ -420,9 +428,10 @@ namespace stool
                 uint64_t fst_pos = 0;
                 */
                 STNodeVector<INDEX_SIZE> tmp;
+                std::queue<STNODE_SUB_TRAVERSER*> tmp2;
                 for (auto &it : this->sub_trees)
                 {
-                    it->computeNextLCPIntervalSetForParallelProcessing(ems[0], tmp);
+                    it->computeNextLCPIntervalSetForParallelProcessing(ems[0], tmp, tmp2, this->sub_tree_limit_size);
                 }
                 /*
                 for (uint64_t i = 1; i < this->sub_trees.size(); i++)
@@ -482,9 +491,19 @@ namespace stool
                 {
                     if (this->sub_trees[x]->children_count() > this->sub_tree_limit_size)
                     {
+                        if(this->recycle_sub_trees.size() > 0){
+                        auto st = this->recycle_sub_trees.top();
+                        this->recycle_sub_trees.pop();
+                        this->sub_trees[x]->split(*st);
+                        this->sub_trees.push_back(st);
+
+                        }else{
                         auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
                         this->sub_trees[x]->split(*st);
                         this->sub_trees.push_back(st);
+                        std::cout << "SPLIT CREATE" << std::endl;
+
+                        }
                     }
                     else
                     {
@@ -540,7 +559,8 @@ namespace stool
                 for (uint64_t i = nonEmptyCount; i < this->sub_trees.size(); i++)
                 {
                     this->sub_trees[i]->clear();
-                    delete this->sub_trees[i];
+                    this->recycle_sub_trees.push(this->sub_trees[i]);
+                    //delete this->sub_trees[i];
                     this->sub_trees[i] = nullptr;
                 }
                 this->sub_trees.resize(nonEmptyCount);
