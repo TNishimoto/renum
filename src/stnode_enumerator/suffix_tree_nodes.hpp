@@ -29,7 +29,7 @@ namespace stool
         const uint SINGLE_MODE = 3;
 
         template <typename INDEX_SIZE, typename RLBWTDS>
-        class STNodeEnumerator
+        class SuffixTreeNodes
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
             //using STNODE_TRAVERSER = STNodeSubTraverser<INDEX_SIZE, RLBWTDS>;

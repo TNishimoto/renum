@@ -10,7 +10,7 @@
 //#include "next_rinterval_storage_constructor.hpp"
 #include "../rlbwt/rlbwt_data_structures.hpp"
 
-#include "stnode_enumerator.hpp"
+#include "suffix_tree_nodes.hpp"
 #include "weiner_link_emulator.hpp"
 #include <thread>
 #include "../debug/stnode_checker.hpp"
@@ -35,7 +35,7 @@ namespace stool
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            static uint64_t outputMaximalSubstrings(std::ofstream &out, STNodeEnumerator<INDEX_SIZE, RLBWTDS> &stnodeSequencer, STTreeAnalysisResult &analysis)
+            static uint64_t outputMaximalSubstrings(std::ofstream &out, SuffixTreeNodes<INDEX_SIZE, RLBWTDS> &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
 
                 uint64_t count = 0;
@@ -51,7 +51,7 @@ namespace stool
 
                 return count;
             }
-            static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(STNodeEnumerator<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
+            static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(SuffixTreeNodes<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
             {
 
                 std::vector<stool::LCPInterval<uint64_t>> r;
