@@ -21,10 +21,16 @@ namespace stool
             uint8_t fst_value = 0;
             uint8_t last_value = 0;
 
-            uint64_t _count = 0;
             uint64_t fst_unused_size = 8;
             uint64_t last_unused_size = 8;
             public:
+            void clear(){
+                this->deq.clear();
+                this->fst_value = 0;
+                this->last_value = 0;
+                this->fst_unused_size = 8;
+                this->last_unused_size = 8;
+            }
             bool operator[](uint64_t i) const
             {
                 //uint64_t fstw = 8 - start;
@@ -41,7 +47,7 @@ namespace stool
                 //std::cout << "i: " << i << "[" << j << ", " << diff << "]" << ((v >> diff) & 1) << "/" << ((uint64_t)v) << std::endl;
                 return (v >> diff) & 1;
             }
-            uint64_t size()
+            uint64_t size() const
             {
                 return this->deq.size() * 8 + (8 - fst_unused_size) + (8 - last_unused_size);
             }

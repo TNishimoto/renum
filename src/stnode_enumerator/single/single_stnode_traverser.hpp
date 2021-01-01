@@ -11,6 +11,7 @@
 #include "../weiner_link_emulator.hpp"
 #include "../../../module/stool/src/io.h"
 #include "../stnode_vector.hpp"
+#include "bit_deque.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
@@ -25,8 +26,8 @@ namespace stool
 
             uint64_t _stnode_count = 0;
             std::deque<INDEX_SIZE> childs_vec;
-            std::deque<bool> first_child_flag_vec;
-            std::deque<bool> maximal_repeat_check_vec;
+            BitDeque first_child_flag_vec;
+            BitDeque maximal_repeat_check_vec;
             int64_t lcp = -1;
             RLBWTDS *_RLBWTDS = nullptr;
             ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> em;
