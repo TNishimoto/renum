@@ -30,7 +30,7 @@ namespace stool
             while (pos != UINT64_MAX)
             {
 
-                trees[pos]->computeNextLCPIntervalSetForParallelProcessing(em, tmp, uqueue, limit);
+                trees[pos]->computeNextLCPIntervalSetForParallelProcessing(em, tmp, uqueue, trees);
                 if(trees[pos]->children_count() < limit){
                     uqueue.push(trees[pos]);
                 }
@@ -431,7 +431,7 @@ namespace stool
                 std::queue<STNODE_SUB_TRAVERSER*> tmp2;
                 for (auto &it : this->sub_trees)
                 {
-                    it->computeNextLCPIntervalSetForParallelProcessing(ems[0], tmp, tmp2, this->sub_tree_limit_size);
+                    it->computeNextLCPIntervalSetForParallelProcessing(ems[0], tmp, tmp2, this->sub_trees);
                 }
                 /*
                 for (uint64_t i = 1; i < this->sub_trees.size(); i++)
@@ -448,11 +448,12 @@ namespace stool
             void heavyEnumerate()
             {
                 bool isSingleProcess = false;
-
+                /*
                 if (current_lcp == 12)
                 {
                     throw -1;
                 }
+                */
 
                 if (current_lcp >= 0)
                 {
@@ -475,15 +476,16 @@ namespace stool
                     throw -1;
                 }
 
-                this->merge();
+                //this->merge();
                 this->remove_empty_trees();
-                this->split();
+                //this->split();
 
                 if ((double)this->sub_trees.size() * 2 < (double)this->sub_trees.capacity())
                 {
                     this->sub_trees.shrink_to_fit();
                 }
             }
+            /*
             void split()
             {
                 uint64_t x = 0;
@@ -511,6 +513,8 @@ namespace stool
                     }
                 }
             }
+            */
+           /*
             void merge()
             {
 
@@ -538,6 +542,7 @@ namespace stool
                     }
                 }
             }
+            */
             void remove_empty_trees()
             {
                 uint64_t nonEmptyCount = 0;
@@ -559,8 +564,8 @@ namespace stool
                 for (uint64_t i = nonEmptyCount; i < this->sub_trees.size(); i++)
                 {
                     this->sub_trees[i]->clear();
-                    this->recycle_sub_trees.push(this->sub_trees[i]);
-                    //delete this->sub_trees[i];
+                    //this->recycle_sub_trees.push(this->sub_trees[i]);
+                    delete this->sub_trees[i];
                     this->sub_trees[i] = nullptr;
                 }
                 this->sub_trees.resize(nonEmptyCount);
