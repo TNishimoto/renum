@@ -40,7 +40,7 @@ namespace stool
             STNodeSubTraverser(uint64_t size, RLBWTDS *__RLBWTDS) : _RLBWTDS(__RLBWTDS)
             {
                 this->childs_vec.resize(size * 2);
-                this->first_child_flag_vec.resize(size);
+                this->first_child_flag_vec.resize(size * 2);
                 this->maximal_repeat_check_vec.resize(size);
             }
             RLBWTDS *get_rlbwtds() const
