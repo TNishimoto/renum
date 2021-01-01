@@ -11,6 +11,7 @@
 #include "../weiner_link_emulator.hpp"
 #include "stnode_sub_traverser.hpp"
 #include "../single/single_stnode_traverser.hpp"
+#include "multi_thread.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
@@ -18,81 +19,6 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
-
-        std::mutex mtx;
-        template <typename INDEX_SIZE, typename RLBWTDS>
-        void parallel_process_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
-                                      std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t limit)
-        {
-            STNodeVector<INDEX_SIZE> tmp;
-            std::queue<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> uqueue;
-            uint64_t pos = fst_position;
-            while (pos != UINT64_MAX)
-            {
-
-                trees[pos]->computeNextLCPIntervalSetForParallelProcessing(em, tmp, uqueue, trees);
-                if(trees[pos]->children_count() < limit){
-                    uqueue.push(trees[pos]);
-                }
-
-
-                //assert(trees[pos]->children_count() <= limit);
-                pos = UINT64_MAX;
-                {
-                    std::lock_guard<std::mutex> lock(mtx);
-                    if (position_stack.size() > 0)
-                    {
-                        pos = position_stack.top();
-                        position_stack.pop();
-                    }
-                }
-            }
-        }
-
-        template <typename INDEX_SIZE, typename RLBWTDS>
-        void parallel_count_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
-                                    std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t &output_children_count)
-        {
-            output_children_count = 0;
-            uint64_t pos = fst_position;
-            while (pos != UINT64_MAX)
-            {
-                auto pair = trees[pos]->countNextLCPIntervalSet(em);
-                output_children_count += pair.second;
-                pos = UINT64_MAX;
-                {
-                    std::lock_guard<std::mutex> lock(mtx);
-                    if (position_stack.size() > 0)
-                    {
-                        pos = position_stack.top();
-                        position_stack.pop();
-                    }
-                }
-            }
-        }
-        
-        template <typename INDEX_SIZE, typename RLBWTDS>
-        void parallel_test_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
-                                    std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t &output_children_count)
-        {
-            output_children_count = 0;
-            uint64_t pos = fst_position;
-            while (pos != UINT64_MAX)
-            {
-                auto pair = trees[pos]->test(em);
-                output_children_count += pair.second;
-                pos = UINT64_MAX;
-                {
-                    std::lock_guard<std::mutex> lock(mtx);
-                    if (position_stack.size() > 0)
-                    {
-                        pos = position_stack.top();
-                        position_stack.pop();
-                    }
-                }
-            }
-        }
-        
 
         template <typename INDEX_SIZE, typename RLBWTDS>
         class STNodeTraverser
@@ -115,7 +41,6 @@ namespace stool
 
             uint64_t thread_count = 1;
             std::stack<uint64_t> position_stack;
-            uint64_t kk = 0;
 #if DEBUG
             uint64_t prev_child_count = 0;
 #endif
@@ -163,7 +88,7 @@ namespace stool
                     this->sub_tree_limit_size = UINT64_MAX;
                 }
 
-                auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
+                auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->_RLBWTDS);
                 sub_trees.push_back(st);
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
@@ -196,7 +121,7 @@ namespace stool
                 for (uint64_t i = 0; i < sub_tree_count; i++)
                 {
 
-                    auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
+                    auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->_RLBWTDS);
                     st->load(file);
                     this->sub_trees.push_back(st);
                     this->_child_count += st->children_count();
@@ -253,7 +178,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    threads.push_back(thread(parallel_test_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i])));
+                    threads.push_back(thread(parallel_count_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i])));
                 }
 
                 for (thread &t : threads)
@@ -306,10 +231,13 @@ namespace stool
 
             void process()
             {
-                if(this->current_lcp >= 0){
-                this->heavyEnumerate();
-                this->recompute_node_counter();
-                }else{                    
+                if (this->current_lcp >= 0)
+                {
+                    this->heavyEnumerate();
+                    this->recompute_node_counter();
+                }
+                else
+                {
                     SingleSTNodeTraverser<INDEX_SIZE, RLBWTDS> tmp_traverser;
                     tmp_traverser.initialize(this->_RLBWTDS);
                     tmp_traverser.process();
@@ -422,28 +350,15 @@ namespace stool
             }
             void single_process()
             {
-                /*
-                if (this->child_count() == 0)
-                    return;
-                uint64_t fst_pos = 0;
-                */
                 STNodeVector<INDEX_SIZE> tmp;
-                std::queue<STNODE_SUB_TRAVERSER*> tmp2;
+                std::queue<STNODE_SUB_TRAVERSER *> uqueue;
                 for (auto &it : this->sub_trees)
                 {
-                    it->computeNextLCPIntervalSetForParallelProcessing(ems[0], tmp, tmp2, this->sub_trees);
+                    it->computeNextSTNodes(ems[0], tmp);
+                    it->clear();
+                    uqueue.push(it);
+                    distribute(this->sub_trees, tmp, uqueue, this->sub_tree_limit_size);
                 }
-                /*
-                for (uint64_t i = 1; i < this->sub_trees.size(); i++)
-                {
-                    position_stack.push(i);
-                }
-
-                assert(this->child_count() > 0);
-
-                parallel_process_stnodes<INDEX_SIZE, RLBWTDS>(ref(sub_trees), fst_pos, ref(position_stack), ref(ems[0]));
-                assert(position_stack.size() == 0);
-                */
             }
             void heavyEnumerate()
             {
@@ -476,73 +391,13 @@ namespace stool
                     throw -1;
                 }
 
-                //this->merge();
                 this->remove_empty_trees();
-                //this->split();
 
                 if ((double)this->sub_trees.size() * 2 < (double)this->sub_trees.capacity())
                 {
                     this->sub_trees.shrink_to_fit();
                 }
             }
-            /*
-            void split()
-            {
-                uint64_t x = 0;
-                while (x < this->sub_trees.size())
-                {
-                    if (this->sub_trees[x]->children_count() > this->sub_tree_limit_size)
-                    {
-                        if(this->recycle_sub_trees.size() > 0){
-                        auto st = this->recycle_sub_trees.top();
-                        this->recycle_sub_trees.pop();
-                        this->sub_trees[x]->split(*st);
-                        this->sub_trees.push_back(st);
-
-                        }else{
-                        auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
-                        this->sub_trees[x]->split(*st);
-                        this->sub_trees.push_back(st);
-                        std::cout << "SPLIT CREATE" << std::endl;
-
-                        }
-                    }
-                    else
-                    {
-                        x++;
-                    }
-                }
-            }
-            */
-           /*
-            void merge()
-            {
-
-                uint64_t mergeIndex = 0;
-                uint64_t mergeCount = 0;
-
-                for (uint64_t i = 0; i < this->sub_trees.size(); i++)
-                {
-                    uint64_t k = this->sub_trees[i]->children_count();
-                    if (k < (this->sub_tree_limit_size / 10))
-                    {
-                        while (mergeIndex < i)
-                        {
-                            if (this->sub_trees[mergeIndex]->children_count() > 0 && this->sub_trees[mergeIndex]->children_count() + k < this->sub_tree_limit_size)
-                            {
-                                mergeCount++;
-                                this->sub_trees[mergeIndex]->merge(*this->sub_trees[i]);
-                                break;
-                            }
-                            else
-                            {
-                                mergeIndex++;
-                            }
-                        }
-                    }
-                }
-            }
-            */
             void remove_empty_trees()
             {
                 uint64_t nonEmptyCount = 0;
