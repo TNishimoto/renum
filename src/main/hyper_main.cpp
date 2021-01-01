@@ -28,7 +28,6 @@
 #include "../rlbwt/bwt_decompress.hpp"
 #include "../main/common.hpp"
 
-
 using namespace std;
 using namespace stool;
 
@@ -66,7 +65,6 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     auto bwtAnalysis = stool::rlbwt2::load_RLBWT_from_file(inputFile, diff_char_vec, run_bits);
     std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000 << "[KB]" << std::endl;
     std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
-
 
     uint64_t data_structure_bytes = 0;
     sdsl::store_to_file(diff_char_vec, inputFile + ".tmp");
@@ -127,13 +125,13 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         mid = std::chrono::system_clock::now();
         construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
         std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
-    std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes/1000) << "[KB]" << std::endl;
+        std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
 
         if (bwtAnalysis.str_size < UINT32_MAX - 10)
         {
             using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint32_t, LPOSDS, FPOSDS>;
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
-            
+
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::STNodeEnumerator<uint32_t, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
@@ -164,7 +162,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
     std::cout << "LPOS and FPos Vector type \t\t\t\t : " << (MODE == '0' ? "std::vector<uint64_t>" : "EliasFano") << std::endl;
     std::cout << "Peak children count \t\t\t : " << st_result.max_nodes_at_level << std::endl;
-    std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes/1000) << "[KB]" << std::endl;
+    std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
 
     std::cout << "Thread number \t\t\t\t : " << thread_num << std::endl;
     std::cout << "Integer Type \t\t\t\t : " << bit_size_mode << std::endl;
@@ -184,11 +182,11 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
 
 int main(int argc, char *argv[])
 {
-    #if DEBUG
+#if DEBUG
     std::cout << "\033[31m";
     std::cout << "DEBUG MODE" << std::endl;
     std::cout << "\033[39m" << std::endl;
-    #endif
+#endif
 
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input file name", true);

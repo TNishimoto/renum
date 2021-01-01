@@ -83,11 +83,12 @@ namespace stool
 
                 this->thread_count = size;
 
+                /*
                 if (this->thread_count == 1)
                 {
                     this->sub_tree_limit_size = UINT64_MAX;
                 }
-
+                */
                 auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->_RLBWTDS);
                 sub_trees.push_back(st);
 

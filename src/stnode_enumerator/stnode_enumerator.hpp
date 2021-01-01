@@ -115,8 +115,11 @@ namespace stool
             {
                 this->_RLBWTDS = &_RLBWTDS;
                 //this->strSize = _RLBWTDS.str_size();
+
                 this->standard_st_traverser.initialize(_thread_count, _RLBWTDS);
+
                 this->fast_st_traverser.initialize(_thread_count, _RLBWTDS);
+
                 this->single_st_traverser.initialize(&_RLBWTDS);
                 this->thread_count = _thread_count;
 
@@ -225,6 +228,7 @@ namespace stool
 
             void process()
             {
+
                 if (this->total_counter > 0)
                 {
                     uint64_t ccc = this->_RLBWTDS->str_size() / this->print_interval;
