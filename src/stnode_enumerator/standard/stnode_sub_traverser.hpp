@@ -26,8 +26,8 @@ namespace stool
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            uint64_t _child_count = 0;
-            uint64_t _stnode_count = 0;
+            uint64_t _first_child_flag_vec_count = 0;
+            uint64_t _maximal_repeat_check_vec_count = 0;
             std::vector<INDEX_SIZE> childs_vec;
             std::vector<bool> first_child_flag_vec;
             std::vector<bool> maximal_repeat_check_vec;
@@ -43,10 +43,12 @@ namespace stool
                 this->first_child_flag_vec.resize(size);
                 this->maximal_repeat_check_vec.resize(size);
             }
-            RLBWTDS* get_rlbwtds() const {
+            RLBWTDS *get_rlbwtds() const
+            {
                 return this->_RLBWTDS;
             }
-            uint64_t capacity(){
+            uint64_t capacity()
+            {
                 return this->first_child_flag_vec.size();
             }
             void pop(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
@@ -76,42 +78,53 @@ namespace stool
             }
 
         private:
-            inline uint64_t get_child_start_position(uint64_t i) const
+            inline uint64_t get_child_start_position(uint64_t child_end_pointer) const
             {
-                return this->childs_vec[(i * 2)];
+                assert(child_end_pointer > 0);
+                assert(child_end_pointer < this->childvec_size());
+                if (this->first_child_flag_vec[child_end_pointer - 1])
+                {
+                    return this->childs_vec[child_end_pointer - 1];
+                }
+                else
+                {
+                    return this->childs_vec[child_end_pointer - 1] + 1;
+                }
             }
-            inline uint64_t get_child_end_position(uint64_t i) const
+            inline uint64_t get_child_end_position(uint64_t child_end_pointer) const
             {
-                return this->childs_vec[(i * 2) + 1];
+                assert(child_end_pointer < this->childvec_size());
+                return this->childs_vec[child_end_pointer];
+            }
+            uint64_t get_first_child_pointer() const
+            {
+                return 1;
             }
 
             uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
             {
-                assert(this->first_child_flag_vec[L]);
-                assert(!this->first_child_flag_vec[L + 1]);
+                assert(L > 0);
+                assert(this->first_child_flag_vec[L - 1]);
+                assert(!this->first_child_flag_vec[L]);
 
                 uint64_t R = L + 1;
-                while (R < this->children_count() && !this->first_child_flag_vec[R])
+                while (R < this->childvec_size() && !this->first_child_flag_vec[R])
                 {
                     R++;
                 }
-
-                R--;
-
                 left = this->get_child_start_position(L);
-                right = this->get_child_end_position(R);
+                right = this->get_child_end_position(R - 1);
 
                 return R + 1;
             }
 
         public:
-            void get_lcp_intervals(uint64_t lcp, std::vector<stool::LCPInterval<uint64_t>> &output)
+            void get_lcp_intervals(uint64_t lcp, std::vector<stool::LCPInterval<uint64_t>> &output) const
             {
                 uint64_t size = this->node_count();
-                uint64_t L = 0;
+                uint64_t L = this->get_first_child_pointer();
                 uint64_t left;
                 uint64_t right;
-
                 for (uint64_t i = 0; i < size; i++)
                 {
                     L = this->increment(L, left, right);
@@ -147,19 +160,24 @@ namespace stool
                 */
             }
 
+            uint64_t childvec_size() const
+            {
+                return this->_first_child_flag_vec_count;
+            }
+
             uint64_t children_count() const
             {
-                return this->_child_count;
+                return this->_first_child_flag_vec_count - this->_maximal_repeat_check_vec_count;
             }
             uint64_t node_count() const
             {
-                return this->_stnode_count;
+                return this->_maximal_repeat_check_vec_count;
             }
 
             void clear()
             {
-                this->_stnode_count = 0;
-                this->_child_count = 0;
+                this->_maximal_repeat_check_vec_count = 0;
+                this->_first_child_flag_vec_count = 0;
             }
             void swap(STNodeSubTraverser<INDEX_SIZE, RLBWTDS> &item)
             {
@@ -167,15 +185,15 @@ namespace stool
                 this->first_child_flag_vec.swap(item.first_child_flag_vec);
                 this->maximal_repeat_check_vec.swap(item.maximal_repeat_check_vec);
 
-                std::swap(this->_stnode_count, item._stnode_count);
-                std::swap(this->_child_count, item._child_count);
+                std::swap(this->_maximal_repeat_check_vec_count, item._maximal_repeat_check_vec_count);
+                std::swap(this->_first_child_flag_vec_count, item._first_child_flag_vec_count);
                 std::swap(this->_RLBWTDS, item._RLBWTDS);
             }
-            uint64_t write_maximal_repeats(uint64_t lcp, std::ofstream &out)
+            uint64_t write_maximal_repeats(uint64_t lcp, std::ofstream &out) const
             {
                 std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
                 uint64_t size = this->node_count();
-                uint64_t L = 0;
+                uint64_t L = this->get_first_child_pointer();
                 uint64_t left;
                 uint64_t right;
                 uint64_t count = 0;
@@ -201,22 +219,24 @@ namespace stool
                 }
                 return count;
             }
-            
+
             void computeNextSTNodes(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, STNodeVector<INDEX_SIZE> &tmp)
             {
                 tmp.clear();
                 RINTERVAL intv;
+                RINTERVAL child;
 
                 uint64_t size = this->node_count();
-                uint64_t L = 0;
+                uint64_t L = this->get_first_child_pointer();
                 uint64_t _left = 0, _right = 0;
 
                 for (uint64_t i = 0; i < size; i++)
                 {
-                    assert(this->first_child_flag_vec[L]);
+                    assert(this->first_child_flag_vec[L - 1]);
 
                     uint64_t nextL = this->increment(L, _left, _right);
                     this->_RLBWTDS->to_rinterval(_left, _right, intv);
+                    uint64_t _count = nextL - L - 1;
 
                     em.clear();
 #if DEBUG
@@ -229,15 +249,19 @@ namespace stool
 #endif
                     em.computeSTNodeCandidates(intv);
 
-                    for (uint64_t i = L; i < nextL; i++)
+                    uint64_t pointer = L;
+
+                    for (uint64_t i = 0; i < _count; i++)
                     {
-                        RINTERVAL child;
-                        uint64_t left = this->get_child_start_position(i);
-                        uint64_t right = this->get_child_end_position(i);
+                        assert(pointer < this->childvec_size());
+
+                        uint64_t left = this->get_child_start_position(pointer);
+                        uint64_t right = this->get_child_end_position(pointer);
                         assert(left <= right);
 
                         this->_RLBWTDS->to_rinterval(left, right, child);
                         em.computeSTChildren(child);
+                        pointer++;
                     }
 
                     em.fit(false);
@@ -259,15 +283,14 @@ namespace stool
                 this->computeNextSTNodes(em, tmp);
 
                 uint64_t next_st_count = tmp.maximal_repeat_check_vec.size();
-                uint64_t next_children_count = tmp.first_child_flag_vec.size();
-
+                uint64_t next_children_count = tmp.first_child_flag_vec.size() - tmp.maximal_repeat_check_vec.size();
 
                 return std::pair<uint64_t, uint64_t>(next_st_count, next_children_count);
             }
 
             void print()
             {
-                std::cout << "[STNODE_COUNT, CHILDREN_COUNT] = [" << this->_stnode_count << ", " << this->first_child_flag_vec.size() << "]" << std::endl;
+                std::cout << "[STNODE_COUNT, CHILDREN_COUNT] = [" << this->node_count() << ", " << this->children_count() << "]" << std::endl;
                 STNodeVector<INDEX_SIZE> item;
                 this->convert(item);
 
@@ -277,7 +300,7 @@ namespace stool
             }
             void print_info()
             {
-                uint64_t L = 0;
+                uint64_t L = this->get_first_child_pointer();
                 uint64_t left = 0, right = 0;
                 for (uint64_t i = 0; i < this->node_count(); i++)
                 {
@@ -286,25 +309,18 @@ namespace stool
                 }
 
                 std::cout << std::endl;
-
-                for (uint64_t i = 0; i < this->childs_vec.size(); i += 2)
-                {
-                    std::cout << "[" << this->childs_vec[i] << ", " << this->childs_vec[i + 1] << "]";
-                }
-
-                std::cout << std::endl;
             }
             void convert(STNodeVector<INDEX_SIZE> &item)
             {
-                for (uint64_t i = 0; i < this->children_count() * 2; i++)
+                for (uint64_t i = 0; i < this->childs_vec.size(); i++)
                 {
                     item.childs_vec.push_back(this->childs_vec[i]);
                 }
-                for (uint64_t i = 0; i < this->children_count(); i++)
+                for (uint64_t i = 0; i < this->first_child_flag_vec.size(); i++)
                 {
                     item.first_child_flag_vec.push_back(this->first_child_flag_vec[i]);
                 }
-                for (uint64_t i = 0; i < this->node_count(); i++)
+                for (uint64_t i = 0; i < this->maximal_repeat_check_vec.size(); i++)
                 {
                     item.maximal_repeat_check_vec.push_back(this->maximal_repeat_check_vec[i]);
                 }
@@ -334,43 +350,39 @@ namespace stool
                     this->maximal_repeat_check_vec[i] = item.maximal_repeat_check_vec[i];
                 }
 
-                this->_stnode_count = item.maximal_repeat_check_vec.size();
-                this->_child_count = item.first_child_flag_vec.size();
+                this->_maximal_repeat_check_vec_count = item.maximal_repeat_check_vec.size();
+                this->_first_child_flag_vec_count = item.first_child_flag_vec.size();
             }
             void move_push(STNodeVector<INDEX_SIZE> &item)
             {
-                auto pair = item.compute_import_positions(this->capacity() - this->children_count() );
+                auto pair = item.compute_import_positions(this->capacity() - this->childvec_size());
                 assert(pair.second > 0);
 
-                uint64_t p = item.first_child_flag_vec.size() - pair.second;
-                for (uint64_t i = 0; i < pair.second; i++)
+                uint64_t k = pair.first + pair.second;
+
+                uint64_t p = item.first_child_flag_vec.size() - k;
+                for (uint64_t i = 0; i < k; i++)
                 {
-                    assert( ((2 * _child_count) + 1 ) < this->childs_vec.size());
-                    this->childs_vec[(2 * _child_count)] = (item.childs_vec[((p + i) * 2)]);
-                    this->childs_vec[(2 * _child_count) + 1] = (item.childs_vec[((p + i) * 2) + 1]);
-                    this->first_child_flag_vec[_child_count] = item.first_child_flag_vec[p + i];
-                    this->_child_count++;
+                    this->childs_vec[_first_child_flag_vec_count] = item.childs_vec[p + i];
+                    this->first_child_flag_vec[_first_child_flag_vec_count] = item.first_child_flag_vec[p + i];
+                    this->_first_child_flag_vec_count++;
                 }
 
-                for (uint64_t i = 0; i < pair.second; i++)
+                for (uint64_t i = 0; i < k; i++)
                 {
-                    item.childs_vec.pop_back();
                     item.childs_vec.pop_back();
                     item.first_child_flag_vec.pop_back();
                 }
                 uint64_t q = item.maximal_repeat_check_vec.size() - pair.first;
                 for (uint64_t i = 0; i < pair.first; i++)
                 {
-                    this->maximal_repeat_check_vec[_stnode_count] = item.maximal_repeat_check_vec[q + i];
-                    this->_stnode_count++;
+                    this->maximal_repeat_check_vec[_maximal_repeat_check_vec_count] = item.maximal_repeat_check_vec[q + i];
+                    this->_maximal_repeat_check_vec_count++;
                 }
                 for (uint64_t i = 0; i < pair.first; i++)
                 {
                     item.maximal_repeat_check_vec.pop_back();
                 }
-                
-
-
             }
         };
 

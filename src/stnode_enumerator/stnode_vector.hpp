@@ -86,7 +86,7 @@ namespace stool
                     }
                     i--;
                 }
-                return std::pair<uint64_t, uint64_t>(node_count, child_count);
+                return std::pair<uint64_t, uint64_t>(node_count, child_count - node_count);
             }
             //void move_push(std::vector<INDEX_SIZE> &_childs_vec, std::vector<bool> &_first_child_flag_vec, std::vector<bool> &_maximal_repeat_check_vec){
 
@@ -152,10 +152,13 @@ namespace stool
                     {
                         st_right = right;
                     }
+                    if(j == 0){
+                        this->childs_vec.push_back(left);
+                        this->first_child_flag_vec.push_back(true);
 
-                    this->childs_vec.push_back(left);
+                    }
                     this->childs_vec.push_back(right);
-                    this->first_child_flag_vec.push_back(j == 0);
+                    this->first_child_flag_vec.push_back(false);
                 }
                 uint64_t x = ds->get_lindex_containing_the_position(st_left);
                 uint64_t d = ds->get_run(x);

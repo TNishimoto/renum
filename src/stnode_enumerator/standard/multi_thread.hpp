@@ -30,7 +30,7 @@ namespace stool
                 if (uqueue.size() > 0)
                 {
                     auto top = uqueue.front();
-                    if (top->children_count() + w <= limit)
+                    if (top->childvec_size() + w <= top->capacity() )
                     {
                         top->move_push(tmp);
                     }

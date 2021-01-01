@@ -111,7 +111,7 @@ namespace stool
             uint64_t write_maximal_repeats(std::ofstream &out) const
             {
                 std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
-                uint64_t size = this->maximal_repeat_check_vec.size();
+                uint64_t size = this->node_count();
                 uint64_t L = this->get_first_child_pointer();
                 uint64_t left;
                 uint64_t right;
@@ -160,9 +160,9 @@ namespace stool
             uint64_t get_using_memory() const 
             {
                 uint64_t x1 = this->childs_vec.size() * sizeof(INDEX_SIZE);
-                uint64_t x2 = (this->first_child_flag_vec.size() * 1) / 8;
+                uint64_t x2 = (this->first_child_flag_vec.size() * 1);
                 //uint64_t x3 = (this->leftmost_child_bits.size() * 1) / 8;
-                uint64_t x4 = (maximal_repeat_check_vec.size() * 1) / 8;
+                uint64_t x4 = (maximal_repeat_check_vec.size() * 1);
                 return x1 + x2 + x4;
             }
             void convert_to_vector(STNodeVector<INDEX_SIZE> &output)
