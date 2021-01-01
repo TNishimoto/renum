@@ -43,43 +43,35 @@ namespace stool
             {
                 this->parent_current_lcp = lcp;
             }
-            void import(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3, uint64_t lcp, uint64_t num)
+            void import(STNodeVector<INDEX_SIZE> &item, uint64_t lcp, uint64_t num)
             {
-                while (true)
+                std::vector<stool::LCPInterval<INDEX_SIZE>> tmp;
+                for (uint64_t i = 0; i < num; i++)
                 {
-                    if (this->maximal_repeat_check_vec.size() == num && (item2.size() == 0 || item2[0]))
+                    tmp.clear();
+                    item.get_last(lcp, tmp);
+                    for (uint64_t j = 0; j < tmp.size(); j++)
                     {
-                        break;
+                        this->first_child_flag_vec.push_back(j == 0);
+                        uint64_t lb = this->_RLBWTDS->get_lindex_containing_the_position(tmp[j].i);
+                        uint64_t ld = tmp[j].i - this->_RLBWTDS->get_lpos(lb);
+                        uint64_t rb = this->_RLBWTDS->get_lindex_containing_the_position(tmp[j].j);
+                        uint64_t rd = tmp[j].j - this->_RLBWTDS->get_lpos(rb);
+                        this->childs_vec.push_back(lb);
+                        this->childs_vec.push_back(ld);
+                        this->childs_vec.push_back(rb);
+                        this->childs_vec.push_back(rd);
                     }
-
-                    uint64_t left = item1[0];
-                    item1.pop_front();
-                    uint64_t right = item1[0];
-                    item1.pop_front();
-
-                    uint64_t lb = this->_RLBWTDS->get_lindex_containing_the_position(left);
-                    uint64_t ld = left - this->_RLBWTDS->get_lpos(lb);
-                    uint64_t rb = this->_RLBWTDS->get_lindex_containing_the_position(right);
-                    uint64_t rd = right - this->_RLBWTDS->get_lpos(rb);
-                    this->childs_vec.push_back(lb);
-                    this->childs_vec.push_back(ld);
-                    this->childs_vec.push_back(rb);
-                    this->childs_vec.push_back(rd);
-
-                    if (item2[0])
-                    {
-                        this->maximal_repeat_check_vec.push_back(item3[0]);
-                        item3.pop_front();
-                    }
-                    this->first_child_flag_vec.push_back(item2[0]);
-                    item2.pop_front();
+                    this->maximal_repeat_check_vec.push_back(item.maximal_repeat_check_vec[item.maximal_repeat_check_vec.size() - 1]);
+                    item.pop();
                 }
+
+
                 assert(this->maximal_repeat_check_vec.size() == num);
                 this->current_lcp = lcp;
                 this->child_width_vec.push_back(this->first_child_flag_vec.size());
                 this->stnode_count_vec.push_back(num);
                 this->processed_flag_vec.push_back(false);
-
             }
 
         private:

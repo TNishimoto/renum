@@ -279,13 +279,12 @@ namespace stool
                 return p + k;
             }
 
-            void move(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
+            void to_stnode_vector(STNodeVector<INDEX_SIZE> &item)
             {
                 for (auto &it : this->sub_trees)
                 {
-                    it->pop(item1, item2, item3);
+                    it->to_stnode_vector(item);
                 }
-                this->remove_empty_trees();
             }
             void import(uint64_t lcp, STNodeVector<INDEX_SIZE> &item)
             {

@@ -51,31 +51,7 @@ namespace stool
             {
                 return this->first_child_flag_vec.size();
             }
-            void pop(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
-            {
-                assert(false);
-                throw -1;
-                /*
-                uint64_t size = this->first_child_flag_vec.size();
-                for (uint64_t i = 0; i < size; i++)
-                {
-                    item1.push_back(this->childs_vec[0]);
-                    this->childs_vec.pop_front();
-
-                    item1.push_back(this->childs_vec[0]);
-                    this->childs_vec.pop_front();
-
-                    item2.push_back(this->first_child_flag_vec[0]);
-                    this->first_child_flag_vec.pop_front();
-                }
-                for (uint64_t i = 0; i < this->_stnode_count; i++)
-                {
-                    item3.push_back(this->maximal_repeat_check_vec[0]);
-                    this->maximal_repeat_check_vec.pop_front();
-                }
-                this->_stnode_count = 0;
-                */
-            }
+            
 
         private:
             inline uint64_t get_child_start_position(uint64_t child_end_pointer) const
@@ -292,7 +268,7 @@ namespace stool
             {
                 std::cout << "[STNODE_COUNT, CHILDREN_COUNT] = [" << this->node_count() << ", " << this->children_count() << "]" << std::endl;
                 STNodeVector<INDEX_SIZE> item;
-                this->convert(item);
+                this->to_stnode_vector(item);
 
                 stool::Printer::print("child_vec", item.childs_vec);
                 stool::Printer::print_bits("first_child_flag_vec", item.first_child_flag_vec);
@@ -310,17 +286,14 @@ namespace stool
 
                 std::cout << std::endl;
             }
-            void convert(STNodeVector<INDEX_SIZE> &item)
+            void to_stnode_vector(STNodeVector<INDEX_SIZE> &item)
             {
-                for (uint64_t i = 0; i < this->childs_vec.size(); i++)
+                for (uint64_t i = 0; i < this->childvec_size(); i++)
                 {
                     item.childs_vec.push_back(this->childs_vec[i]);
-                }
-                for (uint64_t i = 0; i < this->first_child_flag_vec.size(); i++)
-                {
                     item.first_child_flag_vec.push_back(this->first_child_flag_vec[i]);
                 }
-                for (uint64_t i = 0; i < this->maximal_repeat_check_vec.size(); i++)
+                for (uint64_t i = 0; i < this->node_count(); i++)
                 {
                     item.maximal_repeat_check_vec.push_back(this->maximal_repeat_check_vec[i]);
                 }

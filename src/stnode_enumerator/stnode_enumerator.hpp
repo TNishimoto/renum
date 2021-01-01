@@ -187,8 +187,7 @@ namespace stool
                 }
                 else if (this->mode == FAST_MODE)
                 {
-                    assert(false);
-                    throw -1;
+                    this->fast_st_traverser.get_lcp_intervals(output);
                 }
                 else if (this->mode == SINGLE_MODE)
                 {
@@ -281,22 +280,25 @@ namespace stool
                     this->standard_st_traverser.import(this->single_st_traverser.get_current_lcp(),tmp);
 
                 }
-                /*
-                if (this->mode == STANDARD_MODE && (this->child_count() * 10 < this->peak_child_count))
+                
+                if (this->mode == STANDARD_MODE && (this->child_count() * 50 < this->peak_child_count))
                 {
                     std::cout << "Switch" << std::endl;
+                    STNodeVector<INDEX_SIZE> tmp;
+                    uint64_t lcp = this->standard_st_traverser.get_current_lcp();
+                    this->standard_st_traverser.to_stnode_vector(tmp);
+                    this->standard_st_traverser.clear();
 
-                    std::deque<INDEX_SIZE> childs_vec;
-                    std::deque<bool> first_child_flag_vec;
-                    std::deque<bool> maximal_repeat_check_vec;
-                    this->standard_st_traverser.move(childs_vec, first_child_flag_vec, maximal_repeat_check_vec);
-                    this->fast_st_traverser.import(childs_vec, first_child_flag_vec, maximal_repeat_check_vec, this->standard_st_traverser.get_current_lcp()-1 );
-                    this->fast_st_traverser.set_peak(this->peak_child_count);
+                    this->fast_st_traverser.import(tmp, lcp );
+
+                    this->fast_st_traverser.set_peak(this->peak_child_count / 50);
+
                     this->mode = FAST_MODE;
                     this->fast_st_traverser.process();
+                    std::cout << "Switch[END]" << std::endl;
 
                 }
-                */
+                
 
 #if DEBUG
 

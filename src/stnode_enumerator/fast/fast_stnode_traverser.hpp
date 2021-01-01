@@ -143,6 +143,24 @@ namespace stool
                 }
                 return count;
             }
+
+            void get_lcp_intervals(std::vector<stool::LCPInterval<uint64_t>> &output)
+            {
+
+                std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
+
+                uint64_t size = this->node_count();
+                uint64_t L = 0;
+                RINTERVAL intv;
+                for (uint64_t i = 0; i < size; i++)
+                {
+                    L = this->get_stnode(L, intv);
+                    uint64_t _left = this->_RLBWTDS->get_lpos(intv.beginIndex) + intv.beginDiff;
+                    uint64_t _right = this->_RLBWTDS->get_lpos(intv.endIndex) + intv.endDiff;
+                    stool::LCPInterval<INDEX_SIZE> newLCPIntv(_left, _right, this->current_lcp - 1);
+                    output.push_back(newLCPIntv);
+                }
+            }
             uint64_t get_stnode(uint64_t L, RINTERVAL &output)
             {
                 assert(this->first_child_flag_vec.size() > 0);
@@ -355,7 +373,7 @@ namespace stool
                 return k;
             }
 
-            void import(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3, uint64_t lcp)
+            void import(STNodeVector<INDEX_SIZE> &item, uint64_t lcp)
             {
                 uint64_t k = 1000;
                 while (this->sub_trees.size() > 0)
@@ -363,16 +381,14 @@ namespace stool
                     delete this->sub_trees[this->sub_trees.size() - 1];
                     this->sub_trees.pop_back();
                 }
-                while (item3.size() > 0)
+                while (item.size() > 0)
                 {
                     auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
                     sub_trees.push_back(st);
-                    uint64_t num = item3.size() < k ? item3.size() : k;
-                    st->import(item1, item2, item3, lcp, num);
+                    uint64_t num = item.size() < k ? item.size() : k;
+                    st->import(item, lcp, num);
                 }
-                assert(item1.size() == 0);
-                assert(item2.size() == 0);
-                assert(item3.size() == 0);
+                assert(item.size() == 0);
 
                 this->current_lcp = lcp;
             }
@@ -391,18 +407,6 @@ namespace stool
 
             void recompute_node_counter()
             {
-                /*
-                if (this->first_child_flag_vec.size() == 0)
-                {
-                    _node_count = 0;
-                    _child_count = 0;
-                }
-                else
-                {
-                    _node_count = this->st;
-                    _child_count = _count_children_size();
-                }
-                */
 
                 current_lcp++;
             }
