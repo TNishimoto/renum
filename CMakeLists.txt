@@ -59,3 +59,6 @@ target_link_libraries(hyper.out fn)
 
 add_executable(ptest.out src/main/ptest_main.cpp)
 target_link_libraries(ptest.out fn)
+
+add_executable(deque.out src/main/bit_deque_main.cpp)
+target_link_libraries(deque.out fn)
