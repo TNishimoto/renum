@@ -88,6 +88,7 @@ namespace stool
         {
         private:
             std::mutex mtx;
+            uint64_t current_lcp = 0;
 
         public:
             std::vector<stool::LCPInterval<uint64_t>> lcp_intervals;
@@ -98,7 +99,6 @@ namespace stool
             wt_gmr<> wt;
             std::vector<uint64_t> C;
 
-            uint64_t current_lcp = 0;
 
             void initialize(string inputFile)
             {
@@ -156,12 +156,19 @@ namespace stool
                 }
                 std::cout << "Construct Checker[Finished]" << std::endl;
             }
+            void set_lcp(uint64_t lcp){
+                this->current_lcp = lcp;
+            }
+            uint64_t get_lcp(){
+                return this->current_lcp;
+            }
+
             void increment(std::vector<stool::LCPInterval<uint64_t>> &testIntervals)
             {
                 uint64_t k = testIntervals.size();
                 if (this->lcp_intervals.size() < 100)
                 {
-                    std::cout << "INCREMENT TEST" << std::endl;
+                    std::cout << "INCREMENT TEST, LCP = " << this->get_lcp() << std::endl;
                     for (auto &it : testIntervals)
                     {
                         std::cout << it.to_string();

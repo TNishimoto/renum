@@ -62,6 +62,14 @@ public:
             it.lcp = 0;
 
             stnodeSequencer.get_lcp_intervals(r2);
+            /*
+            if(ds->str_size() < 1000){
+                for(auto &it : r2){
+                    std::cout << it.to_string();
+                }
+                std::cout << std::endl;
+            }
+            */
 
             if (ds->stnc != nullptr)
             {

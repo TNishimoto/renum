@@ -231,7 +231,7 @@ namespace stool
                 lcpIntv.i = left;
                 lcpIntv.j = right;
                 assert(this->_RLBWTDS->stnc != nullptr);
-                lcpIntv.lcp = this->_RLBWTDS->stnc->current_lcp - 1;
+                lcpIntv.lcp = this->_RLBWTDS->stnc->get_lcp() - 1;
                 this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
             }
 

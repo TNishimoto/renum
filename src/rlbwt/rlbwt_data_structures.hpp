@@ -49,7 +49,7 @@ namespace stool
                     std::cout << "stnc is null" << std::endl;
                     throw -1;
                 }
-                stool::LCPInterval<uint64_t> intv2 = input.get_lcp_interval(this->stnc->current_lcp, this->_fposDS);
+                stool::LCPInterval<uint64_t> intv2 = input.get_lcp_interval(this->stnc->get_lcp(), this->_fposDS);
 
                 return this->stnc->check_lcp_interval(intv2.i, intv2.j);
             }
@@ -68,7 +68,7 @@ namespace stool
                 std::vector<stool::LCPInterval<uint64_t>> wlinks;
                 for (uint64_t i = 0; i < indexCount; i++)
                 {
-                    stool::LCPInterval<uint64_t> intv = stnodeVec[indexVec[i]].get_lcp_interval(this->stnc->current_lcp, this->_fposDS);
+                    stool::LCPInterval<uint64_t> intv = stnodeVec[indexVec[i]].get_lcp_interval(this->stnc->get_lcp(), this->_fposDS);
                     //std::cout << "[" << intv.i << ", " << intv.j << "]";
                     wlinks.push_back(intv);
                 }

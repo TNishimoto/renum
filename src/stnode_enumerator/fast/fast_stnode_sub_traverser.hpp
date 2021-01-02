@@ -166,7 +166,7 @@ namespace stool
 
             void pop_level(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
             {
-                assert(this->child_width_vec.size() > 0);
+                assert(this->child_width_vec.size() >= 2);
                 for (uint64_t i = 0; i < this->child_width_vec[0]; i++)
                 {
                     item1.push_back(this->childs_vec[0]);
@@ -193,6 +193,8 @@ namespace stool
                 stnode_count_vec.pop_front();
                 processed_flag_vec.pop_front();
                 this->current_lcp++;
+                                assert(this->child_width_vec.size() >= 1);
+
             }
 
             bool check_maximal_repeat(uint64_t st_index) const
