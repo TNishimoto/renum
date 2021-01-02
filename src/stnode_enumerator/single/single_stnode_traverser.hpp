@@ -28,6 +28,8 @@ namespace stool
             std::deque<INDEX_SIZE> childs_vec;
             BitDeque first_child_flag_vec;
             BitDeque maximal_repeat_check_vec;
+            //std::deque<bool> first_child_flag_vec;
+            //std::deque<bool> maximal_repeat_check_vec;
             int64_t lcp = -1;
             RLBWTDS *_RLBWTDS = nullptr;
             ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> em;
@@ -45,7 +47,11 @@ namespace stool
                 this->lcp = -1;
                 this->em.initialize(__RLBWTDS);
             }
+            bool isStop() const
+            {
+                    return this->get_current_lcp() >= 0 && this->node_count() == 0;
 
+            }
             void get_lcp_intervals(std::vector<stool::LCPInterval<uint64_t>> &output) const
             {
                 uint64_t size = this->node_count();
@@ -106,7 +112,8 @@ namespace stool
                     this->computeNextLCPIntervalSet();
                 }
             }
-            uint64_t get_first_child_pointer() const {
+            uint64_t get_first_child_pointer() const
+            {
                 return 1;
             }
             uint64_t write_maximal_repeats(std::ofstream &out) const
@@ -158,7 +165,7 @@ namespace stool
                 }
                 std::cout << std::endl;
             }
-            uint64_t get_using_memory() const 
+            uint64_t get_using_memory() const
             {
                 uint64_t x1 = this->childs_vec.size() * sizeof(INDEX_SIZE);
                 uint64_t x2 = (this->first_child_flag_vec.size() * 1);
@@ -200,7 +207,8 @@ namespace stool
                 for (uint64_t i = 0; i < r.size(); i++)
                 {
                     auto &it = r[i];
-                    if(i == 0){
+                    if (i == 0)
+                    {
                         this->childs_vec.push_back(it.first);
                         this->first_child_flag_vec.push_back(true);
                     }
@@ -208,6 +216,7 @@ namespace stool
                     this->first_child_flag_vec.push_back(false);
                 }
                 this->maximal_repeat_check_vec.push_back(true);
+                assert(this->first_child_flag_vec[0]);
                 this->_stnode_count++;
                 this->lcp = 0;
             }
@@ -254,6 +263,8 @@ namespace stool
                     }
                     this->childs_vec.pop_front();
                     this->first_child_flag_vec.pop_front();
+                    this->maximal_repeat_check_vec.pop_front();
+                    this->_stnode_count--;
 
                     em.fit(false);
 #if DEBUG
@@ -269,8 +280,6 @@ namespace stool
                         uint64_t count = currentVec.size();
                         this->add(c, count, em);
                     }
-                    this->maximal_repeat_check_vec.pop_front();
-                    this->_stnode_count--;
                 }
 
                 this->lcp++;
@@ -322,6 +331,7 @@ namespace stool
                     this->childs_vec.push_back(right);
                     this->first_child_flag_vec.push_back(false);
                 }
+                assert(this->first_child_flag_vec[0]);
                 uint64_t x = this->_RLBWTDS->get_lindex_containing_the_position(st_left);
                 uint64_t d = this->_RLBWTDS->get_run(x);
                 bool isMaximalRepeat = (this->_RLBWTDS->get_lpos(x) + d) <= st_right;
@@ -331,7 +341,7 @@ namespace stool
             uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
             {
                 assert(L > 0);
-                assert(this->first_child_flag_vec[L-1]);
+                assert(this->first_child_flag_vec[L - 1]);
                 assert(!this->first_child_flag_vec[L]);
 
                 uint64_t R = L + 1;
@@ -340,7 +350,7 @@ namespace stool
                     R++;
                 }
                 left = this->get_child_start_position(L);
-                right = this->get_child_end_position(R-1);
+                right = this->get_child_end_position(R - 1);
 
                 return R + 1;
             }

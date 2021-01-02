@@ -45,7 +45,6 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
     std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000 << "[KB]" << std::endl;
     std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
 
-
     //DEBUG
     if (diff_char_vec.size() < 100)
     {
