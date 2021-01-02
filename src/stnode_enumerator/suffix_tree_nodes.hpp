@@ -52,6 +52,7 @@ namespace stool
             uint64_t _switch_threshold = 0;
             uint64_t debug_peak_memory = 0;
             uint64_t thread_count = 1;
+            bool use_fast_mode = true;
 
             uint mode = SINGLE_MODE;
             //uint mode = FAST_MODE;
@@ -281,7 +282,7 @@ namespace stool
 
                 }
                 
-                if (this->mode == STANDARD_MODE && (this->child_count() * 50 < this->peak_child_count))
+                if (this->use_fast_mode && this->mode == STANDARD_MODE && (this->child_count() * 50 < this->peak_child_count))
                 {
                     std::cout << "Switch" << std::endl;
                     STNodeVector<INDEX_SIZE> tmp;
@@ -289,7 +290,7 @@ namespace stool
                     this->standard_st_traverser.to_stnode_vector(tmp);
                     this->standard_st_traverser.clear();
 
-                    this->fast_st_traverser.import(tmp, lcp );
+                    this->fast_st_traverser.import(tmp, lcp - 1 );
 
                     this->fast_st_traverser.set_peak(this->peak_child_count / 50);
 

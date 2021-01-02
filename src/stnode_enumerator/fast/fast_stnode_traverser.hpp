@@ -391,7 +391,7 @@ namespace stool
                 }
                 assert(item.size() == 0);
 
-                this->current_lcp = lcp;
+                this->current_lcp = lcp - 1;
             }
 
         private:
