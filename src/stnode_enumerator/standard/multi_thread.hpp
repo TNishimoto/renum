@@ -50,7 +50,7 @@ namespace stool
         }
 
         template <typename INDEX_SIZE, typename RLBWTDS>
-        void parallel_process_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
+        void parallel_succ_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
                                       std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t limit)
         {
             STNodeVector<INDEX_SIZE> tmp;

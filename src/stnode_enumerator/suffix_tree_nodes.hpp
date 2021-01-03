@@ -34,6 +34,8 @@ namespace stool
             using RINTERVAL = RInterval<INDEX_SIZE>;
             //using STNODE_TRAVERSER = STNodeSubTraverser<INDEX_SIZE, RLBWTDS>;
             using SUCCINCT_STNODE_TRAVERSER = SuccinctSortedSTChildren<INDEX_SIZE, RLBWTDS>;
+            using ITERATOR = STNodeIterator<SuffixTreeNodes>;
+            using DEPTH_ITERATOR = STDepthIterator<SuffixTreeNodes>;
 
             STNodeTraverser<INDEX_SIZE, RLBWTDS> standard_st_traverser;
             FastSTNodeTraverser<INDEX_SIZE, RLBWTDS> fast_st_traverser;
@@ -45,6 +47,7 @@ namespace stool
             uint64_t print_interval_counter = 0;
 
         public:
+            using index_type = INDEX_SIZE;
             uint64_t total_counter = 0;
             uint64_t peak_child_count = 0;
             uint64_t alpha = 2;
@@ -59,6 +62,25 @@ namespace stool
 
             RLBWTDS *_RLBWTDS;
 
+            /*
+            iterator begin() const
+            {
+                return iterator(this, true);
+            }
+            iterator end() const
+            {
+                return iterator(this, false);
+            }
+            */
+
+            void clear(){
+                this->standard_st_traverser.clear();
+                this->fast_st_traverser.clear();
+                this->single_st_traverser.clear();
+                this->peak_child_count = 0;
+                this->total_counter = 0;
+                this->mode = SINGLE_MODE;
+            }
             uint64_t node_count() const
             {
                 if (this->mode == STANDARD_MODE)
@@ -159,7 +181,12 @@ namespace stool
                     throw -1;
                 }
             }
-            int64_t current_lcp()
+            int64_t get_current_lcp() const
+            {
+                return this->current_lcp();
+            }
+
+            int64_t current_lcp() const
             {
                 if (this->mode == STANDARD_MODE)
                 {
@@ -226,8 +253,9 @@ namespace stool
             }
             */
 
-            void process()
+            bool succ()
             {
+                if(this->is_finished()) return false;
 
                 if (this->total_counter > 0)
                 {
@@ -257,14 +285,15 @@ namespace stool
 
                 if (this->mode == STANDARD_MODE)
                 {
-                    this->standard_st_traverser.process();
+                    this->standard_st_traverser.succ();
                 }
                 else if (this->mode == FAST_MODE)
                 {
-                    this->fast_st_traverser.process();
-                }else if (this->mode == SINGLE_MODE)
+                    this->fast_st_traverser.succ();
+                }
+                else if (this->mode == SINGLE_MODE)
                 {
-                    this->single_st_traverser.process();
+                    this->single_st_traverser.succ();
                 }
                 else
                 {
@@ -273,15 +302,15 @@ namespace stool
                 }
 
                 this->update_info();
-                if(this->mode == SINGLE_MODE && this->thread_count > 1){
+                if (this->mode == SINGLE_MODE && this->thread_count > 1)
+                {
                     std::cout << "Switch -> STANDARD" << std::endl;
                     this->mode = STANDARD_MODE;
                     STNodeVector<INDEX_SIZE> tmp;
                     this->single_st_traverser.convert_to_vector(tmp);
-                    this->standard_st_traverser.import(this->single_st_traverser.get_current_lcp(),tmp);
-
+                    this->standard_st_traverser.import(this->single_st_traverser.get_current_lcp(), tmp);
                 }
-                
+
                 if (this->use_fast_mode && this->mode == STANDARD_MODE && (this->child_count() * 50 < this->peak_child_count))
                 {
                     std::cout << "Switch" << std::endl;
@@ -290,16 +319,14 @@ namespace stool
                     this->standard_st_traverser.to_stnode_vector(tmp);
                     this->standard_st_traverser.clear();
 
-                    this->fast_st_traverser.import(tmp, lcp - 1 );
+                    this->fast_st_traverser.import(tmp, lcp);
 
                     this->fast_st_traverser.set_peak(this->peak_child_count / 50);
 
                     this->mode = FAST_MODE;
-                    this->fast_st_traverser.process();
+                    this->fast_st_traverser.succ();
                     std::cout << "Switch[END]" << std::endl;
-
                 }
-                
 
 #if DEBUG
 
@@ -310,6 +337,7 @@ namespace stool
                 }
 
 #endif
+                return true;
             }
             void update_info()
             {
@@ -320,16 +348,17 @@ namespace stool
                 }
             }
 
-            bool isStop()
+            bool is_finished() const
             {
                 if (this->mode == STANDARD_MODE)
                 {
-                    return this->standard_st_traverser.isStop();
+                    return this->standard_st_traverser.is_finished();
                 }
                 else if (this->mode == FAST_MODE)
                 {
-                    return this->fast_st_traverser.isStop();
-                }else if (this->mode == SINGLE_MODE)
+                    return this->fast_st_traverser.is_finished();
+                }
+                else if (this->mode == SINGLE_MODE)
                 {
                     return this->single_st_traverser.get_current_lcp() >= 0 && this->single_st_traverser.node_count() == 0;
                 }
@@ -350,7 +379,8 @@ namespace stool
                 else if (this->mode == FAST_MODE)
                 {
                     this->fast_st_traverser.print();
-                }else if (this->mode == SINGLE_MODE)
+                }
+                else if (this->mode == SINGLE_MODE)
                 {
                     this->single_st_traverser.print();
                 }
@@ -375,7 +405,105 @@ namespace stool
                         }
                         */
             }
+            
+            DEPTH_ITERATOR begin()
+            {
+                this->clear();
+                this->succ();
+                return DEPTH_ITERATOR(this, true);
+            }
+            DEPTH_ITERATOR end()
+            {
+                return DEPTH_ITERATOR(this, false);
+            }
 
+            void increment(ITERATOR &iter) const
+            {
+
+                if (this->mode == STANDARD_MODE)
+                {
+                    this->standard_st_traverser.increment(iter.child_index, iter.node_index, iter.array_index);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    this->fast_st_traverser.increment(iter.child_index, iter.node_index, iter.array_index);
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    this->single_st_traverser.increment2(iter.child_index, iter.node_index, iter.array_index);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+
+            }
+
+            INDEX_SIZE get_left(const ITERATOR &iter) const
+            {
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.get_left(iter.child_index, iter.array_index);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.get_left(iter.child_index);
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.get_left(iter.child_index);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+
+            }
+            INDEX_SIZE get_right(const ITERATOR &iter) const
+            {
+
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.get_right(iter.child_index, iter.array_index);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.get_right(iter.child_index);
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.get_right(iter.child_index);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+
+            }
+            void set_current_first_iterator(ITERATOR &iter) const
+            {
+                if (this->mode == STANDARD_MODE)
+                {
+                    this->standard_st_traverser.set_current_first_iterator(iter.child_index, iter.node_index, iter.array_index);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    this->fast_st_traverser.set_current_first_iterator(iter.child_index, iter.node_index, iter.array_index);
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    this->single_st_traverser.set_current_first_iterator(iter.child_index, iter.node_index, iter.array_index);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+            }
+            
         private:
             uint64_t get_using_memory()
             {
@@ -386,7 +514,8 @@ namespace stool
                 else if (this->mode == FAST_MODE)
                 {
                     return this->fast_st_traverser.get_using_memory();
-                }else if (this->mode == SINGLE_MODE)
+                }
+                else if (this->mode == SINGLE_MODE)
                 {
                     return this->single_st_traverser.get_using_memory();
                 }

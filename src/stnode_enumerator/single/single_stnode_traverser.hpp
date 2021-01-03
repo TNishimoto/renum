@@ -12,6 +12,7 @@
 #include "../../../module/stool/src/io.h"
 #include "../stnode_vector.hpp"
 #include "bit_deque.hpp"
+#include "../node_iterator.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
@@ -23,6 +24,8 @@ namespace stool
         class SingleSTNodeTraverser
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
+            using ITERATOR = STNodeIterator<SingleSTNodeTraverser>;
+            using DEPTH_ITERATOR = STDepthIterator<SingleSTNodeTraverser>;
 
             uint64_t _stnode_count = 0;
             std::deque<INDEX_SIZE> childs_vec;
@@ -35,6 +38,8 @@ namespace stool
             ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> em;
 
         public:
+            using index_type = INDEX_SIZE;
+
             SingleSTNodeTraverser()
             {
             }
@@ -47,10 +52,10 @@ namespace stool
                 this->lcp = -1;
                 this->em.initialize(__RLBWTDS);
             }
-            bool isStop() const
-            {
-                    return this->get_current_lcp() >= 0 && this->node_count() == 0;
 
+            bool is_finished() const
+            {
+                return this->get_current_lcp() >= 0 && this->node_count() == 0;
             }
             void get_lcp_intervals(std::vector<stool::LCPInterval<uint64_t>> &output) const
             {
@@ -85,6 +90,10 @@ namespace stool
             {
                 return lcp;
             }
+            uint64_t get_integer_array_size() const
+            {
+                return this->first_child_flag_vec.size();
+            }
             uint64_t child_count() const
             {
                 return this->first_child_flag_vec.size() - this->node_count();
@@ -92,6 +101,20 @@ namespace stool
             uint64_t node_count() const
             {
                 return this->_stnode_count;
+            }
+            DEPTH_ITERATOR begin()
+            {
+                this->clear();
+                this->succ();
+                return DEPTH_ITERATOR(this, true);
+            }
+            DEPTH_ITERATOR end()
+            {
+                return DEPTH_ITERATOR(this, false);
+            }
+            ITERATOR node_end_iterator()
+            {
+                return ITERATOR(this, false);
             }
 
             void clear()
@@ -101,21 +124,32 @@ namespace stool
                 this->maximal_repeat_check_vec.clear();
                 this->first_child_flag_vec.clear();
             }
-            void process()
+            bool succ()
             {
-                if (this->lcp == -1)
+                if (this->is_finished())
                 {
-                    this->first_compute();
+                    return false;
                 }
                 else
                 {
-                    this->computeNextLCPIntervalSet();
+
+                    if (this->lcp == -1)
+                    {
+                        this->first_compute();
+                    }
+                    else
+                    {
+                        this->computeNextLCPIntervalSet();
+                    }
+                    return true;
                 }
             }
             uint64_t get_first_child_pointer() const
             {
                 return 1;
             }
+            
+
             uint64_t write_maximal_repeats(std::ofstream &out) const
             {
                 std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
@@ -338,6 +372,8 @@ namespace stool
                 this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
                 this->_stnode_count++;
             }
+
+        public:
             uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
             {
                 assert(L > 0);
@@ -353,6 +389,81 @@ namespace stool
                 right = this->get_child_end_position(R - 1);
 
                 return R + 1;
+            }
+            uint64_t increment(uint64_t L) const
+            {
+                assert(L > 0);
+                assert(this->first_child_flag_vec[L - 1]);
+                assert(!this->first_child_flag_vec[L]);
+
+                uint64_t R = L + 1;
+                while (R < this->first_child_flag_vec.size() && !this->first_child_flag_vec[R])
+                {
+                    R++;
+                }
+                return R + 1;
+            }
+            void increment(ITERATOR &iter) const
+            {
+                this->increment2(iter.child_index, iter.node_index, iter.array_index);
+            }
+            void increment2(INDEX_SIZE &child_index, INDEX_SIZE &node_index, INDEX_SIZE &array_index) const
+            {
+                child_index = this->increment(child_index);
+                if (child_index >= this->get_integer_array_size())
+                {
+                    child_index = std::numeric_limits<INDEX_SIZE>::max();
+                    node_index = std::numeric_limits<INDEX_SIZE>::max();
+                    array_index = std::numeric_limits<INDEX_SIZE>::max();
+
+                }
+                else
+                {
+                    node_index++;
+                }
+            }
+
+            INDEX_SIZE get_left(const ITERATOR &iter) const
+            {
+                return this->get_child_start_position(iter.child_index);
+            }
+            INDEX_SIZE get_left(INDEX_SIZE child_index) const
+            {
+                return this->get_child_start_position(child_index);
+            }
+
+            INDEX_SIZE get_right(const ITERATOR &iter) const
+            {
+                uint64_t left = 0, right = 0;
+                this->increment(iter.child_index, left, right);
+                return right;
+            }
+            INDEX_SIZE get_right(INDEX_SIZE child_index) const
+            {
+                uint64_t left = 0, right = 0;
+                this->increment(child_index, left, right);
+                return right;
+            }
+
+            void set_current_first_iterator(ITERATOR &it) const
+            {
+                this->set_current_first_iterator(it.child_index, it.node_index, it.array_index);
+            }
+            void set_current_first_iterator(INDEX_SIZE &child_index, INDEX_SIZE &node_index, INDEX_SIZE &array_index) const
+            {
+                if (this->is_finished())
+                {
+                    child_index = std::numeric_limits<INDEX_SIZE>::max();                    
+                    node_index = std::numeric_limits<INDEX_SIZE>::max();
+                    array_index = std::numeric_limits<INDEX_SIZE>::max();
+
+                }
+                else
+                {
+                    child_index = 1;
+                    node_index = 0;
+                    array_index = std::numeric_limits<INDEX_SIZE>::max();
+                }
             }
         };
 

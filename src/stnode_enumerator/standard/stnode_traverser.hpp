@@ -25,9 +25,10 @@ namespace stool
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
             using STNODE_SUB_TRAVERSER = STNodeSubTraverser<INDEX_SIZE, RLBWTDS>;
+            using ITERATOR = STNodeIterator<STNodeTraverser>;
+            using DEPTH_ITERATOR = STDepthIterator<STNodeTraverser>;
 
             std::vector<STNODE_SUB_TRAVERSER *> sub_trees;
-            std::stack<STNODE_SUB_TRAVERSER *> recycle_sub_trees;
 
             //std::vector<std::vector<STNODE_SUB_TRAVERSER *>> new_trees;
 
@@ -47,6 +48,7 @@ namespace stool
 
         public:
             RLBWTDS *_RLBWTDS;
+            using index_type = INDEX_SIZE;
 
             int64_t get_current_lcp() const
             {
@@ -89,8 +91,10 @@ namespace stool
                     this->sub_tree_limit_size = UINT64_MAX;
                 }
                 */
+               /*
                 auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->_RLBWTDS);
                 sub_trees.push_back(st);
+                */
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
@@ -230,24 +234,32 @@ namespace stool
             }
             */
 
-            void process()
+            bool succ()
             {
-                if (this->current_lcp >= 0)
+                if (this->is_finished())
                 {
-                    this->heavyEnumerate();
-                    this->recompute_node_counter();
+                    return false;
                 }
                 else
                 {
-                    SingleSTNodeTraverser<INDEX_SIZE, RLBWTDS> tmp_traverser;
-                    tmp_traverser.initialize(this->_RLBWTDS);
-                    tmp_traverser.process();
-                    STNodeVector<INDEX_SIZE> tmp;
-                    tmp_traverser.convert_to_vector(tmp);
-                    this->import(tmp_traverser.get_current_lcp(), tmp);
+                    if (this->current_lcp >= 0)
+                    {
+                        this->heavyEnumerate();
+                        this->recompute_node_counter();
+                    }
+                    else
+                    {
+                        SingleSTNodeTraverser<INDEX_SIZE, RLBWTDS> tmp_traverser;
+                        tmp_traverser.initialize(this->_RLBWTDS);
+                        tmp_traverser.succ();
+                        STNodeVector<INDEX_SIZE> tmp;
+                        tmp_traverser.convert_to_vector(tmp);
+                        this->import(tmp_traverser.get_current_lcp(), tmp);
+                    }
+                    return true;
                 }
             }
-            bool isStop()
+            bool is_finished() const
             {
                 return this->current_lcp >= 0 && this->child_count() == 0;
                 //return total_counter == strSize - 1;
@@ -288,7 +300,11 @@ namespace stool
             }
             void import(uint64_t lcp, STNodeVector<INDEX_SIZE> &item)
             {
-                assert(this->sub_trees.size() == 1);
+
+                assert(this->sub_trees.size() == 0);
+                auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->_RLBWTDS);
+                this->sub_trees.push_back(st);
+
                 this->current_lcp = lcp;
                 this->sub_trees[0]->import(item);
                 this->_child_count = this->sub_trees[0]->children_count();
@@ -312,7 +328,7 @@ namespace stool
                 current_lcp++;
             }
 
-            void parallel_process()
+            void parallel_succ()
             {
 #if DEBUG
                 std::cout << "PARALLEL PROCESS" << std::endl;
@@ -336,7 +352,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    threads.push_back(thread(parallel_process_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), this->sub_tree_limit_size));
+                    threads.push_back(thread(parallel_succ_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), this->sub_tree_limit_size));
                 }
 
                 for (thread &t : threads)
@@ -348,7 +364,7 @@ namespace stool
 
                 assert(position_stack.size() == 0);
             }
-            void single_process()
+            void single_succ()
             {
                 STNodeVector<INDEX_SIZE> tmp;
                 std::queue<STNODE_SUB_TRAVERSER *> uqueue;
@@ -377,12 +393,12 @@ namespace stool
                     //bool b = true;
                     if (isSingleProcess)
                     {
-                        this->single_process();
+                        this->single_succ();
                     }
                     else
                     {
 
-                        this->parallel_process();
+                        this->parallel_succ();
                     }
                 }
                 else
@@ -424,6 +440,96 @@ namespace stool
                     this->sub_trees[i] = nullptr;
                 }
                 this->sub_trees.resize(nonEmptyCount);
+            }
+
+        public:
+            DEPTH_ITERATOR begin()
+            {
+                this->clear();
+
+                this->succ();
+
+                return DEPTH_ITERATOR(this, true);
+            }
+            DEPTH_ITERATOR end()
+            {
+                return DEPTH_ITERATOR(this, false);
+            }
+
+            void increment(ITERATOR &iter) const
+            {
+                this->increment(iter.child_index, iter.node_index, iter.array_index);
+            }
+            
+            void increment(INDEX_SIZE &child_index, INDEX_SIZE &node_index, INDEX_SIZE &array_index) const
+            {
+                uint64_t left = 0, right = 0;
+                child_index = this->sub_trees[array_index]->increment(child_index, left, right);
+
+                if (child_index >= this->sub_trees[array_index]->get_integer_array_size())
+                {
+                    if (array_index + 1 < this->sub_trees.size())
+                    {
+                        child_index = 1;
+                        node_index = 0;
+                        array_index++;
+                    }
+                    else
+                    {
+                        child_index = std::numeric_limits<INDEX_SIZE>::max();
+                        node_index = std::numeric_limits<INDEX_SIZE>::max();
+                        array_index = std::numeric_limits<INDEX_SIZE>::max();
+                    }
+                }
+                else
+                {
+                    node_index++;
+                }
+            }
+            
+
+            INDEX_SIZE get_left(const ITERATOR &iter) const
+            {
+                return this->get_left(iter.child_index, iter.array_index);
+            }
+            INDEX_SIZE get_left(INDEX_SIZE child_index, INDEX_SIZE array_index) const
+            {
+
+                uint64_t left = 0, right = 0;
+                this->sub_trees[array_index]->increment(child_index, left, right);
+                return left;
+            }
+
+            INDEX_SIZE get_right(const ITERATOR &iter) const
+            {
+                return this->get_right(iter.child_index, iter.array_index);
+            }
+            INDEX_SIZE get_right(INDEX_SIZE child_index, INDEX_SIZE array_index) const
+            {
+
+                uint64_t left = 0, right = 0;
+                this->sub_trees[array_index]->increment(child_index, left, right);
+                return right;
+            }
+
+            void set_current_first_iterator(ITERATOR &iter) const
+            {
+                this->set_current_first_iterator(iter.child_index,iter.node_index,iter.array_index);
+            }
+            void set_current_first_iterator(INDEX_SIZE &child_index, INDEX_SIZE &node_index, INDEX_SIZE &array_index) const
+            {
+                if (this->is_finished())
+                {
+                    node_index = std::numeric_limits<INDEX_SIZE>::max();
+                    child_index = std::numeric_limits<INDEX_SIZE>::max();
+                    array_index = std::numeric_limits<INDEX_SIZE>::max();
+                }
+                else
+                {
+                    child_index = 1;
+                    node_index = 0;
+                    array_index = 0;
+                }
             }
         };
 

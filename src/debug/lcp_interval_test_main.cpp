@@ -50,27 +50,19 @@ public:
 
         std::vector<stool::LCPInterval<uint64_t>> r;
 
-        while (!stnodeSequencer.isStop())
+        auto it = stnodeSequencer.begin();
+        while (it != stnodeSequencer.end())
         {
             std::vector<stool::LCPInterval<uint64_t>> r2;
 
-            stnodeSequencer.process();
-
-            stool::LCPInterval<uint64_t> it;
-            it.i = 0;
-            it.j = 0;
-            it.lcp = 0;
-
-            stnodeSequencer.get_lcp_intervals(r2);
-            /*
-            if(ds->str_size() < 1000){
-                for(auto &it : r2){
-                    std::cout << it.to_string();
-                }
-                std::cout << std::endl;
+            for (auto interval : it)
+            {
+                stool::LCPInterval<uint64_t> copy;
+                copy.i = interval.first;
+                copy.j = interval.second;
+                copy.lcp = stnodeSequencer.get_current_lcp();
+                r2.push_back(copy);
             }
-            */
-
             if (ds->stnc != nullptr)
             {
                 ds->stnc->increment(r2);
@@ -79,6 +71,7 @@ public:
             {
                 r.push_back(it);
             }
+            it++;
         }
 
         std::cout << "STOP" << std::endl;
@@ -127,37 +120,43 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
 
     if (mode == "A")
     {
+        
         std::cout << "General Test" << std::endl;
         stool::lcp_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds);
         test_Intervals.swap(tmp);
+        
     }
     else if (mode == "B")
     {
+        
         std::cout << "Standard Test" << std::endl;
         stool::lcp_on_rlbwt::STNodeTraverser<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds);
         test_Intervals.swap(tmp);
+        
     }
     else if (mode == "C")
     {
+        
         std::cout << "Fast Test" << std::endl;
         stool::lcp_on_rlbwt::FastSTNodeTraverser<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds);
         test_Intervals.swap(tmp);
+        
     }
 
     else
     {
+
         std::cout << "Single Test" << std::endl;
         stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(&ds);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds);
         test_Intervals.swap(tmp);
-
     }
 
     //std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application<RDS>::testLCPIntervals(stnodeTraverser);
@@ -178,7 +177,6 @@ int main(int argc, char *argv[])
     p.add<string>("input_file", 'i', "input file name", true);
     p.add<string>("mode", 'm', "mode", false, "A");
     p.add<int>("thread_num", 'p', "thread number", false, -1);
-
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");

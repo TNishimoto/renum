@@ -77,7 +77,13 @@ namespace stool
                 return 1;
             }
 
-            uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
+            
+        public:
+            uint64_t get_integer_array_size() const
+            {
+                return this->_first_child_flag_vec_count;
+            }
+        uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
             {
                 assert(L > 0);
                 assert(this->first_child_flag_vec[L - 1]);
@@ -94,7 +100,6 @@ namespace stool
                 return R + 1;
             }
 
-        public:
             void get_lcp_intervals(uint64_t lcp, std::vector<stool::LCPInterval<uint64_t>> &output) const
             {
                 uint64_t size = this->node_count();

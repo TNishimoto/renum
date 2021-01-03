@@ -40,10 +40,10 @@ namespace stool
 
                 uint64_t count = 0;
 
-                while (!stnodeSequencer.isStop())
+                while (!stnodeSequencer.is_finished())
                 {
 
-                    stnodeSequencer.process();
+                    stnodeSequencer.succ();
                     count += stnodeSequencer.write_maximal_repeats(out);
                 }
                 std::cout << "Enumerated" << std::endl;
@@ -56,11 +56,11 @@ namespace stool
 
                 std::vector<stool::LCPInterval<uint64_t>> r;
 
-                while (!stnodeSequencer.isStop())
+                while (!stnodeSequencer.is_finished())
                 {
                     std::vector<stool::LCPInterval<uint64_t>> r2;
 
-                    stnodeSequencer.process();
+                    stnodeSequencer.succ();
 
                     stool::LCPInterval<uint64_t> it;
                     it.i = 0;

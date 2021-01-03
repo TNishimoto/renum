@@ -264,7 +264,7 @@ namespace stool
                     std::cout << "LCP Interval CHECK ERROR!(1)" << std::endl;
                     std::cout << "Test LCP Interval = "
                               << "[" << i << ", " << j << "]"
-                              << "Current LCP = " << this->current_lcp << std::endl;
+                              << ", Current LCP = " << this->current_lcp << std::endl;
 
                     throw -1;
                 }
