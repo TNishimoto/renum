@@ -117,6 +117,12 @@ namespace stool
                     this->depth = std::numeric_limits<INDEX_SIZE>::max();
                 }
             }
+            uint64_t child_count(){
+                return this->traverser->child_count();
+            }
+            uint64_t node_count(){
+                return this->traverser->node_count();
+            }
 
             STNodeIterator<TRAVERSER> operator*() const
             {

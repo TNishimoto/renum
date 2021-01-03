@@ -116,10 +116,7 @@ namespace stool
             }
             bool checkMaximalRepeat(uint64_t left, uint64_t right)
             {
-                uint64_t x = this->_RLBWTDS->get_lindex_containing_the_position(left);
-                uint64_t d = this->_RLBWTDS->get_run(x);
-                bool isMaximalRepeat = (this->_RLBWTDS->get_lpos(x) + d) <= right;
-                return isMaximalRepeat;
+                return this->_RLBWTDS->checkMaximalRepeat(left, right);
 
             }
 

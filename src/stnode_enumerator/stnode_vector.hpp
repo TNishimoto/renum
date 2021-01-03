@@ -166,9 +166,8 @@ namespace stool
                     this->childs_vec.push_back(right);
                     this->first_child_flag_vec.push_back(false);
                 }
-                uint64_t x = ds->get_lindex_containing_the_position(st_left);
-                uint64_t d = ds->get_run(x);
-                bool isMaximalRepeat = (ds->get_lpos(x) + d) <= st_right;
+                bool isMaximalRepeat = ds->checkMaximalRepeat(st_left, st_right);
+
                 this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
             }
             template <typename RLBWTDS>

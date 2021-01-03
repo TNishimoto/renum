@@ -27,6 +27,7 @@
 #include "../rlbwt/fpos_data_structure.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
 #include "../main/common.hpp"
+#include "../stnode_enumerator/weiner_link_search.hpp"
 
 using namespace std;
 using namespace stool;
@@ -35,15 +36,132 @@ using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
 
-void computeMaximalSubstrings(std::string inputFile, std::string outputFile, string mode, int thread_num)
+class MaximalRepeatTest
+{
+public:
+    template <typename STNODES>
+    static uint64_t test(STNODES &stnodeSequencer, std::vector<uint8_t> &bwt)
+    {
+        using INDEX_SIZE = typename STNODES::index_type;
+
+        uint64_t count = 0;
+
+        std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
+
+        auto it = stnodeSequencer.begin();
+        while (it != stnodeSequencer.end())
+        {
+
+            for (auto node_it = it.begin(); node_it != it.end(); node_it++)
+            {
+                bool b = stnodeSequencer.check_maximal_repeat(node_it);
+                if (b)
+                {
+                    count++;
+                    INDEX_SIZE left = stnodeSequencer.get_left(node_it);
+                    INDEX_SIZE right = stnodeSequencer.get_right(node_it);
+
+                    bool mb = false;
+                    for (uint64_t i = left + 1; i <= right; i++)
+                    {
+                        uint8_t l = bwt[i - 1];
+                        uint8_t r = bwt[i];
+
+                        if (l != r)
+                        {
+                            mb = true;
+                            break;
+                        }
+                    }
+                    if (mb != b)
+                    {
+                        std::cout << mb << "/" << b << std::endl;
+                        std::cout << "[" << left << ", " << right << "]" << std::endl;
+
+                        std::cout << "BWT on Range: ";
+                        for (uint64_t i = left; i <= right; i++)
+                        {
+                            std::cout << bwt[i];
+                        }
+                        std::cout << std::endl;
+                    }
+                    assert(mb == b);
+                }
+            }
+            it++;
+        }
+
+        return count;
+    }
+};
+
+
+std::vector<uint8_t> load_bwt(std::string filename)
+{
+
+    std::ifstream stream;
+    stream.open(filename, std::ios::binary);
+
+    std::vector<uint8_t> vec;
+
+    if (!stream)
+    {
+        std::cerr << "error reading file " << std::endl;
+        throw -1;
+    }
+    uint64_t len;
+    stream.seekg(0, std::ios::end);
+    uint64_t n = (unsigned long)stream.tellg();
+    stream.seekg(0, std::ios::beg);
+    len = n / sizeof(uint8_t);
+
+    vec.resize(len, 0);
+    stream.read((char *)&(vec)[0], len * sizeof(char));
+
+    return vec;
+}
+uint8_t get_last_char(sdsl::int_vector<> &bwt, std::vector<uint64_t> &C, sdsl::bit_vector &bv)
+{
+    uint64_t k = 0;
+    bv.resize(bwt.size());
+    bool b = true;
+    //std::cout << bwt.size() << std::endl;
+    for (uint64_t i = 0; i < bwt.size(); i++)
+    {
+        //std::cout << (uint) bwt[i];
+        if (bwt[i] == 0)
+        {
+            k++;
+            std::cout << i << std::endl;
+        }
+        if (i > 0 && bwt[i] != bwt[i - 1])
+        {
+            b = !b;
+        }
+        bv[i] = b;
+    }
+    //std::cout << std::endl;
+    if (k == 0)
+    {
+        std::cout << "Error: This bwt does not contain 0." << std::endl;
+        throw -1;
+    }
+    else if (k >= 2)
+    {
+        std::cout << "Error2: This bwt contains 0 twice or more." << std::endl;
+        throw -1;
+    }
+    std::cout << "Constructing array C..." << std::endl;
+
+    stool::FMIndex::constructC(bwt, C);
+
+    return bwt[bwt.size() - 1];
+}
+
+void computeMaximalSubstrings(std::string inputFile, string mode, int thread_num)
 {
     auto start = std::chrono::system_clock::now();
 
-    std::ofstream out(outputFile, std::ios::out | std::ios::binary);
-    if (!out)
-    {
-        throw std::runtime_error("Cannot open the output file!");
-    }
 
     sdsl::int_vector<> diff_char_vec;
     stool::EliasFanoVectorBuilder run_bits;
@@ -92,7 +210,10 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     stnodeTraverser.use_fast_mode = mode == "1";
 
     stnodeTraverser.initialize(thread_num, ds);
-    ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+
+    std::vector<uint8_t> plain_bwt;
+    stool::bwt::load(inputFile, plain_bwt);
+    ms_count = MaximalRepeatTest::test(stnodeTraverser, plain_bwt);
     bit_size_mode = "UINT32_t";
 
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
@@ -104,7 +225,6 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     std::cout << "\033[31m";
     std::cout << "______________________RESULT______________________" << std::endl;
     std::cout << "RLBWT File \t\t\t\t : " << inputFile << std::endl;
-    std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
     std::cout << "Use Fast \t\t\t\t\t : " << (stnodeTraverser.use_fast_mode ? "True" : "False") << std::endl;
 
     std::cout << "LPOS and FPos Vector type \t\t\t\t : "
@@ -128,6 +248,78 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     std::cout << "\033[39m" << std::endl;
 }
 
+void computeMaximalSubstrings_beller(std::string inputFile)
+{
+    std::cout << "Loading : " << inputFile << std::endl;
+
+    std::vector<uint8_t> plain_bwt = load_bwt(inputFile);
+
+    sdsl::int_vector<> bwt;
+    bwt.width(8);
+    bwt.resize(plain_bwt.size());
+    for(uint64_t i=0;i<plain_bwt.size();i++){
+        bwt[i] = plain_bwt[i];
+    }
+
+    //string text = "";
+    auto start = std::chrono::system_clock::now();
+    std::vector<uint64_t> C;
+    sdsl::bit_vector bv;
+
+    uint8_t lastChar = get_last_char(bwt, C, bv);
+    sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
+
+    std::cout << "Constructing Wavelet Tree..." << std::endl;
+    wt_huff<> wt;
+    construct_im(wt, bwt);
+    std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+
+    uint64_t ms_count = 0;
+
+    stool::IntervalSearchDataStructure range;
+    range.initialize(&wt, &C, lastChar);
+
+    uint64_t input_text_size = wt.size();
+
+    auto mid = std::chrono::system_clock::now();
+    double construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
+    std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
+
+    std::cout << "Enumerating..." << std::endl;
+    uint64_t peak_count = 0;
+    stool::lcp_on_rlbwt::STTreeAnalysisResult st_result;
+
+        using INDEX_TYPE = uint32_t;
+
+        stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE> wsearch;
+        wsearch.initialize(&range, &bwt_bit_rank1, input_text_size);
+        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE>> traverser;
+        traverser.initialize(&wsearch);
+        ms_count = MaximalRepeatTest::test(traverser, plain_bwt);
+    auto end = std::chrono::system_clock::now();
+    double enumeration_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
+
+    double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    double bps = ((double)input_text_size / ((double)elapsed / 1000)) / 1000;
+
+    std::cout << "\033[31m";
+    std::cout << "______________________RESULT______________________" << std::endl;
+    std::cout << "RLBWT File \t\t\t\t\t : " << inputFile << std::endl;
+    std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
+    std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
+    std::cout << "Peak count \t : " << st_result.max_nodes_at_level << std::endl;
+    std::cout << "The usage of Wavelet tree : " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+
+    std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
+    std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
+
+    std::cout << "\t Preprocessing time \t\t : " << construction_time << "[ms]" << std::endl;
+    std::cout << "\t Enumeration time \t\t : " << enumeration_time << "[ms]" << std::endl;
+
+    std::cout << "_______________________________________________________" << std::endl;
+    std::cout << "\033[39m" << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
 #if DEBUG
@@ -138,7 +330,6 @@ int main(int argc, char *argv[])
 
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input file name", true);
-    p.add<string>("output_file", 'o', "output file name", false, "");
     p.add<string>("mode", 'm', "mode", false, "1");
     p.add<int>("thread_num", 'p', "thread number", false, -1);
 
@@ -146,8 +337,6 @@ int main(int argc, char *argv[])
     string inputFile = p.get<string>("input_file");
     string mode = p.get<string>("mode");
 
-    string outputFile = p.get<string>("output_file");
-    string format = "binary";
     int thread_num = p.get<int>("thread_num");
     if (thread_num < 0)
     {
@@ -164,17 +353,11 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if (outputFile.size() == 0)
-    {
-        if (format == "csv")
-        {
-            outputFile = inputFile + ".max.csv";
-        }
-        else
-        {
-            outputFile = inputFile + ".max";
-        }
+    if(mode != "0"){
+    computeMaximalSubstrings(inputFile, mode, thread_num);
+
+    }else{
+        computeMaximalSubstrings_beller(inputFile);
     }
 
-        computeMaximalSubstrings(inputFile, outputFile, mode, thread_num);
 }

@@ -527,6 +527,12 @@ namespace stool
             {
                 return this->sub_trees[array_index]->check_maximal_repeat(node_index);
             }
+            
+            bool check_maximal_repeat(ITERATOR &iter) const
+            {
+                    return this->check_maximal_repeat(iter.node_index, iter.array_index);
+
+            }
         };
 
     } // namespace lcp_on_rlbwt

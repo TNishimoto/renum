@@ -62,9 +62,11 @@ namespace stool
             {
 
                 uint64_t k1 = left == 0 ? 0 : (*bwt_bit_rank1)(left);
-                uint64_t k2 = (*bwt_bit_rank1)(right + 1);
-                bool b = !((k2 - k1 == 0) || ((k2 - k1) == (right - left + 1)));
-                return b;
+                uint64_t k2 = (*bwt_bit_rank1)(right+1);
+                bool isNotMaximalRepeat = ((k2 - k1 == 0) || ((k2 - k1) == (right - left + 1)));
+
+\
+                return !isNotMaximalRepeat;
             }
 
             uint64_t get_explicit_stnode_count()

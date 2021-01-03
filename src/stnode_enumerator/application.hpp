@@ -25,18 +25,15 @@ namespace stool
             uint64_t max_nodes_at_level;
         };
 
-        template <typename RLBWTDS>
         class Application
         {
         public:
-            using CHAR = typename RLBWTDS::CHAR;
-            //using CHARVEC = typename RLBWT_STR::char_vec_type;
-            using INDEX_SIZE = typename RLBWTDS::INDEX;
-            using UCHAR = typename std::make_unsigned<CHAR>::type;
-            using RINTERVAL = RInterval<INDEX_SIZE>;
 
-            static uint64_t outputMaximalSubstrings(std::ofstream &out, SuffixTreeNodes<INDEX_SIZE, RLBWTDS> &stnodeSequencer, STTreeAnalysisResult &analysis)
+            template <typename STNODES>
+            static uint64_t outputMaximalSubstrings(std::ofstream &out, STNODES &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
+                using INDEX_SIZE = typename STNODES::index_type;
+
                 uint64_t count = 0;
 
                 std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
@@ -44,6 +41,9 @@ namespace stool
                 auto it = stnodeSequencer.begin();
                 while (it != stnodeSequencer.end())
                 {
+                    if(analysis.max_nodes_at_level < stnodeSequencer.child_count()){
+                        analysis.max_nodes_at_level = stnodeSequencer.child_count();
+                    }
                     std::vector<stool::LCPInterval<uint64_t>> r2;
 
                     for (auto node_it = it.begin(); node_it != it.end(); node_it++)
@@ -73,7 +73,6 @@ namespace stool
                 }
                 std::cout << "Enumerated" << std::endl;
 
-                analysis.max_nodes_at_level = stnodeSequencer.peak_child_count;
 
                 return count;
             }

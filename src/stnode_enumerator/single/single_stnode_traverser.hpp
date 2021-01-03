@@ -409,6 +409,11 @@ namespace stool
             {
                 return this->maximal_repeat_check_vec[node_index];
             }
+            bool check_maximal_repeat(ITERATOR &iter) const
+            {
+                    return this->check_maximal_repeat(iter.node_index);
+
+            }
         };
 
     } // namespace lcp_on_rlbwt

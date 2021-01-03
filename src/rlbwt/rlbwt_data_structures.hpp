@@ -54,6 +54,14 @@ namespace stool
                 return this->stnc->check_lcp_interval(intv2.i, intv2.j);
             }
 
+            bool checkMaximalRepeat(uint64_t left, uint64_t right)
+            {
+                uint64_t x = this->get_lindex_containing_the_position(left);
+                uint64_t d = this->get_run(x);
+                bool isMaximalRepeat = (this->get_lpos(x) + d - 1) < right;
+                return isMaximalRepeat;
+
+            }
             bool checkWeinerLink(const stool::LCPInterval<uint64_t> intv2, std::vector<RINTERVAL> &stnodeVec, std::vector<uint64_t> &indexVec, uint64_t indexCount)
             {
                 assert(intv2.i <= intv2.j);

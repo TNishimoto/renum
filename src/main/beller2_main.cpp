@@ -17,6 +17,7 @@
 #include "../debug/naive_algorithms.hpp"
 #include "../stnode_enumerator/weiner_link_search.hpp"
 #include "../stnode_enumerator/single/single_stnode_traverser.hpp"
+#include "../stnode_enumerator/application.hpp"
 
 #include <sdsl/wt_algorithm.hpp>
 
@@ -34,7 +35,6 @@ using LCPINTV = stool::LCPInterval<uint64_t>;
 class LCPIntervalTest
 {
 public:
-
     template <typename STNODES>
     static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(STNODES &stnodeSequencer)
     {
@@ -219,26 +219,29 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
 
     std::cout << "Enumerating..." << std::endl;
     uint64_t peak_count = 0;
+            stool::lcp_on_rlbwt::STTreeAnalysisResult st_result;
 
     if (input_text_size - 10 < UINT32_MAX)
     {
-        stool::beller::OutputStructure<uint32_t> os;
-        os.is_output_maximal_substrings = true;
-        os.out = &out;
-        os.bwt_bit_rank1 = &bwt_bit_rank1;
+        using INDEX_TYPE = uint32_t;
 
-        ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(range, os);
-        peak_count = os.peak;
+        stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE> wsearch;
+        wsearch.initialize(&range, &bwt_bit_rank1, input_text_size );
+        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE>> traverser;
+        traverser.initialize(&wsearch);
+        ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, traverser, st_result);
+
     }
     else
     {
-        stool::beller::OutputStructure<uint64_t> os;
-        os.is_output_maximal_substrings = true;
-        os.out = &out;
-        os.bwt_bit_rank1 = &bwt_bit_rank1;
+        using INDEX_TYPE = uint64_t;
 
-        ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(range, os);
-        peak_count = os.peak;
+        stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE> wsearch;
+        wsearch.initialize(&range, &bwt_bit_rank1, input_text_size );
+        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE>> traverser;
+        traverser.initialize(&wsearch);
+        ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, traverser, st_result);
+
     }
     auto end = std::chrono::system_clock::now();
     double enumeration_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
@@ -252,7 +255,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
     std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
     std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
-    std::cout << "Peak count \t : " << peak_count << std::endl;
+    std::cout << "Peak count \t : " << st_result.max_nodes_at_level << std::endl;
     std::cout << "The usage of Wavelet tree : " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
     std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;

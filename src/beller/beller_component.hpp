@@ -36,8 +36,11 @@ namespace stool
                 {
                     uint64_t k1 = interval.i == 0 ? 0 : (*bwt_bit_rank1)(interval.i);
                     uint64_t k2 = (*bwt_bit_rank1)(interval.j + 1);
-                    bool b = !((k2 - k1 == 0) || ((k2 - k1) == (interval.j - interval.i + 1)));
-                    if (b)
+
+
+                    bool isNotMaximalRepeat = ((k2 - k1 == 0) || ((k2 - k1) == (interval.j - interval.i + 1)));
+
+                    if (!isNotMaximalRepeat)
                     {
                         this->outputIntervals.push_back(interval);
                         count++;

@@ -66,7 +66,6 @@ namespace stool
                     item.pop();
                 }
 
-
                 assert(this->maximal_repeat_check_vec.size() == num);
                 this->current_lcp = lcp;
                 this->child_width_vec.push_back(this->first_child_flag_vec.size());
@@ -110,6 +109,9 @@ namespace stool
                 uint64_t fst = this->childs_vec[(startIndex * 4)];
                 uint64_t end = this->childs_vec[(endIndex * 4) + 2];
                 bool isMaximalRepeat = fst != end;
+
+
+
                 this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
             }
             inline void call_level_nodes(uint64_t stnode_count, uint64_t childnode_count)
@@ -166,6 +168,7 @@ namespace stool
 
             void pop_level(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
             {
+                
                 assert(this->child_width_vec.size() >= 2);
                 for (uint64_t i = 0; i < this->child_width_vec[0]; i++)
                 {
@@ -193,7 +196,7 @@ namespace stool
                 stnode_count_vec.pop_front();
                 processed_flag_vec.pop_front();
                 this->current_lcp++;
-                                assert(this->child_width_vec.size() >= 1);
+                assert(this->child_width_vec.size() >= 1);
 
             }
 
@@ -399,13 +402,33 @@ namespace stool
 
             void print()
             {
+                std::cout << "[STNODE_COUNT, CHILDREN_COUNT] = [" << this->node_count() << ", " << this->children_count() << "]" << std::endl;
                 stool::Printer::print_bits("processed_flag_vec", this->processed_flag_vec);
                 stool::Printer::print_bits("first_child_flag_vec", this->first_child_flag_vec);
                 stool::Printer::print_bits("maximal_repeat_check_vec", this->maximal_repeat_check_vec);
+                stool::Printer::print("child_vec", this->childs_vec);
+
                 stool::Printer::print("child_width_vec", this->child_width_vec);
                 stool::Printer::print("stnode_count_vec", this->stnode_count_vec);
 
-                std::cout << "[" << this->node_count() << ", " << this->children_count() << "]" << std::endl;
+                RINTERVAL output;
+                output.beginIndex = std::numeric_limits<INDEX_SIZE>::max();
+                output.endIndex = std::numeric_limits<INDEX_SIZE>::max();
+                output.beginDiff = std::numeric_limits<INDEX_SIZE>::max();
+                output.endDiff = std::numeric_limits<INDEX_SIZE>::max();
+
+                uint64_t L = 0;
+                for(uint64_t i=0;i<this->stnode_count_vec.size();i++){
+                    for(uint64_t j=0;j<this->stnode_count_vec[i];j++){
+                        L = this->read_st_node(L, output);
+                    
+                        auto intv = output.get_lcp_interval(this->current_lcp + i, this->_RLBWTDS->lpos_vec);
+                        std::cout << intv.to_string();
+                    
+                    }
+                    std::cout << std::endl;
+                }
+
             }
             void print_info()
             {

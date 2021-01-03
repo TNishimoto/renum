@@ -106,7 +106,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         std::cout << "Enumerate Maximal Substrings..." << std::endl;
         stool::lcp_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds);
-        ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+        ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
     }
     else
     {
@@ -135,7 +135,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+            ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
             bit_size_mode = "UINT32_t";
         }
         else
@@ -146,7 +146,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
             std::cout << "Enumerate Maximal Substrings..." << std::endl;
             stool::lcp_on_rlbwt::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            ms_count = stool::lcp_on_rlbwt::Application<RDS>::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+            ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
         }
     }
 

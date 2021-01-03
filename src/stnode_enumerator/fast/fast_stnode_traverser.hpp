@@ -174,7 +174,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < k1; i++)
                 {
-                    this->maximal_repeat_check_vec.pop_back();
+                    this->maximal_repeat_check_vec.pop_front();
                 }
                 for (uint64_t i = 0; i < k2; i++)
                 {
@@ -327,12 +327,32 @@ namespace stool
 
             void print()
             {
-                std::cout << "PRINT PTREE" << std::endl;
+                std::cout << "PRINT FAST STNODE TRAVERSER" << std::endl;
 
                 stool::Printer::print_bits("first_child_flag_vec", this->first_child_flag_vec);
                 stool::Printer::print_bits("maximal_repeat_check_vec", this->maximal_repeat_check_vec);
                 stool::Printer::print("child_width_vec", this->child_width_vec);
                 stool::Printer::print("stnode_count_vec", this->st_width_vec);
+
+
+                RINTERVAL output;
+
+                uint64_t L = 0;
+                for(uint64_t i=0;i<this->st_width_vec.size();i++){
+                    for(uint64_t j=0;j<this->st_width_vec[i];j++){
+                        L = this->get_stnode(L, output);
+                    
+                        auto intv = output.get_lcp_interval(this->current_lcp + i, this->_RLBWTDS->lpos_vec);
+                        std::cout << intv.to_string();
+                    
+                    }
+                    std::cout << std::endl;
+                }
+                std::cout << "PRINT SUBTREES" << std::endl;
+
+                for(auto &it : this->sub_trees){
+                    it->print();
+                }
 
                 /*
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
@@ -379,7 +399,6 @@ namespace stool
                 this->succ();
 
                 assert(item.size() == 0);
-
             }
 
         private:
@@ -520,12 +539,11 @@ namespace stool
                 RINTERVAL output;
                 child_index = this->get_stnode(child_index, output);
 
-                if (child_index >= this->child_width_vec[0] )
+                if (child_index >= this->child_width_vec[0])
                 {
                     child_index = std::numeric_limits<INDEX_SIZE>::max();
                     node_index = std::numeric_limits<INDEX_SIZE>::max();
                     array_index = std::numeric_limits<INDEX_SIZE>::max();
-
                 }
                 else
                 {
@@ -574,7 +592,7 @@ namespace stool
             {
                 if (this->is_finished())
                 {
-                    
+
                     node_index = std::numeric_limits<INDEX_SIZE>::max();
                     child_index = std::numeric_limits<INDEX_SIZE>::max();
                     array_index = std::numeric_limits<INDEX_SIZE>::max();
@@ -586,10 +604,15 @@ namespace stool
                     array_index = std::numeric_limits<INDEX_SIZE>::max();
                 }
             }
-            bool check_maximal_repeat(INDEX_SIZE node_index) const {
+            bool check_maximal_repeat(INDEX_SIZE node_index) const
+            {
                 return this->maximal_repeat_check_vec[node_index];
             }
 
+            bool check_maximal_repeat(ITERATOR &iter) const
+            {
+                return this->check_maximal_repeat(iter.node_index);
+            }
         }; // namespace lcp_on_rlbwt
 
     } // namespace lcp_on_rlbwt

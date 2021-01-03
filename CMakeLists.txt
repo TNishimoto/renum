@@ -70,5 +70,5 @@ target_link_libraries(hyper.out fn)
 add_executable(interval_test.out src/debug/lcp_interval_test_main.cpp)
 target_link_libraries(interval_test.out fn)
 
-add_executable(maximal_repeat_test.out src/debug/maximal_repeat_test_main.cpp)
-target_link_libraries(maximal_repeat_test.out fn)
+#add_executable(maximal_repeat_test.out src/debug/maximal_repeat_test_main.cpp)
+#target_link_libraries(maximal_repeat_test.out fn)
