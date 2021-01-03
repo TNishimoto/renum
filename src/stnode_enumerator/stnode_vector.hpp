@@ -182,6 +182,14 @@ namespace stool
                     this->add(c, count, em, ds);
                 }
             }
+            
+            void print() const
+            {
+                std::cout << "[STNODE_COUNT, CHILDREN_COUNT] = [" << this->maximal_repeat_check_vec.size() << ", " << "XXX" << "]" << std::endl;
+                stool::Printer::print("child_vec", this->childs_vec);
+                stool::Printer::print_bits("first_child_flag_vec", this->first_child_flag_vec);
+                stool::Printer::print_bits("maximal_repeat_check_vec", this->maximal_repeat_check_vec);
+            }
         };
     } // namespace lcp_on_rlbwt
 } // namespace stool

@@ -148,7 +148,6 @@ namespace stool
             {
                 return 1;
             }
-            
 
             uint64_t write_maximal_repeats(std::ofstream &out) const
             {
@@ -415,7 +414,6 @@ namespace stool
                     child_index = std::numeric_limits<INDEX_SIZE>::max();
                     node_index = std::numeric_limits<INDEX_SIZE>::max();
                     array_index = std::numeric_limits<INDEX_SIZE>::max();
-
                 }
                 else
                 {
@@ -453,10 +451,9 @@ namespace stool
             {
                 if (this->is_finished())
                 {
-                    child_index = std::numeric_limits<INDEX_SIZE>::max();                    
+                    child_index = std::numeric_limits<INDEX_SIZE>::max();
                     node_index = std::numeric_limits<INDEX_SIZE>::max();
                     array_index = std::numeric_limits<INDEX_SIZE>::max();
-
                 }
                 else
                 {
@@ -464,6 +461,11 @@ namespace stool
                     node_index = 0;
                     array_index = std::numeric_limits<INDEX_SIZE>::max();
                 }
+            }
+
+            bool check_maximal_repeat(INDEX_SIZE node_index) const
+            {
+                return this->maximal_repeat_check_vec[node_index];
             }
         };
 

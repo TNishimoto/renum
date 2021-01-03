@@ -222,9 +222,6 @@ namespace stool
                 mmax -= k2;
                 this->child_width_vec.pop_front();
                 this->st_width_vec.pop_front();
-                //this->children_intervals.pop_front();
-                //this->first_child_flag_vec.pop_front();
-                //this->maximal_repeat_check_vec.pop_front();
             }
 
             bool succ()
@@ -358,7 +355,7 @@ namespace stool
             }
             bool is_finished() const
             {
-                return this->current_lcp >= 0 && this->child_count() == 0;
+                return this->current_lcp >= 0 && this->child_count() == 0 && this->sub_trees.size() == 0;
                 //return total_counter == strSize - 1;
             }
 
@@ -411,9 +408,12 @@ namespace stool
                     uint64_t num = item.size() < k ? item.size() : k;
                     st->import(item, lcp, num);
                 }
-                assert(item.size() == 0);
 
                 this->current_lcp = lcp - 1;
+                this->succ();
+
+                assert(item.size() == 0);
+
             }
 
         private:
@@ -608,6 +608,7 @@ namespace stool
             {
                 if (this->is_finished())
                 {
+                    
                     node_index = std::numeric_limits<INDEX_SIZE>::max();
                     child_index = std::numeric_limits<INDEX_SIZE>::max();
                     array_index = std::numeric_limits<INDEX_SIZE>::max();
@@ -618,6 +619,9 @@ namespace stool
                     node_index = 0;
                     array_index = std::numeric_limits<INDEX_SIZE>::max();
                 }
+            }
+            bool check_maximal_repeat(INDEX_SIZE node_index) const {
+                return this->maximal_repeat_check_vec[node_index];
             }
 
         }; // namespace lcp_on_rlbwt

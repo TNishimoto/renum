@@ -37,16 +37,42 @@ namespace stool
 
             static uint64_t outputMaximalSubstrings(std::ofstream &out, SuffixTreeNodes<INDEX_SIZE, RLBWTDS> &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
-
                 uint64_t count = 0;
 
-                while (!stnodeSequencer.is_finished())
-                {
+                std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
 
-                    stnodeSequencer.succ();
-                    count += stnodeSequencer.write_maximal_repeats(out);
+                auto it = stnodeSequencer.begin();
+                while (it != stnodeSequencer.end())
+                {
+                    std::vector<stool::LCPInterval<uint64_t>> r2;
+
+                    for (auto node_it = it.begin(); node_it != it.end(); node_it++)
+                    {
+                        bool b = stnodeSequencer.check_maximal_repeat(node_it);
+                        if (b)
+                        {
+                            INDEX_SIZE left = stnodeSequencer.get_left(node_it);
+                            INDEX_SIZE right = stnodeSequencer.get_right(node_it);
+                            stool::LCPInterval<INDEX_SIZE> intv(left, right, stnodeSequencer.get_current_lcp());
+                            buffer.push_back(intv);
+                            count++;
+                            if (buffer.size() >= 8000)
+                            {
+                                out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                                buffer.clear();
+                            }
+                        }
+                    }
+                    it++;
+                }
+                
+                if (buffer.size() >= 1)
+                {
+                    out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                    buffer.clear();
                 }
                 std::cout << "Enumerated" << std::endl;
+
                 analysis.max_nodes_at_level = stnodeSequencer.peak_child_count;
 
                 return count;

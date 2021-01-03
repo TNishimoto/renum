@@ -83,6 +83,12 @@ namespace stool
                 traverser->increment(*this);
                 return *this;
             }
+            
+            STNodeIterator &operator++(int)
+            {
+                ++(*this);
+                return *this;
+            }
             bool operator!=(const STNodeIterator &rhs) const
             {
                 return this->node_index != rhs.node_index || this->child_index != rhs.child_index;

@@ -362,6 +362,11 @@ namespace stool
                     item.maximal_repeat_check_vec.pop_back();
                 }
             }
+            
+            bool check_maximal_repeat(INDEX_SIZE node_index) const
+            {
+                return this->maximal_repeat_check_vec[node_index];
+            }
         };
 
     } // namespace lcp_on_rlbwt

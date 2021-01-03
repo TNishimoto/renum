@@ -73,7 +73,8 @@ namespace stool
             }
             */
 
-            void clear(){
+            void clear()
+            {
                 this->standard_st_traverser.clear();
                 this->fast_st_traverser.clear();
                 this->single_st_traverser.clear();
@@ -255,7 +256,8 @@ namespace stool
 
             bool succ()
             {
-                if(this->is_finished()) return false;
+                if (this->is_finished())
+                    return false;
 
                 if (this->total_counter > 0)
                 {
@@ -316,15 +318,15 @@ namespace stool
                     std::cout << "Switch" << std::endl;
                     STNodeVector<INDEX_SIZE> tmp;
                     uint64_t lcp = this->standard_st_traverser.get_current_lcp();
+
                     this->standard_st_traverser.to_stnode_vector(tmp);
                     this->standard_st_traverser.clear();
 
+                    this->fast_st_traverser.set_peak(this->peak_child_count / 50);
                     this->fast_st_traverser.import(tmp, lcp);
 
-                    this->fast_st_traverser.set_peak(this->peak_child_count / 50);
 
                     this->mode = FAST_MODE;
-                    this->fast_st_traverser.succ();
                     std::cout << "Switch[END]" << std::endl;
                 }
 
@@ -350,23 +352,26 @@ namespace stool
 
             bool is_finished() const
             {
+                bool b = false;
                 if (this->mode == STANDARD_MODE)
                 {
-                    return this->standard_st_traverser.is_finished();
+                    b = this->standard_st_traverser.is_finished();
                 }
                 else if (this->mode == FAST_MODE)
                 {
-                    return this->fast_st_traverser.is_finished();
+                    b = this->fast_st_traverser.is_finished();
                 }
                 else if (this->mode == SINGLE_MODE)
                 {
-                    return this->single_st_traverser.get_current_lcp() >= 0 && this->single_st_traverser.node_count() == 0;
+                    b = this->single_st_traverser.is_finished();
                 }
                 else
                 {
                     assert(false);
                     throw -1;
                 }
+                return b;
+
                 //return total_counter == strSize - 1;
             }
 
@@ -405,7 +410,7 @@ namespace stool
                         }
                         */
             }
-            
+
             DEPTH_ITERATOR begin()
             {
                 this->clear();
@@ -437,7 +442,6 @@ namespace stool
                     assert(false);
                     throw -1;
                 }
-
             }
 
             INDEX_SIZE get_left(const ITERATOR &iter) const
@@ -459,7 +463,6 @@ namespace stool
                     assert(false);
                     throw -1;
                 }
-
             }
             INDEX_SIZE get_right(const ITERATOR &iter) const
             {
@@ -481,7 +484,6 @@ namespace stool
                     assert(false);
                     throw -1;
                 }
-
             }
             void set_current_first_iterator(ITERATOR &iter) const
             {
@@ -503,7 +505,28 @@ namespace stool
                     throw -1;
                 }
             }
-            
+
+            bool check_maximal_repeat(ITERATOR &iter) const
+            {
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.check_maximal_repeat(iter.node_index, iter.array_index);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.check_maximal_repeat(iter.node_index);
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.check_maximal_repeat(iter.node_index);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+            }
+
         private:
             uint64_t get_using_memory()
             {
