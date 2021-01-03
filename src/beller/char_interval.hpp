@@ -109,6 +109,13 @@ namespace stool
 
             return p;
         }
+        /*
+        template <typename INDEX_SIZE>
+        uint64_t getIntervals2(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
+        {
+            return 0;
+        }
+        */
     };
 
 } // namespace stool

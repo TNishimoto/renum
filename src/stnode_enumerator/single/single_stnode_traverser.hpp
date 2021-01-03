@@ -56,18 +56,6 @@ namespace stool
             {
                 return this->get_current_lcp() >= 0 && this->node_count() == 0;
             }
-            void get_lcp_intervals(std::vector<stool::LCPInterval<uint64_t>> &output) const
-            {
-                uint64_t size = this->node_count();
-                uint64_t L = this->get_first_child_pointer();
-                uint64_t left;
-                uint64_t right;
-                for (uint64_t i = 0; i < size; i++)
-                {
-                    L = this->increment(L, left, right);
-                    output.push_back(stool::LCPInterval<uint64_t>(left, right, lcp));
-                }
-            }
             void load(std::ifstream &file)
             {
                 file.read((char *)&this->_stnode_count, sizeof(uint64_t));

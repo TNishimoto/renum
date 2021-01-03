@@ -7,6 +7,7 @@
 #include <queue>
 #include <vector>
 #include <type_traits>
+#include "../rlbwt/range_distinct/light_range_distinct.hpp"
 
 namespace stool
 {

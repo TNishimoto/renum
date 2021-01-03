@@ -51,6 +51,10 @@ target_link_libraries(fn sdsl divsufsort divsufsort64)
 add_executable(beller.out src/main/beller_main.cpp)
 target_link_libraries(beller.out fn)
 
+add_executable(beller2.out src/main/beller2_main.cpp)
+target_link_libraries(beller2.out fn)
+
+
 add_executable(hyper.out src/main/hyper_main.cpp)
 target_link_libraries(hyper.out fn)
 
