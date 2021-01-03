@@ -100,6 +100,27 @@ namespace stool
                 output.endIndex = it.endIndex;
                 output.endDiff = it.endDiff;
             }
+            void get_child(uint8_t c, uint64_t index, std::pair<INDEX_SIZE, INDEX_SIZE> &output)
+            {
+                auto &it = this->childrenVec[c][index];
+                uint64_t left = this->_RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
+                uint64_t right = this->_RLBWTDS->get_fpos(it.endIndex, it.endDiff);
+                output.first = left;
+                output.second = right;
+            }
+            uint64_t get_width(uint8_t c)
+            {
+                auto &currentVec = this->childrenVec[c];
+                return currentVec.size();
+            }
+            bool checkMaximalRepeat(uint64_t left, uint64_t right)
+            {
+                uint64_t x = this->_RLBWTDS->get_lindex_containing_the_position(left);
+                uint64_t d = this->_RLBWTDS->get_run(x);
+                bool isMaximalRepeat = (this->_RLBWTDS->get_lpos(x) + d) <= right;
+                return isMaximalRepeat;
+
+            }
 
             bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
             {
@@ -142,7 +163,34 @@ namespace stool
                 }
             }
 
-        public:
+            void computeSTNodeCandidates(INDEX_SIZE left, INDEX_SIZE right)
+            {
+                RINTERVAL intv;
+                this->_RLBWTDS->to_rinterval(left, right, intv);
+                this->computeSTNodeCandidates(intv);
+            }
+            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> &output_chars)
+            {
+                this->clear();
+                this->computeSTNodeCandidates(node.first, node.second);
+                for (auto &it : children)
+                {
+                    this->computeSTChildren(it.first, it.second);
+                }
+                this->fit(false);
+#if DEBUG
+                if (this->_RLBWTDS->stnc != nullptr)
+                {
+                    this->verify_next_lcp_interval(node.first, node.second);
+                }
+#endif
+                for (uint64_t i = 0; i < this->indexCount; i++)
+                {
+                    auto c = this->indexVec[i];
+                    output_chars.push_back(c);
+                }
+            }
+
             void computeSTChildren(const RINTERVAL &w)
             {
 
@@ -161,6 +209,13 @@ namespace stool
                     //}
                 }
             }
+            void computeSTChildren(INDEX_SIZE left, INDEX_SIZE right)
+            {
+                RINTERVAL child;
+                this->_RLBWTDS->to_rinterval(left, right, child);
+                this->computeSTChildren(child);
+            }
+
 #if DEBUG
             bool check(const RInterval<INDEX_SIZE> &range)
             {

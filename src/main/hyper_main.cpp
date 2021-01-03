@@ -195,11 +195,8 @@ int main(int argc, char *argv[])
     p.add<string>("mode", 'm', "mode", false, "1");
     p.add<int>("thread_num", 'p', "thread number", false, -1);
 
-    p.add<bool>("debug", 'd', "debug", false, false);
-
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");
-    bool debug = p.get<bool>("debug");
     string mode = p.get<string>("mode");
 
     string outputFile = p.get<string>("output_file");
@@ -232,14 +229,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!debug)
-    {
         computeMaximalSubstrings(inputFile, outputFile, mode, thread_num);
-    }
-    else
-    {
-        testMaximalSubstrings<INDEX>(inputFile, mode, thread_num);
 
-        //test2(inputFile, mode);
-    }
 }

@@ -77,36 +77,7 @@ namespace stool
 
                 return count;
             }
-            static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(SuffixTreeNodes<INDEX_SIZE, RLBWTDS> &stnodeSequencer)
-            {
-
-                std::vector<stool::LCPInterval<uint64_t>> r;
-
-                while (!stnodeSequencer.is_finished())
-                {
-                    std::vector<stool::LCPInterval<uint64_t>> r2;
-
-                    stnodeSequencer.succ();
-
-                    stool::LCPInterval<uint64_t> it;
-                    it.i = 0;
-                    it.j = 0;
-                    it.lcp = 0;
-
-                    stnodeSequencer.get_lcp_intervals(r2);
-
-                    if (stnodeSequencer._RLBWTDS->stnc != nullptr)
-                    {
-                        stnodeSequencer._RLBWTDS->stnc->increment(r2);
-                    }
-                    for (auto &it : r2)
-                    {
-                        r.push_back(it);
-                    }
-                }
-                std::cout << "STOP" << std::endl;
-                return r;
-            }
+            
         };
 
     } // namespace lcp_on_rlbwt

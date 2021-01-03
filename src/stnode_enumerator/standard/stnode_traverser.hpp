@@ -197,15 +197,6 @@ namespace stool
                 }
                 return count;
             }
-            uint64_t write_maximal_repeats(std::ofstream &out)
-            {
-                uint64_t count = 0;
-                for (auto &it : this->sub_trees)
-                {
-                    count += it->write_maximal_repeats(this->current_lcp, out);
-                }
-                return count;
-            }
             void get_lcp_intervals(std::vector<stool::LCPInterval<uint64_t>> &output)
             {
                 for (auto &it : this->sub_trees)
@@ -249,8 +240,8 @@ namespace stool
                     }
                     else
                     {
-                        SingleSTNodeTraverser<INDEX_SIZE, RLBWTDS> tmp_traverser;
-                        tmp_traverser.initialize(this->_RLBWTDS);
+                        SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> tmp_traverser;
+                        tmp_traverser.initialize(&ems[0]);
                         tmp_traverser.succ();
                         STNodeVector<INDEX_SIZE> tmp;
                         tmp_traverser.convert_to_vector(tmp);

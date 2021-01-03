@@ -60,8 +60,8 @@ target_link_libraries(hyper.out fn)
 #add_executable(ptest.out src/main/ptest_main.cpp)
 #target_link_libraries(ptest.out fn)
 
-add_executable(deque.out src/debug/bit_deque_main.cpp)
-target_link_libraries(deque.out fn)
+#add_executable(deque.out src/debug/bit_deque_main.cpp)
+#target_link_libraries(deque.out fn)
 
 add_executable(interval_test.out src/debug/lcp_interval_test_main.cpp)
 target_link_libraries(interval_test.out fn)

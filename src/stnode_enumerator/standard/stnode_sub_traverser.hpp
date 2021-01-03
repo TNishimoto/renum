@@ -170,36 +170,7 @@ namespace stool
                 std::swap(this->_first_child_flag_vec_count, item._first_child_flag_vec_count);
                 std::swap(this->_RLBWTDS, item._RLBWTDS);
             }
-            uint64_t write_maximal_repeats(uint64_t lcp, std::ofstream &out) const
-            {
-                std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
-                uint64_t size = this->node_count();
-                uint64_t L = this->get_first_child_pointer();
-                uint64_t left;
-                uint64_t right;
-                uint64_t count = 0;
-                for (uint64_t i = 0; i < size; i++)
-                {
-                    L = this->increment(L, left, right);
-                    if (this->maximal_repeat_check_vec[i])
-                    {
-                        buffer.push_back(stool::LCPInterval<INDEX_SIZE>(left, right, lcp));
-                        count++;
-                        if (buffer.size() >= 8000)
-                        {
-                            out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
-                            buffer.clear();
-                        }
-                    }
-                }
-
-                if (buffer.size() >= 1)
-                {
-                    out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
-                    buffer.clear();
-                }
-                return count;
-            }
+            
 
             void computeNextSTNodes(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, STNodeVector<INDEX_SIZE> &tmp)
             {

@@ -39,7 +39,8 @@ namespace stool
 
             STNodeTraverser<INDEX_SIZE, RLBWTDS> standard_st_traverser;
             FastSTNodeTraverser<INDEX_SIZE, RLBWTDS> fast_st_traverser;
-            SingleSTNodeTraverser<INDEX_SIZE, RLBWTDS> single_st_traverser;
+            SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> single_st_traverser;
+            std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
 
             //std::vector<SUCCINCT_STNODE_TRAVERSER *> succinct_sub_trees;
 
@@ -138,13 +139,20 @@ namespace stool
             void initialize(uint64_t _thread_count, RLBWTDS &_RLBWTDS)
             {
                 this->_RLBWTDS = &_RLBWTDS;
+
+                for (uint64_t i = 0; i < this->thread_count; i++)
+                {
+                    ems.push_back(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>());
+                    ems[ems.size() - 1].initialize(this->_RLBWTDS);
+                }
+
                 //this->strSize = _RLBWTDS.str_size();
 
                 this->standard_st_traverser.initialize(_thread_count, _RLBWTDS);
 
                 this->fast_st_traverser.initialize(_thread_count, _RLBWTDS);
 
-                this->single_st_traverser.initialize(&_RLBWTDS);
+                this->single_st_traverser.initialize(&ems[0]);
                 this->thread_count = _thread_count;
 
 #if DEBUG
@@ -161,26 +169,6 @@ namespace stool
                 this->_expected_peak_memory_bits = this->_RLBWTDS->rle_size() * d;
                 this->_switch_threshold = this->alpha * (this->expected_peak_memory_bits() / (sizeof(uint64_t) * 8));
                 */
-            }
-            uint64_t write_maximal_repeats(std::ofstream &out)
-            {
-                if (this->mode == STANDARD_MODE)
-                {
-                    return this->standard_st_traverser.write_maximal_repeats(out);
-                }
-                else if (this->mode == FAST_MODE)
-                {
-                    return this->fast_st_traverser.write_maximal_repeats(out);
-                }
-                else if (this->mode == SINGLE_MODE)
-                {
-                    return this->single_st_traverser.write_maximal_repeats(out);
-                }
-                else
-                {
-                    assert(false);
-                    throw -1;
-                }
             }
             int64_t get_current_lcp() const
             {

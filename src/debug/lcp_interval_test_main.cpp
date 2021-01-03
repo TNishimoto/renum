@@ -120,41 +120,41 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
 
     if (mode == "A")
     {
-        
+
         std::cout << "General Test" << std::endl;
         stool::lcp_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds);
         test_Intervals.swap(tmp);
-        
     }
     else if (mode == "B")
     {
-        
+
         std::cout << "Standard Test" << std::endl;
         stool::lcp_on_rlbwt::STNodeTraverser<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds);
         test_Intervals.swap(tmp);
-        
     }
     else if (mode == "C")
     {
-        
+
         std::cout << "Fast Test" << std::endl;
         stool::lcp_on_rlbwt::FastSTNodeTraverser<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds);
         test_Intervals.swap(tmp);
-        
     }
 
     else
     {
 
         std::cout << "Single Test" << std::endl;
-        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX, RDS> stnodeTraverser;
-        stnodeTraverser.initialize(&ds);
+        using INTERVAL_SEARCH = stool::lcp_on_rlbwt::ExplicitWeinerLinkEmulator<INDEX, RDS>;
+        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX, INTERVAL_SEARCH> stnodeTraverser;
+        INTERVAL_SEARCH em;
+        em.initialize(&ds);
+        stnodeTraverser.initialize(&em);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds);
         test_Intervals.swap(tmp);
     }

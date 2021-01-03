@@ -126,40 +126,6 @@ namespace stool
                     ems[ems.size() - 1].initialize(&__RLBWTDS);
                 }
             }
-            uint64_t write_maximal_repeats(std::ofstream &out)
-            {
-                uint64_t count = 0;
-                std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
-
-                uint64_t size = this->node_count();
-                uint64_t L = 0;
-                RINTERVAL intv;
-                for (uint64_t i = 0; i < size; i++)
-                {
-                    L = this->get_stnode(L, intv);
-                    if (this->maximal_repeat_check_vec[i])
-                    {
-                        uint64_t _left = this->_RLBWTDS->get_lpos(intv.beginIndex) + intv.beginDiff;
-                        uint64_t _right = this->_RLBWTDS->get_lpos(intv.endIndex) + intv.endDiff;
-
-                        stool::LCPInterval<INDEX_SIZE> newLCPIntv(_left, _right, this->current_lcp);
-                        buffer.push_back(newLCPIntv);
-                        count++;
-                        if (buffer.size() >= 8000)
-                        {
-                            out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
-                            buffer.clear();
-                        }
-                    }
-                }
-
-                if (buffer.size() >= 1)
-                {
-                    out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
-                    buffer.clear();
-                }
-                return count;
-            }
 
             void get_lcp_intervals(std::vector<stool::LCPInterval<uint64_t>> &output)
             {
