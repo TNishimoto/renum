@@ -136,6 +136,9 @@ namespace stool
                 return 1;
             }
 
+            uint64_t get_input_text_length(){
+                return this->em->get_input_text_length();
+            }
             void print() const
             {
                 std::cout << "[STNODE_COUNT, CHILDREN_COUNT] = [" << this->node_count() << ", " << this->child_count() << "]" << std::endl;

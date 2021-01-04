@@ -58,6 +58,10 @@ namespace stool
                 this->searcher = _searcher;
                 this->strSize = _strSize;
             }
+            
+            uint64_t get_input_text_length(){
+                return this->searcher->wt->size();
+            }
             bool checkMaximalRepeat(uint64_t left, uint64_t right)
             {
 

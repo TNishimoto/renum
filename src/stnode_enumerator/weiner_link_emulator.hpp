@@ -45,6 +45,9 @@ namespace stool
 
             LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> lightRangeSearcher;
             SuccinctRangeDistinctDataStructure<INDEX_SIZE> heavyRangeSearcher;
+            uint64_t get_input_text_length(){
+                return this->_RLBWTDS->str_size();
+            }
 
             void initialize(RLBWTDS *_rlbwtds)
             {

@@ -44,24 +44,26 @@ namespace stool
 
             //std::vector<SUCCINCT_STNODE_TRAVERSER *> succinct_sub_trees;
 
-            uint64_t print_interval = 100;
-            uint64_t print_interval_counter = 0;
 
         public:
             using index_type = INDEX_SIZE;
-            uint64_t total_counter = 0;
             uint64_t peak_child_count = 0;
+            uint64_t thread_count = 1;
+            bool use_fast_mode = true;
+            uint mode = SINGLE_MODE;
+            RLBWTDS *_RLBWTDS;
+            
+            /*
+            uint64_t print_interval = 100;
+            uint64_t print_interval_counter = 0;
+            uint64_t total_counter = 0;
             uint64_t alpha = 2;
             uint64_t _expected_peak_memory_bits = 0;
             uint64_t _switch_threshold = 0;
             uint64_t debug_peak_memory = 0;
-            uint64_t thread_count = 1;
-            bool use_fast_mode = true;
-
-            uint mode = SINGLE_MODE;
+            */
             //uint mode = FAST_MODE;
 
-            RLBWTDS *_RLBWTDS;
 
             /*
             iterator begin() const
@@ -80,7 +82,7 @@ namespace stool
                 this->fast_st_traverser.clear();
                 this->single_st_traverser.clear();
                 this->peak_child_count = 0;
-                this->total_counter = 0;
+                //this->total_counter = 0;
                 this->mode = SINGLE_MODE;
             }
             uint64_t node_count() const
@@ -241,29 +243,17 @@ namespace stool
                 }
             }
             */
+            
+            uint64_t get_input_text_length(){
+                return this->_RLBWTDS->str_size();
+            }
+            
 
             bool succ()
             {
                 if (this->is_finished())
                     return false;
 
-                if (this->total_counter > 0)
-                {
-                    uint64_t ccc = this->_RLBWTDS->str_size() / this->print_interval;
-                    uint64_t pp_num = ccc * this->print_interval_counter;
-
-                    if (this->debug_peak_memory < this->get_using_memory())
-                    {
-                        this->debug_peak_memory = this->get_using_memory();
-                    }
-
-                    if (this->total_counter >= pp_num)
-                    {
-                        this->print_info();
-
-                        this->print_interval_counter++;
-                    }
-                }
 #if DEBUG
 
                 if (this->_RLBWTDS->str_size() < 100)
@@ -331,7 +321,7 @@ namespace stool
             }
             void update_info()
             {
-                this->total_counter += this->child_count() - this->node_count();
+                //this->total_counter += this->child_count() - this->node_count();
                 if (this->peak_child_count < this->child_count())
                 {
                     this->peak_child_count = this->child_count();
@@ -383,6 +373,7 @@ namespace stool
                     throw -1;
                 }
             }
+            /*
             void print_info()
             {
                 std::cout << "[" << (this->print_interval_counter) << "/" << this->print_interval << "] ";
@@ -392,12 +383,8 @@ namespace stool
                 std::cout << ", current_total = " << (this->_RLBWTDS->str_size() - this->total_counter);
                 std::cout << ", Peak = " << this->debug_peak_memory / 1000 << "[KB]" << std::endl;
                 //std::cout << "Peak = " << debug_peak_counter << "[KB]" << std::endl;
-                /*
-                        if(this->print_interval_counter == 3){
-                            throw -1;
-                        }
-                        */
             }
+            */
 
             DEPTH_ITERATOR begin()
             {

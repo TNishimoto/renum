@@ -23,12 +23,53 @@ namespace stool
         {
         public:
             uint64_t max_nodes_at_level;
+            uint64_t print_interval = 100;
+
+            uint64_t position_counter = 0;
+            uint64_t input_text_length = 0;
+            int64_t current_lcp = -1;
+            uint64_t current_child_count = 0;
+            uint64_t print_interval_counter = 0;
+
+            void print_info()
+            {
+                std::cout << "[" << (this->print_interval_counter) << "/" << this->print_interval << "] ";
+                std::cout << "LCP = " << this->current_lcp;
+                std::cout << ", Peak = " << this->max_nodes_at_level;
+                std::cout << ", Current = " << this->current_child_count;
+                std::cout << ", current_total = " << (this->input_text_length - this->position_counter);
+                std::cout << std::endl;
+            }
+
+            template <typename STNODES>
+            void analyze(STNODES &stnodeSequencer)
+            {
+
+                this->current_lcp++;
+                this->position_counter += stnodeSequencer.child_count() - stnodeSequencer.node_count();
+                this->current_child_count = stnodeSequencer.child_count();
+                if (this->position_counter > 0)
+                {
+                    uint64_t x = this->input_text_length / this->print_interval;
+                    uint64_t pp_num = x * this->print_interval_counter;
+
+                    if (this->position_counter >= pp_num)
+                    {
+                        this->print_info();
+                        this->print_interval_counter++;
+                    }
+                }
+
+                if (this->max_nodes_at_level < stnodeSequencer.child_count())
+                {
+                    this->max_nodes_at_level = stnodeSequencer.child_count();
+                }
+            }
         };
 
         class Application
         {
         public:
-
             template <typename STNODES>
             static uint64_t outputMaximalSubstrings(std::ofstream &out, STNODES &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
@@ -36,17 +77,17 @@ namespace stool
 
                 uint64_t count = 0;
 
+                analysis.input_text_length = stnodeSequencer.get_input_text_length();
+
                 std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
 
-                auto it = stnodeSequencer.begin();
-                while (it != stnodeSequencer.end())
+                auto depth_iterator = stnodeSequencer.begin();
+                while (depth_iterator != stnodeSequencer.end())
                 {
-                    if(analysis.max_nodes_at_level < stnodeSequencer.child_count()){
-                        analysis.max_nodes_at_level = stnodeSequencer.child_count();
-                    }
+                    analysis.analyze(stnodeSequencer);
                     std::vector<stool::LCPInterval<uint64_t>> r2;
 
-                    for (auto node_it = it.begin(); node_it != it.end(); node_it++)
+                    for (auto node_it = depth_iterator.begin(); node_it != depth_iterator.end(); node_it++)
                     {
                         bool b = stnodeSequencer.check_maximal_repeat(node_it);
                         if (b)
@@ -63,9 +104,9 @@ namespace stool
                             }
                         }
                     }
-                    it++;
+                    depth_iterator++;
                 }
-                
+
                 if (buffer.size() >= 1)
                 {
                     out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
@@ -73,10 +114,8 @@ namespace stool
                 }
                 std::cout << "Enumerated" << std::endl;
 
-
                 return count;
             }
-            
         };
 
     } // namespace lcp_on_rlbwt

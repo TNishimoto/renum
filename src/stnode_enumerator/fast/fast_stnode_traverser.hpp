@@ -59,6 +59,7 @@ namespace stool
             //uint64_t sub_tree_limit_size = 2000;
             uint64_t mmax = 0;
             uint64_t peak_mmax = 10000;
+            uint64_t max_finished_level = 0;
 
             uint64_t sub_tree_max_count = 100;
 
@@ -282,6 +283,10 @@ namespace stool
                     for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                     {
                         tmp_queue.push(i);
+                    }
+                    if(finished_level_count > max_finished_level){
+                        max_finished_level = finished_level_count;
+                        //std::cout << "Size: " << finished_level_count << ", " << std::flush;
                     }
                     for (uint64_t i = 0; i < finished_level_count; i++)
                     {
