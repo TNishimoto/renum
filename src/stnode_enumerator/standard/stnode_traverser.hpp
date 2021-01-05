@@ -293,7 +293,7 @@ namespace stool
             {
 
                 assert(this->sub_trees.size() == 0);
-                auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->_RLBWTDS);
+                auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size);
                 this->sub_trees.push_back(st);
 
                 this->current_lcp = lcp;

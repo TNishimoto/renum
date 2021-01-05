@@ -42,7 +42,7 @@ namespace stool
                 else
                 {
                     std::lock_guard<std::mutex> lock(mtx);
-                    auto st = new STNodeSubTraverser<INDEX_SIZE, RLBWTDS>(limit, trees[0]->get_rlbwtds());
+                    auto st = new STNodeSubTraverser<INDEX_SIZE, RLBWTDS>(limit );
                     trees.push_back(st);
                     uqueue.push(st);
                 }

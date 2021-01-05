@@ -157,13 +157,6 @@ namespace stool
                 this->single_st_traverser.initialize(&ems[0]);
                 this->thread_count = _thread_count;
 
-#if DEBUG
-                if (this->_RLBWTDS->str_size() < 100)
-                {
-                    this->print_interval = _RLBWTDS.str_size();
-                }
-
-#endif
 
                 /*
                 double ratio = (double)this->_RLBWTDS->str_size() / (double)this->_RLBWTDS->rle_size();
