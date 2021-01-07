@@ -25,6 +25,8 @@ namespace stool
             std::vector<std::vector<RINTERVAL>> childrenVec;
             std::vector<RINTERVAL> stnodeVec;
             std::vector<uint64_t> indexVec;
+            std::vector<std::vector<uint8_t>> edgeCharVec;
+
             std::vector<bool> stnodeOccFlagArray;
 
             uint64_t indexCount = 0;
@@ -47,6 +49,7 @@ namespace stool
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 childrenVec.resize(CHARMAX);
                 indexVec.resize(CHARMAX);
+                edgeCharVec.resize(CHARMAX);
 
                 stnodeOccFlagArray.resize(CHARMAX, false);
                 stnodeVec.resize(CHARMAX);
@@ -58,18 +61,18 @@ namespace stool
                 this->searcher = _searcher;
                 this->strSize = _strSize;
             }
-            
-            uint64_t get_input_text_length(){
+
+            uint64_t get_input_text_length()
+            {
                 return this->searcher->wt->size();
             }
             bool checkMaximalRepeat(uint64_t left, uint64_t right)
             {
 
                 uint64_t k1 = left == 0 ? 0 : (*bwt_bit_rank1)(left);
-                uint64_t k2 = (*bwt_bit_rank1)(right+1);
+                uint64_t k2 = (*bwt_bit_rank1)(right + 1);
                 bool isNotMaximalRepeat = ((k2 - k1 == 0) || ((k2 - k1) == (right - left + 1)));
 
-\
                 return !isNotMaximalRepeat;
             }
 
@@ -94,17 +97,19 @@ namespace stool
                 {
                     auto &it = this->indexVec[i];
                     childrenVec[it].clear();
+                    edgeCharVec[it].clear();
 
                     stnodeOccFlagArray[it] = false;
                 }
                 indexCount = 0;
                 explicitChildCount = 0;
             }
-            void get_child(uint8_t c, uint64_t index, std::pair<INDEX_SIZE, INDEX_SIZE> &output)
+            uint8_t get_child(uint8_t c, uint64_t index, std::pair<INDEX_SIZE, INDEX_SIZE> &output)
             {
                 auto &it = this->childrenVec[c][index];
                 output.first = it.first;
                 output.second = it.second;
+                return this->edgeCharVec[c][index];
             }
             uint64_t get_width(uint8_t c)
             {
@@ -112,52 +117,23 @@ namespace stool
                 return currentVec.size();
             }
 
-            bool pushExplicitWeinerInterval(INDEX_SIZE left, INDEX_SIZE right, uint8_t c)
-            {
-                bool isValid = this->stnodeOccFlagArray[c];
-                if (!isValid)
-                    return false;
-                auto &lcpIntv = this->stnodeVec[c];
-                bool isLastChild = lcpIntv.second == right;
-                bool isFirstChild = lcpIntv.first == left;
-                bool b = !(isFirstChild && isLastChild);
-
-                if (b)
-                {
-
-                    if (this->childrenVec[c].size() == 0)
-                    {
-
-                        this->indexVec[this->indexCount] = c;
-                        this->indexCount++;
-                    }
-                    this->childrenVec[c].push_back(RINTERVAL(left, right));
-                    explicitChildCount++;
-                }
-                return b;
-            }
-            void computeSTNodeCandidates(INDEX_SIZE left, INDEX_SIZE right)
-            {
-
-                uint64_t resultCount = this->searcher->getIntervals(left, right, this->charIntervalTmpVec);
-                for (uint64_t i = 0; i < resultCount; i++)
-                {
-                    auto &it = this->charIntervalTmpVec[i];
-
-                    if (it.c != 0)
-                    {
-                        this->stnodeVec[it.c] = RINTERVAL(it.i, it.j);
-                        this->stnodeOccFlagArray[it.c] = true;
-                    }
-                }
-            }
-            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> &output_chars)
+            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
             {
                 this->clear();
                 this->computeSTNodeCandidates(node.first, node.second);
-                for (auto &it : children)
+                if (edgeChars != nullptr)
                 {
-                    this->computeSTChildren(it.first, it.second);
+                    for (auto &it : children)
+                    {
+                        this->computeSTChildren(it.first, it.second, 0);
+                    }
+                }
+                else
+                {
+                    for (uint64_t i = 0; i < children.size(); i++)
+                    {
+                        this->computeSTChildren(children[i].first, children[i].second, (*edgeChars)[i]);
+                    }
                 }
                 this->fit();
 
@@ -167,21 +143,6 @@ namespace stool
                     output_chars.push_back(c);
                 }
             }
-
-            void computeSTChildren(INDEX_SIZE left, INDEX_SIZE right)
-            {
-
-                assert(left <= right);
-                uint64_t resultCount = this->searcher->getIntervals(left, right, this->charIntervalTmpVec);
-
-                for (uint64_t i = 0; i < resultCount; i++)
-                {
-                    auto &it = this->charIntervalTmpVec[i];
-
-                    this->pushExplicitWeinerInterval(it.i, it.j, it.c);
-                }
-            }
-
             std::vector<RINTERVAL> getFirstChildren()
             {
 
@@ -202,6 +163,62 @@ namespace stool
                 });
                 return r;
             }
+            private:
+            
+            bool pushExplicitWeinerInterval(INDEX_SIZE left, INDEX_SIZE right, uint8_t c, uint8_t edgeChar)
+            {
+                bool isValid = this->stnodeOccFlagArray[c];
+                if (!isValid)
+                    return false;
+                auto &lcpIntv = this->stnodeVec[c];
+                bool isLastChild = lcpIntv.second == right;
+                bool isFirstChild = lcpIntv.first == left;
+                bool b = !(isFirstChild && isLastChild);
+
+                if (b)
+                {
+
+                    if (this->childrenVec[c].size() == 0)
+                    {
+
+                        this->indexVec[this->indexCount] = c;
+                        this->indexCount++;
+                    }
+                    this->childrenVec[c].push_back(RINTERVAL(left, right));
+                    this->edgeCharVec[c].push_back(edgeChar);
+                    explicitChildCount++;
+                }
+                return b;
+            }
+            void computeSTNodeCandidates(INDEX_SIZE left, INDEX_SIZE right)
+            {
+
+                uint64_t resultCount = this->searcher->getIntervals(left, right, this->charIntervalTmpVec);
+                for (uint64_t i = 0; i < resultCount; i++)
+                {
+                    auto &it = this->charIntervalTmpVec[i];
+
+                    if (it.c != 0)
+                    {
+                        this->stnodeVec[it.c] = RINTERVAL(it.i, it.j);
+                        this->stnodeOccFlagArray[it.c] = true;
+                    }
+                }
+            }
+            void computeSTChildren(INDEX_SIZE left, INDEX_SIZE right, uint8_t edgeChar)
+            {
+
+                assert(left <= right);
+                uint64_t resultCount = this->searcher->getIntervals(left, right, this->charIntervalTmpVec);
+
+                for (uint64_t i = 0; i < resultCount; i++)
+                {
+                    auto &it = this->charIntervalTmpVec[i];
+
+                    this->pushExplicitWeinerInterval(it.i, it.j, it.c, edgeChar);
+                }
+            }
+
             void fit()
             {
                 uint64_t k = 0;

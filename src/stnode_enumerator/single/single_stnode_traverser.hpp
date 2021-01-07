@@ -253,7 +253,7 @@ namespace stool
                     output_children.clear();
                     output_chars.clear();
                     this->pop_node(output_node, output_children);
-                    em->executeWeinerLinkSearch(output_node, output_children, output_chars);
+                    em->executeWeinerLinkSearch(output_node, output_children, nullptr, output_chars);
                     for(auto &c : output_chars){
                         this->add(c, *em);
                     }

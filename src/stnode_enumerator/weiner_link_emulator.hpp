@@ -24,6 +24,8 @@ namespace stool
 
         public:
             std::vector<std::vector<RINTERVAL>> childrenVec;
+            std::vector<std::vector<uint8_t>> edgeCharVec;
+
             std::vector<RINTERVAL> stnodeVec;
             std::vector<uint64_t> indexVec;
             std::vector<bool> stnodeOccFlagArray;
@@ -40,9 +42,6 @@ namespace stool
             std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
 
             RLBWTDS *_RLBWTDS;
-            //LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> *lightDS = nullptr;
-            //SuccinctRangeDistinctDataStructure<INDEX_SIZE> *heavyDS = nullptr;
-
             LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> lightRangeSearcher;
             SuccinctRangeDistinctDataStructure<INDEX_SIZE> heavyRangeSearcher;
             uint64_t get_input_text_length()
@@ -55,6 +54,7 @@ namespace stool
                 _RLBWTDS = _rlbwtds;
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 childrenVec.resize(CHARMAX);
+                edgeCharVec.resize(CHARMAX);
                 indexVec.resize(CHARMAX);
 
                 stnodeOccFlagArray.resize(CHARMAX, false);
@@ -91,41 +91,61 @@ namespace stool
                 {
                     auto &it = this->indexVec[i];
                     childrenVec[it].clear();
+                    edgeCharVec[it].clear();
 
                     stnodeOccFlagArray[it] = false;
                 }
                 indexCount = 0;
                 explicitChildCount = 0;
             }
-            void get_child(uint8_t c, uint64_t index, RINTERVAL &output)
+            uint8_t get_child(uint8_t c, uint64_t index, RINTERVAL &output)
             {
                 auto &it = this->childrenVec[c][index];
                 uint64_t left = this->_RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
                 uint64_t right = this->_RLBWTDS->get_fpos(it.endIndex, it.endDiff);
                 this->_RLBWTDS->to_rinterval(left, right, output);
+                return this->edgeCharVec[c][index];
             }
-            void get_child(uint8_t c, uint64_t index, std::pair<INDEX_SIZE, INDEX_SIZE> &output)
+            uint8_t get_child(uint8_t c, uint64_t index, std::pair<INDEX_SIZE, INDEX_SIZE> &output)
             {
                 auto &it = this->childrenVec[c][index];
                 uint64_t left = this->_RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
                 uint64_t right = this->_RLBWTDS->get_fpos(it.endIndex, it.endDiff);
                 output.first = left;
                 output.second = right;
+                return this->edgeCharVec[c][index];
             }
             bool checkMaximalRepeat(uint64_t left, uint64_t right)
             {
                 return this->_RLBWTDS->checkMaximalRepeat(left, right);
             }
 
-            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> &output_chars)
+            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node,
+                                         std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
             {
                 this->clear();
-                this->computeSTNodeCandidates(node.first, node.second);
-                for (auto &it : children)
+                RINTERVAL intv;
+                this->_RLBWTDS->to_rinterval(node.first, node.second, intv);
+
+                this->computeSTNodeCandidates(intv);
+                RINTERVAL child;
+                if (edgeChars != nullptr)
                 {
-                    this->computeSTChildren(it.first, it.second);
+                    for (auto &it : children)
+                    {
+                        this->_RLBWTDS->to_rinterval(it.first, it.second, child);
+                        this->computeSTChildren(child, 0);
+                    }
                 }
-                this->fit(false);
+                else
+                {
+                    for (uint64_t i = 0; i < children.size(); i++)
+                    {
+                        this->_RLBWTDS->to_rinterval(children[i].first, children[i].second, child);
+                        this->computeSTChildren(child, (*edgeChars)[i]);
+                    }
+                }
+                this->fit();
 #if DEBUG
                 if (this->_RLBWTDS->stnc != nullptr)
                 {
@@ -138,15 +158,25 @@ namespace stool
                     output_chars.push_back(c);
                 }
             }
-            void executeWeinerLinkSearch(const RINTERVAL &node, std::vector<RINTERVAL> &children, std::vector<uint8_t> &output_chars)
+            void executeWeinerLinkSearch(const RINTERVAL &node, std::vector<RINTERVAL> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
             {
                 this->clear();
                 this->computeSTNodeCandidates(node);
-                for (auto &it : children)
+                if (edgeChars != nullptr)
                 {
-                    this->computeSTChildren(it);
+                    for (auto &it : children)
+                    {
+                        this->computeSTChildren(it, 0);
+                    }
                 }
-                this->fit(false);
+                else
+                {
+                    for (uint64_t i = 0; i < children.size(); i++)
+                    {
+                        this->computeSTChildren(children[i], (*edgeChars)[i]);
+                    }
+                }
+                this->fit();
 
 #if DEBUG
                 if (this->_RLBWTDS->stnc != nullptr && this->checker_on)
@@ -192,8 +222,7 @@ namespace stool
             }
 
         private:
-
-            bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c)
+            bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c, uint8_t edgeChar)
             {
                 bool isValid = this->stnodeOccFlagArray[c];
                 if (!isValid)
@@ -213,6 +242,7 @@ namespace stool
                         this->indexCount++;
                     }
                     this->childrenVec[c].push_back(w);
+                    this->edgeCharVec[c].push_back(edgeChar);
                     explicitChildCount++;
                 }
                 return b;
@@ -233,14 +263,15 @@ namespace stool
                     }
                 }
             }
-
+            /*
             void computeSTNodeCandidates(INDEX_SIZE left, INDEX_SIZE right)
             {
                 RINTERVAL intv;
                 this->_RLBWTDS->to_rinterval(left, right, intv);
                 this->computeSTNodeCandidates(intv);
             }
-            void computeSTChildren(const RINTERVAL &w)
+            */
+            void computeSTChildren(const RINTERVAL &w, uint8_t edgeChar)
             {
 
                 assert(w.beginIndex <= w.endIndex);
@@ -250,20 +281,17 @@ namespace stool
                 {
                     typename RLBWTDS::UCHAR c = this->charTmpVec[i];
                     auto &it = this->rIntervalTmpVec[i];
-
-                    //auto &lcpIntv = this->stnodeVec[c];
-                    //bool isLastChild = lcpIntv.endIndex == it.endIndex && lcpIntv.endDiff == it.endDiff;
-                    //if(!isLastChild){
-                    this->pushExplicitWeinerInterval(it, c);
-                    //}
+                    this->pushExplicitWeinerInterval(it, c, edgeChar);
                 }
             }
+            /*
             void computeSTChildren(INDEX_SIZE left, INDEX_SIZE right)
             {
                 RINTERVAL child;
                 this->_RLBWTDS->to_rinterval(left, right, child);
                 this->computeSTChildren(child);
             }
+            */
 #if DEBUG
             bool check(const RInterval<INDEX_SIZE> &range)
             {
@@ -340,7 +368,7 @@ namespace stool
 
 #endif
 
-            void fit(bool first)
+            void fit()
             {
                 uint64_t k = 0;
 
@@ -371,87 +399,42 @@ namespace stool
                 }
                 this->indexCount = k;
 
-                if (!first)
+                for (uint64_t i = 0; i < this->indexCount; i++)
                 {
+                    auto c = this->indexVec[i];
+                    uint64_t minCharIndex = 0;
+                    uint64_t maxCharIndex = 0;
 
-                    for (uint64_t i = 0; i < this->indexCount; i++)
+                    auto &currentVec = this->childrenVec[c];
+                    uint64_t count = this->childrenVec[c].size();
+                    for (uint64_t i = 0; i < count; i++)
                     {
-                        auto c = this->indexVec[i];
-                        uint64_t minCharIndex = 0;
-                        uint64_t maxCharIndex = 0;
-
-                        auto &currentVec = this->childrenVec[c];
-                        uint64_t count = this->childrenVec[c].size();
-                        for (uint64_t i = 0; i < count; i++)
+                        auto &it = currentVec[i];
+                        bool isLeft = it.beginIndex < currentVec[minCharIndex].beginIndex || (it.beginIndex == currentVec[minCharIndex].beginIndex && it.beginDiff < currentVec[minCharIndex].beginDiff);
+                        if (isLeft)
                         {
-                            auto &it = currentVec[i];
-                            bool isLeft = it.beginIndex < currentVec[minCharIndex].beginIndex || (it.beginIndex == currentVec[minCharIndex].beginIndex && it.beginDiff < currentVec[minCharIndex].beginDiff);
-                            if (isLeft)
-                            {
-                                minCharIndex = i;
-                            }
-                            bool isRight = it.endIndex > currentVec[maxCharIndex].endIndex || (it.endIndex == currentVec[maxCharIndex].endIndex && it.endDiff > currentVec[maxCharIndex].endDiff);
-                            if (isRight)
-                            {
-                                maxCharIndex = i;
-                            }
+                            minCharIndex = i;
                         }
-                        if (minCharIndex != 0)
+                        bool isRight = it.endIndex > currentVec[maxCharIndex].endIndex || (it.endIndex == currentVec[maxCharIndex].endIndex && it.endDiff > currentVec[maxCharIndex].endDiff);
+                        if (isRight)
                         {
-                            auto tmp = currentVec[0];
-                            currentVec[0] = currentVec[minCharIndex];
-                            currentVec[minCharIndex] = tmp;
-                        }
-
-                        if (maxCharIndex == 0)
-                            maxCharIndex = minCharIndex;
-                        if (maxCharIndex != count - 1)
-                        {
-                            auto tmp2 = currentVec[count - 1];
-                            currentVec[count - 1] = currentVec[maxCharIndex];
-                            currentVec[maxCharIndex] = tmp2;
+                            maxCharIndex = i;
                         }
                     }
-                }
-                else
-                {
-                    for (uint64_t i = 0; i < this->indexCount; i++)
+                    if (minCharIndex != 0)
                     {
-                        auto c = this->indexVec[i];
-                        uint64_t minCharIndex = 0;
-                        uint64_t maxCharIndex = 0;
+                        auto tmp = currentVec[0];
+                        currentVec[0] = currentVec[minCharIndex];
+                        currentVec[minCharIndex] = tmp;
+                    }
 
-                        auto &currentVec = this->childrenVec[c];
-                        uint64_t count = this->childrenVec[c].size();
-                        for (uint64_t i = 0; i < count; i++)
-                        {
-                            auto &it = currentVec[i];
-                            bool isLeft = this->_RLBWTDS->bwt[it.beginIndex] < this->_RLBWTDS->bwt[currentVec[minCharIndex].beginIndex];
-                            if (isLeft)
-                            {
-                                minCharIndex = i;
-                            }
-                            bool isRight = this->_RLBWTDS->bwt[it.beginIndex] > this->_RLBWTDS->bwt[currentVec[maxCharIndex].beginIndex];
-                            if (isRight)
-                            {
-                                maxCharIndex = i;
-                            }
-                        }
-                        if (minCharIndex != 0)
-                        {
-                            auto tmp = currentVec[0];
-                            currentVec[0] = currentVec[minCharIndex];
-                            currentVec[minCharIndex] = tmp;
-                        }
-
-                        if (maxCharIndex == 0)
-                            maxCharIndex = minCharIndex;
-                        if (maxCharIndex != count - 1)
-                        {
-                            auto tmp2 = currentVec[count - 1];
-                            currentVec[count - 1] = currentVec[maxCharIndex];
-                            currentVec[maxCharIndex] = tmp2;
-                        }
+                    if (maxCharIndex == 0)
+                        maxCharIndex = minCharIndex;
+                    if (maxCharIndex != count - 1)
+                    {
+                        auto tmp2 = currentVec[count - 1];
+                        currentVec[count - 1] = currentVec[maxCharIndex];
+                        currentVec[maxCharIndex] = tmp2;
                     }
                 }
             }

@@ -216,7 +216,7 @@ namespace stool
                     output_chars.clear();
                     assert(this->first_child_flag_vec[L - 1]);
                     L = this->read_node(L, output_node, output_children);
-                    em.executeWeinerLinkSearch(output_node, output_children, output_chars);
+                    em.executeWeinerLinkSearch(output_node, output_children, nullptr, output_chars);
                     for(auto &c : output_chars){
                         tmp.import(em, c);
                     }

@@ -344,7 +344,7 @@ namespace stool
                     #if DEBUG
                         em.checker_on = false;
                     #endif
-                    em.executeWeinerLinkSearch(intv, children, output_chars);
+                    em.executeWeinerLinkSearch(intv, children, nullptr, output_chars);
 
                     for (auto &c : output_chars)
                     {
