@@ -24,6 +24,7 @@ namespace stool
         template <typename INDEX_SIZE, typename RLBWTDS>
         void distribute(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, STNodeVector<INDEX_SIZE> &tmp, std::queue<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &uqueue, uint64_t limit)
         {
+            bool store_edge_chars = trees[0]->has_edge_characters();
             while (tmp.size() > 0)
             {
                 uint64_t w = tmp.get_last_width();
@@ -42,7 +43,7 @@ namespace stool
                 else
                 {
                     std::lock_guard<std::mutex> lock(mtx);
-                    auto st = new STNodeSubTraverser<INDEX_SIZE, RLBWTDS>(limit );
+                    auto st = new STNodeSubTraverser<INDEX_SIZE, RLBWTDS>(limit, store_edge_chars);
                     trees.push_back(st);
                     uqueue.push(st);
                 }
@@ -54,6 +55,7 @@ namespace stool
                                       std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t limit)
         {
             STNodeVector<INDEX_SIZE> tmp;
+            //tmp.store_edge_chars = trees[0]->has_edge_characters();
             std::queue<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> uqueue;
             uint64_t pos = fst_position;
             while (pos != UINT64_MAX)

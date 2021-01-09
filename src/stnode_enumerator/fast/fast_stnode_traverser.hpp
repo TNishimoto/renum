@@ -46,9 +46,13 @@ namespace stool
 
             using ITERATOR = STNodeIterator<FastSTNodeTraverser>;
             using DEPTH_ITERATOR = STDepthIterator<FastSTNodeTraverser>;
+            using CHAR = typename RLBWTDS::CHAR;
+
             std::vector<STNODE_SUB_TRAVERSER *> sub_trees;
 
             std::deque<INDEX_SIZE> children_intervals;
+            std::deque<CHAR> edge_char_vec;
+
             std::deque<bool> first_child_flag_vec;
             std::deque<bool> maximal_repeat_check_vec;
             std::deque<uint64_t> child_width_vec;
@@ -69,10 +73,7 @@ namespace stool
 
             uint64_t thread_count = 1;
             std::stack<uint64_t> position_stack;
-            uint64_t kk = 0;
-#if DEBUG
-            uint64_t prev_child_count = 0;
-#endif
+            bool store_edge_chars = false;
 
         public:
             using index_type = INDEX_SIZE;
@@ -98,6 +99,10 @@ namespace stool
                 this->st_width_vec.clear();
                 this->current_lcp = -1;
             }
+            bool has_edge_characters() const
+            {
+                return this->store_edge_chars;
+            }
 
             uint64_t get_current_lcp() const
             {
@@ -113,11 +118,12 @@ namespace stool
                 return this->st_width_vec.size() == 0 ? 0 : this->st_width_vec[0];
             }
 
-            void initialize(uint64_t size, RLBWTDS &__RLBWTDS)
+            void initialize(uint64_t size, RLBWTDS &__RLBWTDS, bool _store_edge_chars)
             {
                 this->_RLBWTDS = &__RLBWTDS;
 
                 this->thread_count = size;
+                this->store_edge_chars = _store_edge_chars;
 
                 //sub_trees.resize(256);
 
@@ -184,6 +190,9 @@ namespace stool
                     this->children_intervals.pop_front();
                     this->children_intervals.pop_front();
                     this->first_child_flag_vec.pop_front();
+                    if(this->store_edge_chars){
+                        this->edge_char_vec.pop_front();
+                    }
                 }
 
                 mmax -= k2;
@@ -211,7 +220,7 @@ namespace stool
 
                     if (current_lcp == -1)
                     {
-                        auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
+                        auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS, this->store_edge_chars);
                         sub_trees.push_back(st);
 
                         this->sub_trees[0]->first_compute(ems[0]);
@@ -254,7 +263,7 @@ namespace stool
                     uint64_t _st_count = this->maximal_repeat_check_vec.size();
                     for (auto &it : this->sub_trees)
                     {
-                        it->pop_level(this->children_intervals, this->first_child_flag_vec, this->maximal_repeat_check_vec);
+                        it->pop_level(this->children_intervals, this->first_child_flag_vec, this->maximal_repeat_check_vec, this->edge_char_vec);
                     }
                     this->child_width_vec.push_back(this->first_child_flag_vec.size() - _child_count);
                     this->st_width_vec.push_back(this->maximal_repeat_check_vec.size() - _st_count);
@@ -284,7 +293,8 @@ namespace stool
                     {
                         tmp_queue.push(i);
                     }
-                    if(finished_level_count > max_finished_level){
+                    if (finished_level_count > max_finished_level)
+                    {
                         max_finished_level = finished_level_count;
                         //std::cout << "Size: " << finished_level_count << ", " << std::flush;
                     }
@@ -303,7 +313,7 @@ namespace stool
                             if (klcp == it->get_current_lcp())
                             {
                                 assert(it->finished_level_count() > 0);
-                                it->pop_level(this->children_intervals, this->first_child_flag_vec, this->maximal_repeat_check_vec);
+                                it->pop_level(this->children_intervals, this->first_child_flag_vec, this->maximal_repeat_check_vec, this->edge_char_vec);
 
                                 tmp_queue.push(top);
                             }
@@ -339,23 +349,24 @@ namespace stool
                 stool::Printer::print("child_width_vec", this->child_width_vec);
                 stool::Printer::print("stnode_count_vec", this->st_width_vec);
 
-
                 RINTERVAL output;
 
                 uint64_t L = 0;
-                for(uint64_t i=0;i<this->st_width_vec.size();i++){
-                    for(uint64_t j=0;j<this->st_width_vec[i];j++){
+                for (uint64_t i = 0; i < this->st_width_vec.size(); i++)
+                {
+                    for (uint64_t j = 0; j < this->st_width_vec[i]; j++)
+                    {
                         L = this->get_stnode(L, output);
-                    
+
                         auto intv = output.get_lcp_interval(this->current_lcp + i, this->_RLBWTDS->lpos_vec);
                         std::cout << intv.to_string();
-                    
                     }
                     std::cout << std::endl;
                 }
                 std::cout << "PRINT SUBTREES" << std::endl;
 
-                for(auto &it : this->sub_trees){
+                for (auto &it : this->sub_trees)
+                {
                     it->print();
                 }
 
@@ -394,7 +405,7 @@ namespace stool
                 }
                 while (item.size() > 0)
                 {
-                    auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
+                    auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS, this->store_edge_chars);
                     sub_trees.push_back(st);
                     uint64_t num = item.size() < k ? item.size() : k;
                     st->import(item, lcp, num);
@@ -501,7 +512,7 @@ namespace stool
 
                 while (this->sub_trees[0]->last_node_count() > 1 && this->sub_trees.size() < this->sub_tree_max_count)
                 {
-                    auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS);
+                    auto st = new STNODE_SUB_TRAVERSER(this->_RLBWTDS, this->store_edge_chars);
                     this->sub_trees[0]->split(*st);
                     this->sub_trees.push_back(st);
                 }
@@ -555,6 +566,53 @@ namespace stool
                     node_index++;
                 }
             }
+
+            INDEX_SIZE get_children_count(const ITERATOR &iter) const
+            {
+                return this->get_children_count(iter.child_index);
+            }
+            INDEX_SIZE get_children_count(INDEX_SIZE child_index) const
+            {
+                RINTERVAL output;
+                INDEX_SIZE R = this->get_stnode(child_index, output);
+                return R - child_index;
+            }
+            INDEX_SIZE get_child_left_boundary(INDEX_SIZE child_index) const
+            {
+                uint64_t run = this->children_intervals[child_index * 4];
+                uint64_t diff = this->children_intervals[(child_index * 4) + 1];
+
+                return this->_RLBWTDS->get_lpos(run) + diff;
+            }
+
+            CHAR get_edge_character(uint64_t child_pointer) const
+            {
+                assert(this->store_edge_chars);
+                return this->_RLBWTDS->decode(this->edge_char_vec[child_pointer]);
+            }
+
+            INDEX_SIZE get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_edge_character(iter.child_index + ith_child);
+            }
+
+            INDEX_SIZE get_child_left_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_child_left_boundary(iter.child_index + ith_child);
+            }
+            INDEX_SIZE get_child_right_boundary(INDEX_SIZE child_index) const
+            {
+                uint64_t run = this->children_intervals[(child_index * 4) + 2];
+                uint64_t diff = this->children_intervals[(child_index * 4) + 3];
+
+                return this->_RLBWTDS->get_lpos(run) + diff;
+            }
+
+            INDEX_SIZE get_child_right_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_child_right_boundary(iter.child_index + ith_child);
+            }
+
             INDEX_SIZE get_left(const ITERATOR &iter) const
             {
                 return this->get_left(iter.child_index);

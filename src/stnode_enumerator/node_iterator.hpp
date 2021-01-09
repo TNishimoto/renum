@@ -18,7 +18,7 @@ namespace stool
     namespace lcp_on_rlbwt
     {
 
-        template <typename TRAVERSER>
+        template <typename TRAVERSER, typename CHAR = uint8_t>
         class STNodeIterator
         {
             const TRAVERSER *traverser;
@@ -46,6 +46,33 @@ namespace stool
 
                     //this->lcp = std::numeric_limits<INDEX_SIZE>::max();
                 }
+            }
+
+            INDEX_SIZE get_children_count() const
+            {
+                return traverser->get_children_count(*this);
+            }
+            INDEX_SIZE get_left() const
+            {
+                return traverser->get_left(*this);
+            }
+            INDEX_SIZE get_right() const
+            {
+                return traverser->get_right(*this);
+            }
+            INDEX_SIZE get_child_left_boundary(uint64_t ith_child) const
+            {
+                return traverser->get_child_left_boundary(*this, ith_child);
+            }
+            INDEX_SIZE get_child_right_boundary(uint64_t ith_child) const
+            {
+                return traverser->get_child_right_boundary(*this, ith_child);
+            }
+            
+            INDEX_SIZE get_edge_character(uint64_t ith_child) const
+            {
+                return traverser->get_edge_character(*this, ith_child);
+
             }
             /*
                 INDEX_SIZE get_lcp() const {
@@ -83,7 +110,7 @@ namespace stool
                 traverser->increment(*this);
                 return *this;
             }
-            
+
             STNodeIterator &operator++(int)
             {
                 ++(*this);
@@ -93,15 +120,35 @@ namespace stool
             {
                 return this->node_index != rhs.node_index || this->child_index != rhs.child_index;
             }
+            void print() const
+            {
+                std::cout << "[" << this->get_left() << ", " << this->get_right() << "]" << std::flush;
+                uint64_t w = this->get_children_count();
+                for(uint64_t i=0;i<w;i++){
+                    uint64_t left = this->get_child_left_boundary(i);
+                    uint64_t right = this->get_child_right_boundary(i);
+                    if(traverser->has_edge_characters()){
+                        uint8_t c = this->get_edge_character(i);
+                        string charStr = c == 0 ? "$(0)" : std::string(1, c);
+                    std::cout << "(" << left << ", " << right << ", " << charStr << ")" << std::flush;
+                    }else{
+                    std::cout << "(" << left << ", " << right << ")" << std::flush;
+
+                    }
+
+                }
+            }
         };
         template <typename TRAVERSER>
         class STDepthIterator
         {
+            private:
+            using INDEX_SIZE = typename TRAVERSER::index_type;
+
             TRAVERSER *traverser;
+            INDEX_SIZE depth;
 
         public:
-            using INDEX_SIZE = typename TRAVERSER::index_type;
-            INDEX_SIZE depth;
 
             STDepthIterator() = default;
 
@@ -117,10 +164,15 @@ namespace stool
                     this->depth = std::numeric_limits<INDEX_SIZE>::max();
                 }
             }
-            uint64_t child_count(){
+            uint64_t get_depth() const {
+                return this->depth;
+            }
+            uint64_t child_count() const
+            {
                 return this->traverser->child_count();
             }
-            uint64_t node_count(){
+            uint64_t node_count() const
+            {
                 return this->traverser->node_count();
             }
 
@@ -133,13 +185,13 @@ namespace stool
             {
                 if (traverser->succ())
                 {
+                    this->depth++;
                     return *this;
                 }
                 else
                 {
                     this->depth = std::numeric_limits<INDEX_SIZE>::max();
                     return *this;
-
                 }
             }
             STDepthIterator &operator++(int)
@@ -158,7 +210,7 @@ namespace stool
             }
             bool operator!=(const STDepthIterator &rhs) const
             {
-                return this->depth != rhs.depth;
+                return this->get_depth() != rhs.get_depth();
             }
         };
 

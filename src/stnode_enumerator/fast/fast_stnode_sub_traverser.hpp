@@ -15,13 +15,15 @@ namespace stool
     namespace lcp_on_rlbwt
     {
 
-        template <typename INDEX_SIZE, typename RLBWTDS>
+        template <typename INDEX_SIZE, typename RLBWTDS, typename CHAR = uint8_t>
         class FastSTNodeSubTraverser
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
             //uint64_t _stnode_count = 0;
             std::deque<INDEX_SIZE> childs_vec;
+            std::deque<CHAR> edge_char_vec;
+
             std::deque<bool> first_child_flag_vec;
             std::deque<bool> maximal_repeat_check_vec;
             std::deque<uint64_t> child_width_vec;
@@ -31,13 +33,17 @@ namespace stool
             uint64_t parent_current_lcp = 0;
 
             RLBWTDS *_RLBWTDS = nullptr;
+            bool store_edge_chars = false;
 
         public:
             FastSTNodeSubTraverser()
             {
             }
-            FastSTNodeSubTraverser(RLBWTDS *__RLBWTDS) : _RLBWTDS(__RLBWTDS)
+            FastSTNodeSubTraverser(RLBWTDS *__RLBWTDS, bool _store_edge_chars) : _RLBWTDS(__RLBWTDS), store_edge_chars(_store_edge_chars)
             {
+            }
+            bool has_edge_characters() const {
+                return this->store_edge_chars;
             }
             void set_parent_current_lcp(uint64_t lcp)
             {
@@ -45,11 +51,11 @@ namespace stool
             }
             void import(STNodeVector<INDEX_SIZE> &item, uint64_t lcp, uint64_t num)
             {
-                std::vector<stool::LCPInterval<INDEX_SIZE>> tmp;
+                std::vector<stool::CharInterval<INDEX_SIZE>> tmp;
                 for (uint64_t i = 0; i < num; i++)
                 {
                     tmp.clear();
-                    item.get_last(lcp, tmp);
+                    item.get_last(tmp);
                     for (uint64_t j = 0; j < tmp.size(); j++)
                     {
                         this->first_child_flag_vec.push_back(j == 0);
@@ -61,6 +67,9 @@ namespace stool
                         this->childs_vec.push_back(ld);
                         this->childs_vec.push_back(rb);
                         this->childs_vec.push_back(rd);
+                        if(this->store_edge_chars){
+                            this->edge_char_vec.push_back(tmp[j].c);
+                        }
                     }
                     this->maximal_repeat_check_vec.push_back(item.maximal_repeat_check_vec[item.maximal_repeat_check_vec.size() - 1]);
                     item.pop();
@@ -84,21 +93,24 @@ namespace stool
                 output.endIndex = this->childs_vec[(i * 4) + 2];
                 output.endDiff = this->childs_vec[(i * 4) + 3];
             }
-            inline uint64_t read_child(uint64_t i, RINTERVAL &output) const
+            inline CHAR read_child(uint64_t i, RINTERVAL &output) const
             {
                 output.beginIndex = this->childs_vec[(i * 4)];
                 output.beginDiff = this->childs_vec[(i * 4) + 1];
                 output.endIndex = this->childs_vec[(i * 4) + 2];
                 output.endDiff = this->childs_vec[(i * 4) + 3];
-                return i + 1;
+                return this->store_edge_chars ? this->edge_char_vec[i] : 0;
             }
 
-            inline void add_child(RINTERVAL &output, bool isFirst)
+            inline void add_child(RINTERVAL &output, CHAR c, bool isFirst)
             {
                 this->childs_vec.push_back(output.beginIndex);
                 this->childs_vec.push_back(output.beginDiff);
                 this->childs_vec.push_back(output.endIndex);
                 this->childs_vec.push_back(output.endDiff);
+                if(this->store_edge_chars){
+                    this->edge_char_vec.push_back(c);
+                }
                 this->first_child_flag_vec.push_back(isFirst);
             }
             inline void call_st_node(uint64_t count)
@@ -125,9 +137,9 @@ namespace stool
 
                 for (uint64_t j = 0; j < count; j++)
                 {
-                    em.get_child(c, j, copy);
+                    CHAR edge_char = em.get_child(c, j, copy);
 
-                    this->add_child(copy, j == 0);
+                    this->add_child(copy, edge_char, j == 0);
                 }
                 this->call_st_node(count);
             }
@@ -151,7 +163,7 @@ namespace stool
                 return current_lcp + this->child_width_vec.size() - 1;
             }
 
-            void pop_level(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3)
+            void pop_level(std::deque<INDEX_SIZE> &item1, std::deque<bool> &item2, std::deque<bool> &item3, std::deque<CHAR> &output_edge_char_vec)
             {
 
                 assert(this->child_width_vec.size() >= 2);
@@ -171,6 +183,11 @@ namespace stool
 
                     item2.push_back(this->first_child_flag_vec[0]);
                     this->first_child_flag_vec.pop_front();
+
+                    if(this->store_edge_chars){                        
+                        output_edge_char_vec.push_back(this->edge_char_vec[0]);
+                        this->edge_char_vec.pop_front();
+                    }
                 }
                 for (uint64_t i = 0; i < this->stnode_count_vec[0]; i++)
                 {
@@ -269,8 +286,8 @@ namespace stool
                 {
                     auto &it = r[i];
 
-                    this->_RLBWTDS->to_rinterval(it.first, it.second, intv);
-                    this->add_child(intv, i == 0);
+                    this->_RLBWTDS->to_rinterval(it.i, it.j, intv);
+                    this->add_child(intv, it.c, i == 0);
                 }
                 this->call_st_node(r.size());
                 this->call_level_nodes(1, r.size());
@@ -305,14 +322,18 @@ namespace stool
                 }
             }
 
-            uint64_t read_st_node(uint64_t L, RINTERVAL &node, std::vector<RINTERVAL> &children)
+            uint64_t read_st_node(uint64_t L, RINTERVAL &node, std::vector<RINTERVAL> &children, std::vector<CHAR> &output_chars)
             {
                 uint64_t nextL = this->read_st_node(L, node);
                 RINTERVAL child;
                 while (L < nextL)
                 {
-                    L = this->read_child(L, child);
+                    CHAR c = this->read_child(L, child);
+                    L++;
                     children.push_back(child);
+                    if(this->store_edge_chars){
+                    output_chars.push_back(c);
+                    }
                 }
                 return L;
             }
@@ -323,6 +344,7 @@ namespace stool
                 RINTERVAL intv;
                 std::vector<RINTERVAL> children;
                 std::vector<uint8_t> output_chars;
+                std::vector<CHAR> output_edge_chars;
 
                 assert(this->children_count() == this->first_child_flag_vec.size());
                 uint64_t c_count = this->child_width_vec[level_index];
@@ -338,13 +360,15 @@ namespace stool
                 {
                     children.clear();
                     output_chars.clear();
+                    output_edge_chars.clear();
                     assert(this->first_child_flag_vec[L]);
-                    L = this->read_st_node(L, intv, children);
+                    L = this->read_st_node(L, intv, children, output_edge_chars);
                     currentProcessCount += children.size();
                     #if DEBUG
                         em.checker_on = false;
                     #endif
-                    em.executeWeinerLinkSearch(intv, children, nullptr, output_chars);
+
+                    em.executeWeinerLinkSearch(intv, children, this->store_edge_chars ? &output_edge_chars : nullptr, output_chars);
 
                     for (auto &c : output_chars)
                     {

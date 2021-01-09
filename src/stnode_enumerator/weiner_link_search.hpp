@@ -26,6 +26,7 @@ namespace stool
             std::vector<RINTERVAL> stnodeVec;
             std::vector<uint64_t> indexVec;
             std::vector<std::vector<uint8_t>> edgeCharVec;
+            using CHAR = uint8_t;
 
             std::vector<bool> stnodeOccFlagArray;
 
@@ -104,24 +105,27 @@ namespace stool
                 indexCount = 0;
                 explicitChildCount = 0;
             }
-            uint8_t get_child(uint8_t c, uint64_t index, std::pair<INDEX_SIZE, INDEX_SIZE> &output)
+            uint8_t get_child(uint8_t c, uint64_t index, std::pair<INDEX_SIZE, INDEX_SIZE> &output) const
             {
                 auto &it = this->childrenVec[c][index];
                 output.first = it.first;
                 output.second = it.second;
                 return this->edgeCharVec[c][index];
             }
-            uint64_t get_width(uint8_t c)
+            uint64_t get_width(uint8_t c) const
             {
                 auto &currentVec = this->childrenVec[c];
                 return currentVec.size();
             }
 
+            CHAR decode(CHAR c) const {
+                return c;
+            }
             void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
             {
                 this->clear();
                 this->computeSTNodeCandidates(node.first, node.second);
-                if (edgeChars != nullptr)
+                if (edgeChars == nullptr)
                 {
                     for (auto &it : children)
                     {
@@ -143,10 +147,11 @@ namespace stool
                     output_chars.push_back(c);
                 }
             }
-            std::vector<RINTERVAL> getFirstChildren()
+            
+            std::vector<CharInterval<INDEX_SIZE>> getFirstChildren()
             {
 
-                std::vector<RINTERVAL> r;
+                std::vector<CharInterval<INDEX_SIZE>> r;
                 INDEX_SIZE left = 0;
                 INDEX_SIZE right = this->strSize - 1;
                 uint64_t count = this->searcher->getIntervals(left, right, this->charIntervalTmpVec);
@@ -156,13 +161,14 @@ namespace stool
                 for (uint64_t x = 0; x < count; x++)
                 {
                     auto &it = this->charIntervalTmpVec[x];
-                    r.push_back(RINTERVAL(it.i, it.j));
+                    r.push_back(CharInterval<INDEX_SIZE>(it.i, it.j, it.c));
                 }
-                sort(r.begin(), r.end(), [&](const RINTERVAL &lhs, const RINTERVAL &rhs) {
-                    return lhs.first < rhs.first;
+                sort(r.begin(), r.end(), [&](const CharInterval<INDEX_SIZE> &lhs, const CharInterval<INDEX_SIZE> &rhs) {
+                    return lhs.c < rhs.c;
                 });
                 return r;
             }
+            
             private:
             
             bool pushExplicitWeinerInterval(INDEX_SIZE left, INDEX_SIZE right, uint8_t c, uint8_t edgeChar)

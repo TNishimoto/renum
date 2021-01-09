@@ -20,7 +20,7 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        template <typename INDEX_SIZE, typename INTERVAL_SEARCH>
+        template <typename INDEX_SIZE, typename INTERVAL_SEARCH, typename CHAR = uint8_t>
         class SingleSTNodeTraverser
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
@@ -29,8 +29,11 @@ namespace stool
 
             uint64_t _stnode_count = 0;
             std::deque<INDEX_SIZE> childs_vec;
+            std::deque<CHAR> edge_char_vec;
+
             BitDeque first_child_flag_vec;
             BitDeque maximal_repeat_check_vec;
+            bool store_edge_chars = false;
             //std::deque<bool> first_child_flag_vec;
             //std::deque<bool> maximal_repeat_check_vec;
             int64_t lcp = -1;
@@ -39,12 +42,17 @@ namespace stool
         public:
             using index_type = INDEX_SIZE;
 
+            bool has_edge_characters() const
+            {
+                return this->store_edge_chars;
+            }
             SingleSTNodeTraverser()
             {
             }
-            void initialize(INTERVAL_SEARCH *_interval_search)
+            void initialize(INTERVAL_SEARCH *_interval_search, bool _store_edge_chars)
             {
                 this->em = _interval_search;
+                this->store_edge_chars = _store_edge_chars;
                 this->lcp = -1;
                 /*
                 this->em = new ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>();
@@ -136,7 +144,8 @@ namespace stool
                 return 1;
             }
 
-            uint64_t get_input_text_length(){
+            uint64_t get_input_text_length()
+            {
                 return this->em->get_input_text_length();
             }
             void print() const
@@ -187,25 +196,45 @@ namespace stool
                     output.maximal_repeat_check_vec.push_back(this->maximal_repeat_check_vec[0]);
                     this->maximal_repeat_check_vec.pop_front();
                 }
+
+                if (this->store_edge_chars)
+                {
+                    //output.store_edge_chars = true;
+                    output.edge_char_vec.reserve(this->edge_char_vec.size());
+                    while (this->edge_char_vec.size() > 0)
+                    {
+                    output.edge_char_vec.push_back(this->edge_char_vec[0]);
+                    this->edge_char_vec.pop_front();
+                    }
+                }
             }
 
         private:
             void first_compute()
             {
                 this->first_child_flag_vec.clear();
+                this->edge_char_vec.clear();
 
                 //em.computeFirstLCPIntervalSet();
-                auto r = em->getFirstChildren();
+                std::vector<CharInterval<INDEX_SIZE>> r = em->getFirstChildren();
                 for (uint64_t i = 0; i < r.size(); i++)
                 {
                     auto &it = r[i];
                     if (i == 0)
                     {
-                        this->childs_vec.push_back(it.first);
+                        this->childs_vec.push_back(it.i);
                         this->first_child_flag_vec.push_back(true);
+                        if (store_edge_chars)
+                        {
+                            this->edge_char_vec.push_back(0);
+                        }
                     }
-                    this->childs_vec.push_back(it.second);
+                    this->childs_vec.push_back(it.j);
                     this->first_child_flag_vec.push_back(false);
+                    if (store_edge_chars)
+                    {
+                        this->edge_char_vec.push_back(it.c);
+                    }
                 }
                 this->maximal_repeat_check_vec.push_back(true);
                 assert(this->first_child_flag_vec[0]);
@@ -213,7 +242,7 @@ namespace stool
                 this->lcp = 0;
             }
 
-            void pop_node(std::pair<INDEX_SIZE, INDEX_SIZE> &output_node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &output_children)
+            void pop_node(std::pair<INDEX_SIZE, INDEX_SIZE> &output_node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &output_children, std::vector<CHAR> &output_edge_chars)
             {
                 assert(this->first_child_flag_vec[0]);
 
@@ -225,16 +254,27 @@ namespace stool
                 uint64_t _count = nextL - L - 1;
                 for (uint64_t i = 0; i < _count; i++)
                 {
-                    uint64_t left = this->get_child_start_position(L);
-                    uint64_t right = this->get_child_end_position(L);
-
+                    uint64_t left = this->get_child_left_boundary(L);
+                    uint64_t right = this->get_child_right_boundary(L);
+                    if (this->store_edge_chars)
+                    {
+                        CHAR c = this->get_edge_character(L, false);
+                        output_edge_chars.push_back(c);
+                        this->edge_char_vec.pop_front();
+                    }
                     output_children.push_back(std::pair<INDEX_SIZE, INDEX_SIZE>(left, right));
+
                     assert(left <= right);
                     this->childs_vec.pop_front();
                     this->first_child_flag_vec.pop_front();
                 }
                 this->childs_vec.pop_front();
                 this->first_child_flag_vec.pop_front();
+                if (store_edge_chars)
+                {
+                    this->edge_char_vec.pop_front();
+                }
+
                 this->maximal_repeat_check_vec.pop_front();
                 this->_stnode_count--;
             }
@@ -247,37 +287,32 @@ namespace stool
                 std::pair<INDEX_SIZE, INDEX_SIZE> output_node;
                 std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> output_children;
                 std::vector<uint8_t> output_chars;
+                std::vector<CHAR> output_edge_chars;
 
                 for (uint64_t i = 0; i < size; i++)
                 {
+
                     output_children.clear();
                     output_chars.clear();
-                    this->pop_node(output_node, output_children);
-                    em->executeWeinerLinkSearch(output_node, output_children, nullptr, output_chars);
-                    for(auto &c : output_chars){
+                    output_edge_chars.clear();
+
+                    this->pop_node(output_node, output_children, output_edge_chars);
+                    if (this->store_edge_chars)
+                    {
+                        em->executeWeinerLinkSearch(output_node, output_children, &output_edge_chars, output_chars);
+                    }
+                    else
+                    {
+                        em->executeWeinerLinkSearch(output_node, output_children, nullptr, output_chars);
+                    }
+
+                    for (auto &c : output_chars)
+                    {
                         this->add(c, *em);
                     }
                 }
 
                 this->lcp++;
-            }
-            inline uint64_t get_child_start_position(uint64_t child_end_pointer) const
-            {
-                assert(child_end_pointer > 0);
-                assert(child_end_pointer < this->childs_vec.size());
-                if (this->first_child_flag_vec[child_end_pointer - 1])
-                {
-                    return this->childs_vec[child_end_pointer - 1];
-                }
-                else
-                {
-                    return this->childs_vec[child_end_pointer - 1] + 1;
-                }
-            }
-            inline uint64_t get_child_end_position(uint64_t child_end_pointer) const
-            {
-                assert(child_end_pointer < this->childs_vec.size());
-                return this->childs_vec[child_end_pointer];
             }
 
             void add(uint8_t c, INTERVAL_SEARCH &em)
@@ -291,7 +326,7 @@ namespace stool
 
                 for (uint64_t j = 0; j < count; j++)
                 {
-                    em.get_child(c, j, child);
+                    CHAR edge_char = em.get_child(c, j, child);
                     uint64_t left = child.first;
                     uint64_t right = child.second;
 
@@ -307,9 +342,17 @@ namespace stool
                     {
                         this->childs_vec.push_back(left);
                         this->first_child_flag_vec.push_back(true);
+                        if (store_edge_chars)
+                        {
+                            this->edge_char_vec.push_back(0);
+                        }
                     }
                     this->childs_vec.push_back(right);
                     this->first_child_flag_vec.push_back(false);
+                    if (store_edge_chars)
+                    {
+                        this->edge_char_vec.push_back(edge_char);
+                    }
                 }
                 assert(this->first_child_flag_vec[0]);
                 bool isMaximalRepeat = this->em->checkMaximalRepeat(st_left, st_right);
@@ -329,8 +372,8 @@ namespace stool
                 {
                     R++;
                 }
-                left = this->get_child_start_position(L);
-                right = this->get_child_end_position(R - 1);
+                left = this->get_child_left_boundary(L);
+                right = this->get_child_right_boundary(R - 1);
 
                 return R + 1;
             }
@@ -365,14 +408,73 @@ namespace stool
                     node_index++;
                 }
             }
+            INDEX_SIZE get_children_count(const ITERATOR &iter) const
+            {
+                return this->get_children_count(iter.child_index);
+            }
+            INDEX_SIZE get_children_count(INDEX_SIZE child_index) const
+            {
+                uint64_t R = this->increment(child_index);
+                return R - child_index - 1;
+            }
+            inline uint64_t get_child_left_boundary(uint64_t child_end_pointer) const
+            {
+                assert(child_end_pointer > 0);
+                assert(child_end_pointer < this->childs_vec.size());
+                if (this->first_child_flag_vec[child_end_pointer - 1])
+                {
+                    return this->childs_vec[child_end_pointer - 1];
+                }
+                else
+                {
+                    return this->childs_vec[child_end_pointer - 1] + 1;
+                }
+            }
+            inline uint64_t get_child_right_boundary(uint64_t child_end_pointer) const
+            {
+                assert(child_end_pointer < this->childs_vec.size());
+                return this->childs_vec[child_end_pointer];
+            }
+            CHAR get_edge_character(uint64_t child_pointer, bool decode) const
+            {
+                assert(this->store_edge_chars);
+                if (decode)
+                {
+                    return this->em->decode(this->edge_char_vec[child_pointer]);
+                }
+                else
+                {
+                    return this->edge_char_vec[child_pointer];
+                }
+            }
+            INDEX_SIZE get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_edge_character(iter.child_index + ith_child, true);
+            }
+
+            INDEX_SIZE get_child_left_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_child_left_boundary(iter.child_index + ith_child);
+            }
+            INDEX_SIZE get_child_right_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_child_right_boundary(iter.child_index + ith_child);
+            }
+
+            /*
+            INDEX_SIZE get_child_left_boundary(INDEX_SIZE child_index) const
+            {
+                return this->get_children_count(iter.child_index);
+            }
+            */
 
             INDEX_SIZE get_left(const ITERATOR &iter) const
             {
-                return this->get_child_start_position(iter.child_index);
+                return this->get_child_left_boundary(iter.child_index);
             }
             INDEX_SIZE get_left(INDEX_SIZE child_index) const
             {
-                return this->get_child_start_position(child_index);
+                return this->get_child_left_boundary(child_index);
             }
 
             INDEX_SIZE get_right(const ITERATOR &iter) const
@@ -414,8 +516,7 @@ namespace stool
             }
             bool check_maximal_repeat(ITERATOR &iter) const
             {
-                    return this->check_maximal_repeat(iter.node_index);
-
+                return this->check_maximal_repeat(iter.node_index);
             }
         };
 

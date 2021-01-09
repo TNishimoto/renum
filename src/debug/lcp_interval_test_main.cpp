@@ -38,17 +38,16 @@ using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
 
-template <typename RLBWTDS>
 class LCPIntervalTest
 {
 public:
-    using CHAR = typename RLBWTDS::CHAR;
+    //using CHAR = typename RLBWTDS::CHAR;
     //using CHARVEC = typename RLBWT_STR::char_vec_type;
-    using INDEX_SIZE = typename RLBWTDS::INDEX;
-    using UCHAR = typename std::make_unsigned<CHAR>::type;
+    //using INDEX_SIZE = typename RLBWTDS::INDEX;
+    //using UCHAR = typename std::make_unsigned<CHAR>::type;
 
-    template <typename STNODES, typename BWT>
-    static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(STNODES &stnodeSequencer, RLBWTDS *ds, BWT &bwt)
+    template <typename STNODES>
+    static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(STNODES &stnodeSequencer, stool::lcp_on_rlbwt::STNodeChecker *checker)
     {
 
         std::vector<stool::LCPInterval<uint64_t>> r;
@@ -60,48 +59,44 @@ public:
 
             for (auto node_it = it.begin(); node_it != it.end(); node_it++)
             {
+                node_it.print();
+                if (stnodeSequencer.has_edge_characters())
+                {
+                    uint64_t child_count = node_it.get_children_count();
+                    uint64_t depth = it.get_depth();
+                    for (uint64_t i = 0; i < child_count; i++)
+                    {
+                        uint64_t left = node_it.get_child_left_boundary(i);
+                        uint64_t right = node_it.get_child_right_boundary(i);
+                        char c = node_it.get_edge_character(i);
+                        if(checker != nullptr){
+                            checker->check_edge_character(left, right, c, depth);
+                        }
+                    }
+                }
+
+                /*
+                */
 
                 stool::LCPInterval<uint64_t> copy;
-                INDEX_SIZE left = stnodeSequencer.get_left(node_it);
-                INDEX_SIZE right = stnodeSequencer.get_right(node_it);
+                uint64_t left = stnodeSequencer.get_left(node_it);
+                uint64_t right = stnodeSequencer.get_right(node_it);
 
                 copy.i = left;
                 copy.j = right;
                 copy.lcp = stnodeSequencer.get_current_lcp();
                 r2.push_back(copy);
-                bool b = stnodeSequencer.check_maximal_repeat(node_it);
-                if (b)
+
+                if (checker != nullptr)
                 {
-                    bool mb = false;
-                    for (uint64_t i = left + 1; i <= right; i++)
-                    {
-                        uint8_t l = bwt[i - 1];
-                        uint8_t r = bwt[i];
-
-                        if (l != r)
-                        {
-                            mb = true;
-                            break;
-                        }
-                    }
-                    if (mb != b)
-                    {
-                        std::cout << mb << "/" << b << std::endl;
-                        std::cout << "[" << left << ", " << right << "]" << std::endl;
-
-                        std::cout << "BWT on Range: ";
-                        for (uint64_t i = left; i <= right; i++)
-                        {
-                            std::cout << (char)bwt[i];
-                        }
-                        std::cout << std::endl;
-                    }
-                    assert(mb == b);
+                    bool b = stnodeSequencer.check_maximal_repeat(node_it);
+                    checker->check_maximal_repeat(left, right, b);
                 }
             }
-            if (ds != nullptr && ds->stnc != nullptr)
+            std::cout << std::endl;
+            if (checker != nullptr)
             {
-                ds->stnc->increment(r2);
+                checker->increment(r2);
             }
             for (auto &it : r2)
             {
@@ -152,18 +147,22 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
     using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
     FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
     RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
+    ds.set_id_to_character_vec(&bwtAnalysis.id_to_character_vec);
     ds.stnc = &stnc;
 
+    /*
     std::vector<uint8_t> plain_bwt;
     stool::bwt::load(inputFile, plain_bwt);
+    std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
+    */
 
     if (mode == "A")
     {
 
         std::cout << "General Test" << std::endl;
         stool::lcp_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
-        stnodeTraverser.initialize(thread_num, ds);
-        std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds, plain_bwt);
+        stnodeTraverser.initialize(thread_num, ds, true);
+        std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest::testLCPIntervals(stnodeTraverser, &stnc);
         test_Intervals.swap(tmp);
     }
     else if (mode == "B")
@@ -171,8 +170,8 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
 
         std::cout << "Standard Test" << std::endl;
         stool::lcp_on_rlbwt::STNodeTraverser<INDEX, RDS> stnodeTraverser;
-        stnodeTraverser.initialize(thread_num, ds);
-        std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds, plain_bwt);
+        stnodeTraverser.initialize(thread_num, ds, true);
+        std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest::testLCPIntervals(stnodeTraverser, &stnc);
         test_Intervals.swap(tmp);
     }
     else if (mode == "C")
@@ -180,8 +179,8 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
 
         std::cout << "Fast Test" << std::endl;
         stool::lcp_on_rlbwt::FastSTNodeTraverser<INDEX, RDS> stnodeTraverser;
-        stnodeTraverser.initialize(thread_num, ds);
-        std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds, plain_bwt);
+        stnodeTraverser.initialize(thread_num, ds, true);
+        std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest::testLCPIntervals(stnodeTraverser, &stnc);
         test_Intervals.swap(tmp);
     }
     else
@@ -192,8 +191,8 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
         stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX, INTERVAL_SEARCH> stnodeTraverser;
         INTERVAL_SEARCH em;
         em.initialize(&ds);
-        stnodeTraverser.initialize(&em);
-        std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest<RDS>::testLCPIntervals(stnodeTraverser, &ds, plain_bwt);
+        stnodeTraverser.initialize(&em, true);
+        std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest::testLCPIntervals(stnodeTraverser, &stnc);
         test_Intervals.swap(tmp);
     }
 
@@ -208,7 +207,6 @@ void computeLCPIntervals_beller(std::string inputFile)
     using LPOSDS = stool::EliasFanoVector;
 
     using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-    using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
     //string text = "";
     std::cout << "Loading : " << inputFile << std::endl;
     std::vector<uint8_t> text = stool::load_text_from_file(inputFile, true);
@@ -229,7 +227,6 @@ void computeLCPIntervals_beller(std::string inputFile)
         }
         bv[i] = b;
         //std::cout << (uint64_t)bv[i];
-        
     }
     std::cout << std::endl;
     sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
@@ -248,9 +245,8 @@ void computeLCPIntervals_beller(std::string inputFile)
     stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<uint32_t> wsearch;
     wsearch.initialize(&range, &bwt_bit_rank1, bwt.size());
     stool::lcp_on_rlbwt::SingleSTNodeTraverser<uint32_t, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<uint32_t>> traverser;
-    traverser.initialize(&wsearch);
-    auto test_Intervals = LCPIntervalTest<RDS>::testLCPIntervals(traverser, nullptr, bwt);
-
+    traverser.initialize(&wsearch, true);
+    auto test_Intervals = LCPIntervalTest::testLCPIntervals(traverser, nullptr);
 }
 
 int main(int argc, char *argv[])
@@ -286,9 +282,12 @@ int main(int argc, char *argv[])
         std::cout << inputFile << " cannot open." << std::endl;
         return -1;
     }
-    if(mode == "E"){
+    if (mode == "E")
+    {
         computeLCPIntervals_beller(inputFile);
-    }else{
-    testLCPIntervals<INDEX>(inputFile, mode, thread_num);
+    }
+    else
+    {
+        testLCPIntervals<INDEX>(inputFile, mode, thread_num);
     }
 }

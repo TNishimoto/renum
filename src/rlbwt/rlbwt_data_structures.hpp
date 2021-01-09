@@ -36,11 +36,24 @@ namespace stool
             stool::WT &wt;
             const LPOSDS &lpos_vec;
             const FPOSDS &_fposDS;
-            //RangeDistinctDataStructureOnRLBWT<INDEX_SIZE> rangeOnRLBWT;
-
-            //const RLBWT_STR &_rlbwt;
-
             std::vector<stool::LCPInterval<uint64_t>> *collectLCPIntervals;
+            std::vector<uint64_t> *id_to_character_vec = nullptr;
+
+
+            RLBWTDataStructures(const sdsl::int_vector<> &diff_char_vec,
+                                stool::WT &_wt, const LPOSDS &_lpos_vec, const FPOSDS &__fposDS) : bwt(diff_char_vec), wt(_wt), lpos_vec(_lpos_vec), _fposDS(__fposDS)
+            {
+
+                //rangeOnRLBWT.initialize(&wt, &bwt);
+            }
+            void set_id_to_character_vec(std::vector<uint64_t> *_id_to_character_vec){
+                this->id_to_character_vec = _id_to_character_vec;
+            }
+            CHAR decode(CHAR c){
+                assert(this->id_to_character_vec != nullptr);
+                return (*this->id_to_character_vec)[c];
+            }
+
 
             bool checkLCPInterval(const RINTERVAL &input)
             {
@@ -61,35 +74,6 @@ namespace stool
                 bool isMaximalRepeat = (this->get_lpos(x) + d - 1) < right;
                 return isMaximalRepeat;
 
-            }
-            bool checkWeinerLink(const stool::LCPInterval<uint64_t> intv2, std::vector<RINTERVAL> &stnodeVec, std::vector<uint64_t> &indexVec, uint64_t indexCount)
-            {
-                assert(intv2.i <= intv2.j);
-                if (this->stnc == nullptr)
-                {
-                    std::cout << "stnc is null" << std::endl;
-                    throw -1;
-                }
-
-
-                //std::cout << "PREV = [" <<    intv2.i << ", " << intv2.j << "]" << std::endl;
-                //std::cout << "NEXT: " ;
-                std::vector<stool::LCPInterval<uint64_t>> wlinks;
-                for (uint64_t i = 0; i < indexCount; i++)
-                {
-                    stool::LCPInterval<uint64_t> intv = stnodeVec[indexVec[i]].get_lcp_interval(this->stnc->get_lcp(), this->_fposDS);
-                    //std::cout << "[" << intv.i << ", " << intv.j << "]";
-                    wlinks.push_back(intv);
-                }
-
-                return this->stnc->check_weiner_links(intv2.i, intv2.j, wlinks);
-            }
-
-            RLBWTDataStructures(const sdsl::int_vector<> &diff_char_vec,
-                                stool::WT &_wt, const LPOSDS &_lpos_vec, const FPOSDS &__fposDS) : bwt(diff_char_vec), wt(_wt), lpos_vec(_lpos_vec), _fposDS(__fposDS)
-            {
-
-                //rangeOnRLBWT.initialize(&wt, &bwt);
             }
 
             INDEX_SIZE get_fpos(INDEX_SIZE index, INDEX_SIZE diff) const

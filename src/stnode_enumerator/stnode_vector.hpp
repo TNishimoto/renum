@@ -24,13 +24,14 @@ namespace stool
         const uint ARRAYSIZE = 2000;
         const uint CARRAYSIZE = 4000;
 
-        template <typename INDEX_SIZE>
+        template <typename INDEX_SIZE, typename CHAR = uint8_t>
         class STNodeVector
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
         public:
             std::vector<INDEX_SIZE> childs_vec;
+            std::vector<CHAR> edge_char_vec;
             std::vector<bool> first_child_flag_vec;
             std::vector<bool> maximal_repeat_check_vec;
 
@@ -40,6 +41,7 @@ namespace stool
             void clear()
             {
                 this->childs_vec.clear();
+                this->edge_char_vec.clear();
                 this->first_child_flag_vec.clear();
                 this->maximal_repeat_check_vec.clear();
             }
@@ -60,41 +62,42 @@ namespace stool
                 }
                 return this->first_child_flag_vec.size() - p;
             }
-            uint64_t mini_increment(uint64_t L, uint64_t &left, uint64_t &right, bool &leftmost) const
+            uint64_t mini_increment(uint64_t L, stool::CharInterval<INDEX_SIZE> &output, bool &leftmost) const
             {
                 assert(L < this->first_child_flag_vec.size());
                 if (this->first_child_flag_vec[L])
                 {
-                    return mini_increment(L + 1, left, right, leftmost);
+                    return mini_increment(L + 1, output, leftmost);
                 }
                 else
                 {
                     if (this->first_child_flag_vec[L - 1])
                     {
-                        left = this->childs_vec[L - 1];
-                        right = this->childs_vec[L];
+                        output.i = this->childs_vec[L - 1];
+                        output.j = this->childs_vec[L];
+                        output.c = this->edge_char_vec.size() > 0 ? this->edge_char_vec[L] : 0;
                         leftmost = true;
                     }
                     else
                     {
-                        left = this->childs_vec[L - 1] + 1;
-                        right = this->childs_vec[L];
+                        output.i = this->childs_vec[L - 1] + 1;
+                        output.j = this->childs_vec[L];
+                        output.c = this->edge_char_vec.size() > 0 ? this->edge_char_vec[L] : 0;
                         leftmost = false;
                     }
                     return L + 1;
                 }
             }
-            void get_last(uint64_t lcp, std::vector<stool::LCPInterval<INDEX_SIZE>> &output) const
+            void get_last(std::vector<stool::CharInterval<INDEX_SIZE>> &output) const
             {
                 uint64_t width = this->get_last_width() - 1;
-                uint64_t left = 0;
-                uint64_t right = 0;
+                stool::CharInterval<INDEX_SIZE> tmp;
                 bool b = false;
                 uint64_t L = this->first_child_flag_vec.size() - width;
                 for (uint64_t i = 0; i < width; i++)
                 {
-                    L = this->mini_increment(L, left, right, b);
-                    output.push_back(stool::LCPInterval<INDEX_SIZE>(left, right, lcp));
+                    L = this->mini_increment(L, tmp, b);
+                    output.push_back(tmp);
                 }
             }
             void pop()
@@ -104,6 +107,10 @@ namespace stool
                 {
                     this->first_child_flag_vec.pop_back();
                     this->childs_vec.pop_back();
+                    if(this->edge_char_vec.size() > 0){
+                        this->edge_char_vec.pop_back();
+
+                    }
                 }
                 this->maximal_repeat_check_vec.pop_back();
             }
@@ -138,7 +145,7 @@ namespace stool
             }
 
             template <typename RLBWTDS>
-            void add(uint8_t c, uint64_t count, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            void add(uint8_t c, uint64_t count, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, bool _store_edge_chars)
             {
                 //RINTERVAL copy;
                 uint64_t st_left = UINT64_MAX;
@@ -147,7 +154,7 @@ namespace stool
 
                 for (uint64_t j = 0; j < count; j++)
                 {
-                    em.get_child(c, j, outputInterval);
+                    CHAR edgeChar = em.get_child(c, j, outputInterval);
                     //uint64_t left = ds->get_fpos(copy.beginIndex, copy.beginDiff);
                     //uint64_t right = ds->get_fpos(copy.endIndex, copy.endDiff);
 
@@ -163,20 +170,28 @@ namespace stool
                     {
                         this->childs_vec.push_back(outputInterval.first);
                         this->first_child_flag_vec.push_back(true);
+                        if (_store_edge_chars)
+                        {
+                            this->edge_char_vec.push_back(0);
+                        }
                     }
                     this->childs_vec.push_back(outputInterval.second);
                     this->first_child_flag_vec.push_back(false);
+                    if (_store_edge_chars)
+                    {
+                        this->edge_char_vec.push_back(edgeChar);
+                    }
                 }
                 bool isMaximalRepeat = em.checkMaximalRepeat(st_left, st_right);
 
                 this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
             }
             template <typename RLBWTDS>
-            void import(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint8_t c)
+            void import(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint8_t c, bool _store_edge_chars)
             {
                 auto &currentVec = em.childrenVec[c];
                 uint64_t count = currentVec.size();
-                this->add(c, count, em);
+                this->add(c, count, em, _store_edge_chars);
             }
 
             void print() const

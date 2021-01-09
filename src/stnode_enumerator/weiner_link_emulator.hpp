@@ -13,7 +13,6 @@ namespace stool
 {
     namespace lcp_on_rlbwt
     {
-        uint64_t DEBUG_LIMIT = 1000;
         /*
             This is a data structure to ...
         */
@@ -21,6 +20,7 @@ namespace stool
         class ExplicitWeinerLinkEmulator
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
+            using CHAR = typename RLBWTDS::CHAR;
 
         public:
             std::vector<std::vector<RINTERVAL>> childrenVec;
@@ -44,10 +44,14 @@ namespace stool
             RLBWTDS *_RLBWTDS;
             LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> lightRangeSearcher;
             SuccinctRangeDistinctDataStructure<INDEX_SIZE> heavyRangeSearcher;
-            uint64_t get_input_text_length()
+            uint64_t get_input_text_length() const
             {
                 return this->_RLBWTDS->str_size();
             }
+            CHAR decode(CHAR c) const {
+                return this->_RLBWTDS->decode(c);
+            }
+
 
             void initialize(RLBWTDS *_rlbwtds)
             {
@@ -129,7 +133,7 @@ namespace stool
 
                 this->computeSTNodeCandidates(intv);
                 RINTERVAL child;
-                if (edgeChars != nullptr)
+                if (edgeChars == nullptr)
                 {
                     for (auto &it : children)
                     {
@@ -160,13 +164,16 @@ namespace stool
             }
             void executeWeinerLinkSearch(const RINTERVAL &node, std::vector<RINTERVAL> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
             {
+
                 this->clear();
+
                 this->computeSTNodeCandidates(node);
-                if (edgeChars != nullptr)
+                if (edgeChars == nullptr)
                 {
                     for (auto &it : children)
                     {
                         this->computeSTChildren(it, 0);
+
                     }
                 }
                 else
@@ -195,9 +202,9 @@ namespace stool
                 }
             }
 
-            std::vector<std::pair<uint64_t, uint64_t>> getFirstChildren()
+            std::vector<CharInterval<INDEX_SIZE>> getFirstChildren()
             {
-                std::vector<std::pair<uint64_t, uint64_t>> r;
+                std::vector<CharInterval<INDEX_SIZE>> r;
                 uint64_t count = this->heavyRangeSearcher.range_distinct(0, this->_RLBWTDS->rle_size() - 1, this->charIntervalTmpVec);
                 //r.resize(count - 1);
 
@@ -208,10 +215,10 @@ namespace stool
                     uint64_t run = this->_RLBWTDS->get_run(it.j) - 1;
                     uint64_t i = this->_RLBWTDS->get_fpos(it.i, 0);
                     uint64_t j = this->_RLBWTDS->get_fpos(it.j, run);
-                    r.push_back(std::pair<uint64_t, uint64_t>(i, j));
+                    r.push_back(CharInterval<INDEX_SIZE>(i, j, it.c));
                 }
-                sort(r.begin(), r.end(), [&](const std::pair<uint64_t, uint64_t> &lhs, const std::pair<uint64_t, uint64_t> &rhs) {
-                    return lhs.first < rhs.first;
+                sort(r.begin(), r.end(), [&](const CharInterval<INDEX_SIZE> &lhs, const CharInterval<INDEX_SIZE> &rhs) {
+                    return lhs.c < rhs.c;
                 });
                 return r;
             }
@@ -263,14 +270,6 @@ namespace stool
                     }
                 }
             }
-            /*
-            void computeSTNodeCandidates(INDEX_SIZE left, INDEX_SIZE right)
-            {
-                RINTERVAL intv;
-                this->_RLBWTDS->to_rinterval(left, right, intv);
-                this->computeSTNodeCandidates(intv);
-            }
-            */
             void computeSTChildren(const RINTERVAL &w, uint8_t edgeChar)
             {
 
@@ -284,14 +283,6 @@ namespace stool
                     this->pushExplicitWeinerInterval(it, c, edgeChar);
                 }
             }
-            /*
-            void computeSTChildren(INDEX_SIZE left, INDEX_SIZE right)
-            {
-                RINTERVAL child;
-                this->_RLBWTDS->to_rinterval(left, right, child);
-                this->computeSTChildren(child);
-            }
-            */
 #if DEBUG
             bool check(const RInterval<INDEX_SIZE> &range)
             {
@@ -355,7 +346,16 @@ namespace stool
                 return count;
             }
 #if DEBUG
-
+            std::vector<stool::LCPInterval<uint64_t>> createNextWeinerLinkNodes(uint64_t lcp)
+            {
+                std::vector<stool::LCPInterval<uint64_t>> wlinks;
+                for (uint64_t i = 0; i < this->indexCount; i++)
+                {
+                    stool::LCPInterval<uint64_t> intv = this->stnodeVec[this->indexVec[i]].get_lcp_interval(lcp, this->_RLBWTDS->_fposDS);
+                    wlinks.push_back(intv);
+                }
+                return wlinks;
+            }
             void verify_next_lcp_interval(uint64_t left, uint64_t right)
             {
                 LCPInterval<uint64_t> lcpIntv;
@@ -363,9 +363,15 @@ namespace stool
                 lcpIntv.j = right;
                 assert(this->_RLBWTDS->stnc != nullptr);
                 lcpIntv.lcp = this->_RLBWTDS->stnc->get_lcp() - 1;
-                this->_RLBWTDS->checkWeinerLink(lcpIntv, this->stnodeVec, this->indexVec, this->indexCount);
-            }
 
+                if (this->_RLBWTDS->stnc != nullptr)
+                {
+                    uint64_t lcp = this->_RLBWTDS->stnc->get_lcp();
+                    auto wlinks = createNextWeinerLinkNodes(lcp);
+
+                    this->_RLBWTDS->stnc->check_weiner_links(left, right, wlinks);
+                }
+            }
 #endif
 
             void fit()

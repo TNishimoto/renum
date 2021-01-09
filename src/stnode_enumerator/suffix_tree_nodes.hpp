@@ -41,18 +41,22 @@ namespace stool
             FastSTNodeTraverser<INDEX_SIZE, RLBWTDS> fast_st_traverser;
             SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> single_st_traverser;
             std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
+            bool store_edge_chars = false;
 
             //std::vector<SUCCINCT_STNODE_TRAVERSER *> succinct_sub_trees;
 
-
         public:
             using index_type = INDEX_SIZE;
+            using CHAR = typename RLBWTDS::CHAR;
             uint64_t peak_child_count = 0;
             uint64_t thread_count = 1;
             bool use_fast_mode = true;
             uint mode = SINGLE_MODE;
             RLBWTDS *_RLBWTDS;
-            
+            bool has_edge_characters() const
+            {
+                return this->store_edge_chars;
+            }
             /*
             uint64_t print_interval = 100;
             uint64_t print_interval_counter = 0;
@@ -63,7 +67,6 @@ namespace stool
             uint64_t debug_peak_memory = 0;
             */
             //uint mode = FAST_MODE;
-
 
             /*
             iterator begin() const
@@ -138,9 +141,10 @@ namespace stool
                 return this->_switch_threshold;
             }
 
-            void initialize(uint64_t _thread_count, RLBWTDS &_RLBWTDS)
+            void initialize(uint64_t _thread_count, RLBWTDS &_RLBWTDS, bool _store_edge_chars)
             {
                 this->_RLBWTDS = &_RLBWTDS;
+                this->store_edge_chars = _store_edge_chars;
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
@@ -150,13 +154,12 @@ namespace stool
 
                 //this->strSize = _RLBWTDS.str_size();
 
-                this->standard_st_traverser.initialize(_thread_count, _RLBWTDS);
+                this->standard_st_traverser.initialize(_thread_count, _RLBWTDS, this->store_edge_chars);
 
-                this->fast_st_traverser.initialize(_thread_count, _RLBWTDS);
+                this->fast_st_traverser.initialize(_thread_count, _RLBWTDS, this->store_edge_chars);
 
-                this->single_st_traverser.initialize(&ems[0]);
+                this->single_st_traverser.initialize(&ems[0], this->store_edge_chars);
                 this->thread_count = _thread_count;
-
 
                 /*
                 double ratio = (double)this->_RLBWTDS->str_size() / (double)this->_RLBWTDS->rle_size();
@@ -236,11 +239,11 @@ namespace stool
                 }
             }
             */
-            
-            uint64_t get_input_text_length(){
+
+            uint64_t get_input_text_length()
+            {
                 return this->_RLBWTDS->str_size();
             }
-            
 
             bool succ()
             {
@@ -295,7 +298,6 @@ namespace stool
 
                     this->fast_st_traverser.set_peak(this->peak_child_count / 50);
                     this->fast_st_traverser.import(tmp, lcp);
-
 
                     this->mode = FAST_MODE;
                     std::cout << "Switch[END]" << std::endl;
@@ -404,6 +406,87 @@ namespace stool
                 else if (this->mode == SINGLE_MODE)
                 {
                     this->single_st_traverser.increment2(iter.child_index, iter.node_index, iter.array_index);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+            }
+            INDEX_SIZE get_children_count(const ITERATOR &iter) const
+            {
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.get_children_count(iter.child_index, iter.array_index);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.get_children_count(iter.child_index);
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.get_children_count(iter.child_index);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+            }
+            
+            CHAR get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.get_edge_character(iter.child_index + ith_child, iter.array_index);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.get_edge_character(iter.child_index + ith_child);
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.get_edge_character(iter.child_index + ith_child, true);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+            }
+            INDEX_SIZE get_child_left_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.get_child_left_boundary(iter.child_index + ith_child, iter.array_index);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.get_child_left_boundary(iter.child_index + ith_child);
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.get_child_left_boundary(iter.child_index + ith_child);
+                }
+                else
+                {
+                    assert(false);
+                    throw -1;
+                }
+            }
+            INDEX_SIZE get_child_right_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                if (this->mode == STANDARD_MODE)
+                {
+                    return this->standard_st_traverser.get_child_right_boundary(iter.child_index + ith_child, iter.array_index);
+                }
+                else if (this->mode == FAST_MODE)
+                {
+                    return this->fast_st_traverser.get_child_right_boundary(iter.child_index + ith_child);
+                }
+                else if (this->mode == SINGLE_MODE)
+                {
+                    return this->single_st_traverser.get_child_right_boundary(iter.child_index + ith_child);
                 }
                 else
                 {

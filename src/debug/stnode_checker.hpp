@@ -98,7 +98,8 @@ namespace stool
             sdsl::int_vector<> bwt;
             wt_gmr<> wt;
             std::vector<uint64_t> C;
-
+            std::vector<char> text;
+            vector<uint64_t> sa;
 
             void initialize(string inputFile)
             {
@@ -115,8 +116,9 @@ namespace stool
 
                 std::cout << "Construct Checker" << std::endl;
 
-                std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
-                vector<uint64_t> sa = stool::construct_suffix_array(text);
+                std::vector<char> tmpText = stool::bwt::decompress_bwt(inputFile);
+                text.swap(tmpText);
+                sa = stool::construct_suffix_array(text);
 
                 vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::naive_compute_lcp_intervals<char, uint64_t>(text, sa);
                 std::sort(
@@ -156,10 +158,39 @@ namespace stool
                 }
                 std::cout << "Construct Checker[Finished]" << std::endl;
             }
-            void set_lcp(uint64_t lcp){
+            bool check_maximal_repeat(uint64_t left, uint64_t right, bool b)
+            {
+
+                bool mb = false;
+                for (uint64_t i = left + 1; i <= right; i++)
+                {
+                    uint8_t l = bwt[i - 1];
+                    uint8_t r = bwt[i];
+
+                    if (l != r)
+                    {
+                        mb = true;
+                        break;
+                    }
+                }
+                assert(mb == b);
+                return mb;
+            }
+            bool check_edge_character(uint64_t left, uint64_t right, uint8_t c, uint64_t lcp){
+                uint64_t pos = sa[left] + lcp;
+                if(text[pos] != c){
+                    std::cout << (int) c << "/" << (int) text[pos] << "*" << "/[" << left << ", " << right << "]" << lcp << std::endl;
+                }
+                assert(text[pos] == c);
+                return text[pos] == c;
+
+            }
+            void set_lcp(uint64_t lcp)
+            {
                 this->current_lcp = lcp;
             }
-            uint64_t get_lcp(){
+            uint64_t get_lcp()
+            {
                 return this->current_lcp;
             }
 

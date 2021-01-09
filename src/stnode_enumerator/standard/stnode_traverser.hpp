@@ -27,6 +27,7 @@ namespace stool
             using STNODE_SUB_TRAVERSER = STNodeSubTraverser<INDEX_SIZE, RLBWTDS>;
             using ITERATOR = STNodeIterator<STNodeTraverser>;
             using DEPTH_ITERATOR = STDepthIterator<STNodeTraverser>;
+            using CHAR = typename RLBWTDS::CHAR;
 
             std::vector<STNODE_SUB_TRAVERSER *> sub_trees;
 
@@ -41,6 +42,7 @@ namespace stool
             uint64_t _node_count = 0;
 
             uint64_t thread_count = 1;
+            bool store_edge_chars = false;
             std::stack<uint64_t> position_stack;
 #if DEBUG
             uint64_t prev_child_count = 0;
@@ -49,7 +51,10 @@ namespace stool
         public:
             RLBWTDS *_RLBWTDS;
             using index_type = INDEX_SIZE;
-
+            bool has_edge_characters() const
+            {
+                return this->store_edge_chars;
+            }
             int64_t get_current_lcp() const
             {
                 return current_lcp;
@@ -79,22 +84,12 @@ namespace stool
                 this->_node_count = 0;
             }
 
-            void initialize(uint64_t size, RLBWTDS &__RLBWTDS)
+            void initialize(uint64_t size, RLBWTDS &__RLBWTDS, bool _store_edge_chars)
             {
+                this->store_edge_chars = _store_edge_chars;
                 this->_RLBWTDS = &__RLBWTDS;
 
                 this->thread_count = size;
-
-                /*
-                if (this->thread_count == 1)
-                {
-                    this->sub_tree_limit_size = UINT64_MAX;
-                }
-                */
-               /*
-                auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->_RLBWTDS);
-                sub_trees.push_back(st);
-                */
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
@@ -105,6 +100,9 @@ namespace stool
 
             void load(std::ifstream &file)
             {
+                assert(false);
+                throw -1;
+                /*
                 this->clear();
 
                 std::cout << "\033[33m";
@@ -126,7 +124,7 @@ namespace stool
                 for (uint64_t i = 0; i < sub_tree_count; i++)
                 {
 
-                    auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->_RLBWTDS);
+                    auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->_RLBWTDS, this->store_edge_chars);
                     st->load(file);
                     this->sub_trees.push_back(st);
                     this->_child_count += st->children_count();
@@ -134,6 +132,7 @@ namespace stool
                 }
                 //this->print();
                 std::cout << "\033[39m" << std::endl;
+                */
             }
             void write(std::ofstream &out)
             {
@@ -241,7 +240,7 @@ namespace stool
                     else
                     {
                         SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> tmp_traverser;
-                        tmp_traverser.initialize(&ems[0]);
+                        tmp_traverser.initialize(&ems[0], this->store_edge_chars);
                         tmp_traverser.succ();
                         STNodeVector<INDEX_SIZE> tmp;
                         tmp_traverser.convert_to_vector(tmp);
@@ -293,7 +292,7 @@ namespace stool
             {
 
                 assert(this->sub_trees.size() == 0);
-                auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size);
+                auto st = new STNODE_SUB_TRAVERSER(this->sub_tree_limit_size, this->store_edge_chars);
                 this->sub_trees.push_back(st);
 
                 this->current_lcp = lcp;
@@ -451,7 +450,7 @@ namespace stool
             {
                 this->increment(iter.child_index, iter.node_index, iter.array_index);
             }
-            
+
             void increment(INDEX_SIZE &child_index, INDEX_SIZE &node_index, INDEX_SIZE &array_index) const
             {
                 uint64_t left = 0, right = 0;
@@ -477,7 +476,17 @@ namespace stool
                     node_index++;
                 }
             }
-            
+
+            INDEX_SIZE get_children_count(const ITERATOR &iter) const
+            {
+                return this->get_children_count(iter.child_index, iter.array_index);
+            }
+            INDEX_SIZE get_children_count(INDEX_SIZE child_index, INDEX_SIZE array_index) const
+            {
+                uint64_t left = 0, right = 0;
+                uint64_t R = this->sub_trees[array_index]->increment(child_index, left, right);
+                return R - child_index - 1;
+            }
 
             INDEX_SIZE get_left(const ITERATOR &iter) const
             {
@@ -502,10 +511,38 @@ namespace stool
                 this->sub_trees[array_index]->increment(child_index, left, right);
                 return right;
             }
+            CHAR get_edge_character(uint64_t child_index, INDEX_SIZE array_index) const
+            {
+                assert(this->store_edge_chars);
+                CHAR c = this->sub_trees[array_index]->get_edge_character(child_index);
+                return this->_RLBWTDS->decode(c);
+            }
+            
+            INDEX_SIZE get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_edge_character(iter.child_index + ith_child, iter.array_index);
+            }
+            INDEX_SIZE get_child_left_boundary(INDEX_SIZE child_index, INDEX_SIZE array_index) const
+            {
+                return this->sub_trees[array_index]->get_child_left_boundary(child_index);
+            }
+            INDEX_SIZE get_child_left_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_child_left_boundary(iter.child_index + ith_child, iter.array_index);
+            }
+
+            INDEX_SIZE get_child_right_boundary(INDEX_SIZE child_index, INDEX_SIZE array_index) const
+            {
+                return this->sub_trees[array_index]->get_child_left_boundary(child_index);
+            }
+            INDEX_SIZE get_child_right_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_child_right_boundary(iter.child_index + ith_child, iter.array_index);
+            }
 
             void set_current_first_iterator(ITERATOR &iter) const
             {
-                this->set_current_first_iterator(iter.child_index,iter.node_index,iter.array_index);
+                this->set_current_first_iterator(iter.child_index, iter.node_index, iter.array_index);
             }
             void set_current_first_iterator(INDEX_SIZE &child_index, INDEX_SIZE &node_index, INDEX_SIZE &array_index) const
             {
@@ -522,16 +559,15 @@ namespace stool
                     array_index = 0;
                 }
             }
-            
+
             bool check_maximal_repeat(INDEX_SIZE node_index, INDEX_SIZE array_index) const
             {
                 return this->sub_trees[array_index]->check_maximal_repeat(node_index);
             }
-            
+
             bool check_maximal_repeat(ITERATOR &iter) const
             {
-                    return this->check_maximal_repeat(iter.node_index, iter.array_index);
-
+                return this->check_maximal_repeat(iter.node_index, iter.array_index);
             }
         };
 
