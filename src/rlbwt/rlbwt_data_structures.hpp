@@ -20,7 +20,7 @@ namespace stool
         {
 
         public:
-            stool::lcp_on_rlbwt::STNodeChecker *stnc;
+            //stool::lcp_on_rlbwt::STNodeChecker *stnc;
 
             /*
             using CHARVEC = typename RLBWT_STR::char_vec_type;
@@ -54,7 +54,7 @@ namespace stool
                 return (*this->id_to_character_vec)[c];
             }
 
-
+            /*
             bool checkLCPInterval(const RINTERVAL &input)
             {
                 if (this->stnc == nullptr)
@@ -66,6 +66,7 @@ namespace stool
 
                 return this->stnc->check_lcp_interval(intv2.i, intv2.j);
             }
+            */
 
             bool checkMaximalRepeat(uint64_t left, uint64_t right)
             {

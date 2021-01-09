@@ -13,6 +13,7 @@ namespace stool
 {
     namespace bwt
     {
+
         bool load(string &filename, std::vector<uint8_t> &output)
         {
             std::ifstream file;
@@ -35,6 +36,30 @@ namespace stool
 
             return true;
         }
+        /*
+        bool load_bwt(string &filename, int_vector<> &bwt)
+        {
+            std::ifstream file;
+            file.open(filename, std::ios::binary);
+
+            if (!file)
+            {
+                std::cerr << "error reading file " << endl;
+                return false;
+            }
+            file.seekg(0, ios::end);
+            auto n = (unsigned long)file.tellg();
+            file.seekg(0, ios::beg);
+
+            output.resize(n / sizeof(char));
+
+            file.read((char *)&(output)[0], n);
+            file.close();
+            file.clear();
+
+            return true;
+        }
+        */
         static uint64_t LF(uint64_t i, int_vector<> &bwt, std::vector<uint64_t> &C, wt_gmr<> &wt)
         {
             uint8_t c = bwt[i];

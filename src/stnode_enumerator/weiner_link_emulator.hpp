@@ -8,6 +8,7 @@
 #include <vector>
 #include <type_traits>
 #include "../rlbwt/range_distinct/light_range_distinct.hpp"
+#include "../debug/stnode_checker.hpp"
 
 namespace stool
 {
@@ -21,7 +22,7 @@ namespace stool
         {
             using RINTERVAL = RInterval<INDEX_SIZE>;
             using CHAR = typename RLBWTDS::CHAR;
-
+            stool::lcp_on_rlbwt::STNodeChecker *stnc;
         public:
             std::vector<std::vector<RINTERVAL>> childrenVec;
             std::vector<std::vector<uint8_t>> edgeCharVec;
@@ -151,7 +152,7 @@ namespace stool
                 }
                 this->fit();
 #if DEBUG
-                if (this->_RLBWTDS->stnc != nullptr)
+                if (this->stnc != nullptr)
                 {
                     this->verify_next_lcp_interval(node.first, node.second);
                 }
@@ -186,7 +187,7 @@ namespace stool
                 this->fit();
 
 #if DEBUG
-                if (this->_RLBWTDS->stnc != nullptr && this->checker_on)
+                if (this->stnc != nullptr && this->checker_on)
                 {
                     uint64_t left = this->_RLBWTDS->get_lpos(node.beginIndex) + node.beginDiff;
                     uint64_t right = this->_RLBWTDS->get_lpos(node.endIndex) + node.endDiff;
@@ -361,15 +362,15 @@ namespace stool
                 LCPInterval<uint64_t> lcpIntv;
                 lcpIntv.i = left;
                 lcpIntv.j = right;
-                assert(this->_RLBWTDS->stnc != nullptr);
-                lcpIntv.lcp = this->_RLBWTDS->stnc->get_lcp() - 1;
+                assert(this->stnc != nullptr);
+                lcpIntv.lcp = this->stnc->get_lcp() - 1;
 
-                if (this->_RLBWTDS->stnc != nullptr)
+                if (this->stnc != nullptr)
                 {
-                    uint64_t lcp = this->_RLBWTDS->stnc->get_lcp();
+                    uint64_t lcp = this->stnc->get_lcp();
                     auto wlinks = createNextWeinerLinkNodes(lcp);
 
-                    this->_RLBWTDS->stnc->check_weiner_links(left, right, wlinks);
+                    this->stnc->check_weiner_links(left, right, wlinks);
                 }
             }
 #endif
@@ -390,10 +391,12 @@ namespace stool
                         this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);
                         std::cout << std::endl;
                     }
-                    if (this->_RLBWTDS->stnc != nullptr && this->checker_on)
+                    /*
+                    if (this->stnc != nullptr && this->checker_on)
                     {
                         assert(this->_RLBWTDS->checkLCPInterval(this->stnodeVec[c]) == (explicitChildrenCount > 0));
                     }
+                    */
 #endif
                     if (explicitChildrenCount > 0)
                     {

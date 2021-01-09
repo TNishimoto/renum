@@ -148,7 +148,7 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
     FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
     RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
     ds.set_id_to_character_vec(&bwtAnalysis.id_to_character_vec);
-    ds.stnc = &stnc;
+    //ds.stnc = &stnc;
 
     /*
     std::vector<uint8_t> plain_bwt;
@@ -209,16 +209,22 @@ void computeLCPIntervals_beller(std::string inputFile)
     using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
     //string text = "";
     std::cout << "Loading : " << inputFile << std::endl;
-    std::vector<uint8_t> text = stool::load_text_from_file(inputFile, true);
-    vector<INDEX> sa = stool::construct_suffix_array(text);
+
+    stool::lcp_on_rlbwt::STNodeChecker stnc;
+    stnc.initialize(inputFile);
+
+    std::vector<uint8_t> bwt2;
+    stool::bwt::load(inputFile, bwt2);
     sdsl::int_vector<> bwt;
-    stool::FMIndex::constructBWT(text, sa, bwt);
+    bwt.width(8);
+    bwt.resize(bwt2.size());
+    for(uint64_t i=0;i<bwt2.size();i++){
+        bwt[i] = bwt2[i];
+    }
 
     sdsl::bit_vector bv;
     bv.resize(bwt.size());
     bool b = true;
-    //std::cout << bwt.size() << std::endl;
-    //std::cout << "BV: ";
     for (uint64_t i = 0; i < bwt.size(); i++)
     {
         if (i > 0 && bwt[i] != bwt[i - 1])
@@ -246,7 +252,7 @@ void computeLCPIntervals_beller(std::string inputFile)
     wsearch.initialize(&range, &bwt_bit_rank1, bwt.size());
     stool::lcp_on_rlbwt::SingleSTNodeTraverser<uint32_t, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<uint32_t>> traverser;
     traverser.initialize(&wsearch, true);
-    auto test_Intervals = LCPIntervalTest::testLCPIntervals(traverser, nullptr);
+    auto test_Intervals = LCPIntervalTest::testLCPIntervals(traverser, &stnc);
 }
 
 int main(int argc, char *argv[])
@@ -282,7 +288,7 @@ int main(int argc, char *argv[])
         std::cout << inputFile << " cannot open." << std::endl;
         return -1;
     }
-    if (mode == "E")
+    if (mode == "Beller")
     {
         computeLCPIntervals_beller(inputFile);
     }
