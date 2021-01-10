@@ -206,7 +206,7 @@ namespace stool
                 }
             }
 
-            void computeNextSTNodes(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t st_index)
+            void computeNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint64_t st_index)
             {
                 uint64_t st_left_index = prevSortedSTChildren->get_stnode_left_index(st_index);
                 uint64_t st_right_index = prevSortedSTChildren->get_stnode_right_index(st_index);
@@ -287,7 +287,7 @@ namespace stool
 #endif
                 }
             }
-            uint64_t countNextSTNodes(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t st_index)
+            uint64_t countNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint64_t st_index)
             {
                 uint64_t st_left_index = prevSortedSTChildren->get_stnode_left_index(st_index);
                 uint64_t st_right_index = prevSortedSTChildren->get_stnode_right_index(st_index);
@@ -335,7 +335,7 @@ namespace stool
 
                 return k;
             }
-            uint64_t countNextSTNodes(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            uint64_t countNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em)
             {
                 assert(this->next_node_count == 0);
                 assert(this->next_child_count == 0);
@@ -349,7 +349,7 @@ namespace stool
                 return k;
             }
 
-            void computeNextSTNodes(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            void computeNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em)
             {
                 assert(this->next_node_count == 0);
                 assert(this->next_child_count == 0);

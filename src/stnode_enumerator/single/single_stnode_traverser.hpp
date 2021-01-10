@@ -41,6 +41,10 @@ namespace stool
 
         public:
             using index_type = INDEX_SIZE;
+            
+            INTERVAL_SEARCH* get_interval_search_deta_structure() const {
+                return this->em;
+            }
 
             bool has_edge_characters() const
             {
@@ -55,7 +59,7 @@ namespace stool
                 this->store_edge_chars = _store_edge_chars;
                 this->lcp = -1;
                 /*
-                this->em = new ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>();
+                this->em = new ExplicitWeinerLinkEmulator<RLBWTDS>();
                 this->em->initialize(__RLBWTDS);
                 */
             }

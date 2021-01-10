@@ -118,57 +118,13 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
     stool::lcp_on_rlbwt::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
 
-    /*
-    sdsl::int_vector<> diff_char_vec;
-    stool::EliasFanoVectorBuilder run_bits;
-    auto bwtAnalysis = stool::rlbwt2::load_RLBWT_from_file(inputFile, diff_char_vec, run_bits);
-    */
-
-    /*
-    stool::WT wt;
-    construct_im(wt, diff_char_vec);
-    */
-   /*
-    std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000 << "[KB]" << std::endl;
-    std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
-    */
-
-    //DEBUG
-    /*
-    if (diff_char_vec.size() < 100)
-    {
-        std::cout << "Run heads: ";
-        for (uint64_t i = 0; i < diff_char_vec.size(); i++)
-        {
-            std::cout << (char)bwtAnalysis.id_to_character_vec[diff_char_vec[i]];
-        }
-        std::cout << std::endl;
-    }
-    */
 
     stool::lcp_on_rlbwt::STNodeChecker stnc;
     stnc.initialize(inputFile);
     
     std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
-    /*
-    stool::EliasFanoVector lpos_vec;
-    lpos_vec.build_from_builder(run_bits);
-    //lpos_vec.build_from_bit_vector(run_bits);
-    using LPOSDS = stool::EliasFanoVector;
-
-    using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-    */
     using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX>;
-    //FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, run_bits, inputFile);
     RDS ds = RDS(&rlbwt, inputFile);
-    //ds.set_id_to_character_vec(&bwtAnalysis.id_to_character_vec);
-    //ds.stnc = &stnc;
-
-    /*
-    std::vector<uint8_t> plain_bwt;
-    stool::bwt::load(inputFile, plain_bwt);
-    std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
-    */
 
     if (mode == "A")
     {
@@ -201,7 +157,7 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
     {
 
         std::cout << "Single Test" << std::endl;
-        using INTERVAL_SEARCH = stool::lcp_on_rlbwt::ExplicitWeinerLinkEmulator<INDEX, RDS>;
+        using INTERVAL_SEARCH = stool::lcp_on_rlbwt::ExplicitWeinerLinkEmulator<RDS>;
         stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX, INTERVAL_SEARCH> stnodeTraverser;
         INTERVAL_SEARCH em;
         em.initialize(&ds);
@@ -218,9 +174,6 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
 void computeLCPIntervals_beller(std::string inputFile)
 {
 
-    using LPOSDS = stool::EliasFanoVector;
-
-    using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
     //string text = "";
     std::cout << "Loading : " << inputFile << std::endl;
 

@@ -68,11 +68,14 @@ namespace stool
             {
                 return traverser->get_child_right_boundary(*this, ith_child);
             }
-            
+
             INDEX_SIZE get_edge_character(uint64_t ith_child) const
             {
                 return traverser->get_edge_character(*this, ith_child);
-
+            }
+            bool is_maximal_repeat() const
+            {
+                return traverser->check_maximal_repeat(*this);
             }
             /*
                 INDEX_SIZE get_lcp() const {
@@ -116,6 +119,41 @@ namespace stool
                 ++(*this);
                 return *this;
             }
+            stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> compute_weiner_links()
+            {
+                std::pair<INDEX_SIZE, INDEX_SIZE> node;
+                node.first = this->get_left();
+                node.second = this->get_right();
+
+                std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> children;
+                std::vector<CHAR> edgeChars;
+                std::vector<CHAR> output_chars;
+
+                uint64_t child_count = this->get_children_count();
+                //uint64_t depth = it.get_depth();
+                for (uint64_t i = 0; i < child_count; i++)
+                {
+                    uint64_t left = this->get_child_left_boundary(i);
+                    uint64_t right = this->get_child_right_boundary(i);
+                    children.push_back(std::pair<INDEX_SIZE, INDEX_SIZE>(left, right));
+                    char c = this->get_edge_character(i);
+                    edgeChars.push_back(c);
+                }
+                auto em = traverser->get_interval_search_deta_structure();
+                if (traverser->has_edge_characters())
+                {
+                    em->executeWeinerLinkSearch(node, children, &edgeChars, output_chars);
+                }
+                else
+                {
+                    em->executeWeinerLinkSearch(node, children, nullptr, output_chars);
+                }
+
+                stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> r;
+                WeinerLinkCommonFunctions::output(*em, traverser->has_edge_characters(), r);
+
+                return r;
+            }
             bool operator!=(const STNodeIterator &rhs) const
             {
                 return this->node_index != rhs.node_index || this->child_index != rhs.child_index;
@@ -124,32 +162,33 @@ namespace stool
             {
                 std::cout << "[" << this->get_left() << ", " << this->get_right() << "]" << std::flush;
                 uint64_t w = this->get_children_count();
-                for(uint64_t i=0;i<w;i++){
+                for (uint64_t i = 0; i < w; i++)
+                {
                     uint64_t left = this->get_child_left_boundary(i);
                     uint64_t right = this->get_child_right_boundary(i);
-                    if(traverser->has_edge_characters()){
+                    if (traverser->has_edge_characters())
+                    {
                         uint8_t c = this->get_edge_character(i);
                         string charStr = c == 0 ? "$(0)" : std::string(1, c);
-                    std::cout << "(" << left << ", " << right << ", " << charStr << ")" << std::flush;
-                    }else{
-                    std::cout << "(" << left << ", " << right << ")" << std::flush;
-
+                        std::cout << "(" << left << ", " << right << ", " << charStr << ")" << std::flush;
                     }
-
+                    else
+                    {
+                        std::cout << "(" << left << ", " << right << ")" << std::flush;
+                    }
                 }
             }
         };
         template <typename TRAVERSER>
         class STDepthIterator
         {
-            private:
+        private:
             using INDEX_SIZE = typename TRAVERSER::index_type;
 
             TRAVERSER *traverser;
             INDEX_SIZE depth;
 
         public:
-
             STDepthIterator() = default;
 
             STDepthIterator(TRAVERSER *_traverser, bool is_start) : traverser(_traverser)
@@ -164,7 +203,8 @@ namespace stool
                     this->depth = std::numeric_limits<INDEX_SIZE>::max();
                 }
             }
-            uint64_t get_depth() const {
+            uint64_t get_depth() const
+            {
                 return this->depth;
             }
             uint64_t child_count() const

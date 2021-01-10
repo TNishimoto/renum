@@ -11,6 +11,8 @@
 
 #include <type_traits>
 #include "../weiner_link_emulator.hpp"
+#include "../weiner_link_search.hpp"
+
 #include "../../../module/stool/src/io.h"
 #include "../stnode_vector.hpp"
 
@@ -217,7 +219,7 @@ namespace stool
                 return nextL;
             }
 
-            void computeNextSTNodes(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, STNodeVector<INDEX_SIZE> &tmp)
+            void computeNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em, STNodeVector<INDEX_SIZE> &tmp)
             {
                 tmp.clear();
                 RINTERVAL intv;
@@ -246,14 +248,12 @@ namespace stool
                     {
                         em.executeWeinerLinkSearch(output_node, output_children, nullptr, output_chars);
                     }
-                    for (auto &c : output_chars)
-                    {
-                        tmp.import(em, c, this->store_edge_chars);
-                    }
+                        WeinerLinkCommonFunctions::output(em, this->store_edge_chars, tmp);
+
                 }
             }
 
-            std::pair<uint64_t, uint64_t> countNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            std::pair<uint64_t, uint64_t> countNextLCPIntervalSet(ExplicitWeinerLinkEmulator<RLBWTDS> &em)
             {
                 STNodeVector<INDEX_SIZE> tmp;
                 this->computeNextSTNodes(em, tmp);

@@ -8,7 +8,7 @@
 #include <vector>
 #include <type_traits>
 #include "../rlbwt/rinterval.hpp"
-
+#include "./stnode_vector.hpp"
 namespace stool
 {
     namespace lcp_on_rlbwt
@@ -27,6 +27,7 @@ namespace stool
             std::vector<uint64_t> indexVec;
             std::vector<std::vector<uint8_t>> edgeCharVec;
             using CHAR = uint8_t;
+            using INDEX = INDEX_SIZE;
 
             std::vector<bool> stnodeOccFlagArray;
 
@@ -63,11 +64,11 @@ namespace stool
                 this->strSize = _strSize;
             }
 
-            uint64_t get_input_text_length()
+            uint64_t get_input_text_length() const
             {
                 return this->searcher->wt->size();
             }
-            bool checkMaximalRepeat(uint64_t left, uint64_t right)
+            bool checkMaximalRepeat(uint64_t left, uint64_t right) const
             {
 
                 uint64_t k1 = left == 0 ? 0 : (*bwt_bit_rank1)(left);
@@ -77,11 +78,11 @@ namespace stool
                 return !isNotMaximalRepeat;
             }
 
-            uint64_t get_explicit_stnode_count()
+            uint64_t get_explicit_stnode_count() const 
             {
                 return this->indexCount;
             }
-            uint64_t get_explicit_children_count()
+            uint64_t get_explicit_children_count() const
             {
                 uint64_t k = 0;
                 for (uint64_t i = 0; i < this->indexCount; i++)
@@ -144,7 +145,7 @@ namespace stool
                     output_chars.push_back(c);
                 }
             }
-            
+
             std::vector<CharInterval<INDEX_SIZE>> getFirstChildren()
             {
 
@@ -165,9 +166,8 @@ namespace stool
                 });
                 return r;
             }
-            
-            private:
-            
+
+        private:
             bool pushExplicitWeinerInterval(INDEX_SIZE left, INDEX_SIZE right, uint8_t c, uint8_t edgeChar)
             {
                 bool isValid = this->stnodeOccFlagArray[c];
@@ -278,6 +278,66 @@ namespace stool
                         currentVec[count - 1] = currentVec[maxCharIndex];
                         currentVec[maxCharIndex] = tmp2;
                     }
+                }
+            }
+        };
+
+        class WeinerLinkCommonFunctions
+        {
+            public:
+            template <typename EM>
+            static void output(const EM em, uint8_t c, bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
+            {
+                //RINTERVAL copy;
+
+                auto &currentVec = em.childrenVec[c];
+                uint64_t count = currentVec.size();
+
+                uint64_t st_left = UINT64_MAX;
+                uint64_t st_right = 0;
+                std::pair<typename EM::INDEX, typename EM::INDEX> outputInterval;
+
+                for (uint64_t j = 0; j < count; j++)
+                {
+                    typename EM::CHAR edgeChar = em.get_child(c, j, outputInterval);
+                    //uint64_t left = ds->get_fpos(copy.beginIndex, copy.beginDiff);
+                    //uint64_t right = ds->get_fpos(copy.endIndex, copy.endDiff);
+
+                    if (outputInterval.first < st_left)
+                    {
+                        st_left = outputInterval.first;
+                    }
+                    if (outputInterval.second > st_right)
+                    {
+                        st_right = outputInterval.second;
+                    }
+                    if (j == 0)
+                    {
+                        output_vec.childs_vec.push_back(outputInterval.first);
+                        output_vec.first_child_flag_vec.push_back(true);
+
+                        if (_store_edge_chars)
+                        {
+                            output_vec.edge_char_vec.push_back(0);
+                        }
+                    }
+                    output_vec.childs_vec.push_back(outputInterval.second);
+                    output_vec.first_child_flag_vec.push_back(false);
+                    if (_store_edge_chars)
+                    {
+                        output_vec.edge_char_vec.push_back(edgeChar);
+                    }
+                }
+                bool isMaximalRepeat = em.checkMaximalRepeat(st_left, st_right);
+
+                output_vec.maximal_repeat_check_vec.push_back(isMaximalRepeat);
+            }
+            template <typename EM>
+            static void output(const EM em, bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
+            {
+                for(uint64_t i=0;i<em.indexCount;i++){
+                    typename EM::CHAR c = em.indexVec[i];
+                    output(em, c, _store_edge_chars, output_vec);
                 }
             }
         };

@@ -134,7 +134,7 @@ namespace stool
                 this->child_width_vec.push_back(childnode_count);
             }
 
-            void add(uint8_t c, uint64_t count, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            void add(uint8_t c, uint64_t count, ExplicitWeinerLinkEmulator<RLBWTDS> &em)
             {
                 RINTERVAL copy;
 
@@ -278,7 +278,7 @@ namespace stool
                 this->maximal_repeat_check_vec.clear();
                 this->first_child_flag_vec.clear();
             }
-            void first_compute(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em)
+            void first_compute(ExplicitWeinerLinkEmulator<RLBWTDS> &em)
             {
                 this->first_child_flag_vec.clear();
 
@@ -295,7 +295,7 @@ namespace stool
                 this->call_st_node(r.size());
                 this->call_level_nodes(1, r.size());
             }
-            void computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t limit)
+            void computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint64_t limit)
             {
                 if (this->child_width_vec.size() == 0)
                 {
@@ -341,7 +341,7 @@ namespace stool
                 return L;
             }
 
-            uint64_t computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t index, uint64_t level_index)
+            uint64_t computeNextLCPIntervalSet(ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint64_t index, uint64_t level_index)
             {
                 assert(!this->processed_flag_vec[level_index]);
                 RINTERVAL intv;

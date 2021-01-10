@@ -10,6 +10,7 @@
 #include "../rlbwt/range_distinct/light_range_distinct.hpp"
 #include "../debug/stnode_checker.hpp"
 #include "../rlbwt/rle.hpp"
+#include "./stnode_vector.hpp"
 
 namespace stool
 {
@@ -18,13 +19,16 @@ namespace stool
         /*
             This is a data structure to ...
         */
-        template <typename INDEX_SIZE, typename RLBWTDS>
+        template <typename RLBWTDS>
         class ExplicitWeinerLinkEmulator
         {
-            using RINTERVAL = RInterval<INDEX_SIZE>;
-            using CHAR = typename RLBWTDS::CHAR;
+
             stool::lcp_on_rlbwt::STNodeChecker *stnc;
         public:
+            using CHAR = typename RLBWTDS::CHAR;
+            using INDEX = typename RLBWTDS::INDEX;
+            using RINTERVAL = RInterval<INDEX>;
+
             std::vector<std::vector<RINTERVAL>> childrenVec;
             std::vector<std::vector<uint8_t>> edgeCharVec;
 
@@ -42,12 +46,12 @@ namespace stool
             // For range distinct
             std::vector<uint8_t> charTmpVec;
             vector<RINTERVAL> rIntervalTmpVec;
-            std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
+            std::vector<CharInterval<INDEX>> charIntervalTmpVec;
 
             RLBWTDS *_RLBWTDS;
             stool::lcp_on_rlbwt::RLE<CHAR> *rlbwt;
-            LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> lightRangeSearcher;
-            SuccinctRangeDistinctDataStructure<INDEX_SIZE> heavyRangeSearcher;
+            LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX> lightRangeSearcher;
+            SuccinctRangeDistinctDataStructure<INDEX> heavyRangeSearcher;
             uint64_t get_input_text_length() const
             {
                 return this->rlbwt->str_size();
@@ -81,11 +85,11 @@ namespace stool
                 lightRangeSearcher.preprocess(head_chars);
                 heavyRangeSearcher.initialize(wt, lastChar);
             }
-            uint64_t get_explicit_stnode_count()
+            uint64_t get_explicit_stnode_count() const 
             {
                 return this->indexCount;
             }
-            uint64_t get_explicit_children_count()
+            uint64_t get_explicit_children_count() const
             {
                 uint64_t k = 0;
                 for (uint64_t i = 0; i < this->indexCount; i++)
@@ -109,7 +113,7 @@ namespace stool
                 indexCount = 0;
                 explicitChildCount = 0;
             }
-            uint8_t get_child(uint8_t c, uint64_t index, RINTERVAL &output)
+            uint8_t get_child(uint8_t c, uint64_t index, RINTERVAL &output) const
             {
                 auto &it = this->childrenVec[c][index];
                 uint64_t left = this->_RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
@@ -117,7 +121,7 @@ namespace stool
                 this->_RLBWTDS->to_rinterval(left, right, output);
                 return this->edgeCharVec[c][index];
             }
-            uint8_t get_child(uint8_t c, uint64_t index, std::pair<INDEX_SIZE, INDEX_SIZE> &output)
+            uint8_t get_child(uint8_t c, uint64_t index, std::pair<INDEX, INDEX> &output) const
             {
                 auto &it = this->childrenVec[c][index];
                 uint64_t left = this->_RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
@@ -126,13 +130,58 @@ namespace stool
                 output.second = right;
                 return this->edgeCharVec[c][index];
             }
-            bool checkMaximalRepeat(uint64_t left, uint64_t right)
+            bool checkMaximalRepeat(uint64_t left, uint64_t right) const
             {
                 return this->_RLBWTDS->checkMaximalRepeat(left, right);
             }
 
-            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node,
-                                         std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
+            void output(uint8_t c, bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
+            {
+                //RINTERVAL copy;
+                
+                auto &currentVec = this->childrenVec[c];
+                uint64_t count = currentVec.size();
+
+                uint64_t st_left = UINT64_MAX;
+                uint64_t st_right = 0;
+                std::pair<INDEX, INDEX> outputInterval;
+
+                for (uint64_t j = 0; j < count; j++)
+                {
+                    CHAR edgeChar = this->get_child(c, j, outputInterval);
+                    //uint64_t left = ds->get_fpos(copy.beginIndex, copy.beginDiff);
+                    //uint64_t right = ds->get_fpos(copy.endIndex, copy.endDiff);
+
+                    if (outputInterval.first < st_left)
+                    {
+                        st_left = outputInterval.first;
+                    }
+                    if (outputInterval.second > st_right)
+                    {
+                        st_right = outputInterval.second;
+                    }
+                    if (j == 0)
+                    {
+                        output_vec.childs_vec.push_back(outputInterval.first);
+                        output_vec.first_child_flag_vec.push_back(true);
+                        if (_store_edge_chars)
+                        {
+                            output_vec.edge_char_vec.push_back(0);
+                        }
+                    }
+                    output_vec.childs_vec.push_back(outputInterval.second);
+                    output_vec.first_child_flag_vec.push_back(false);
+                    if (_store_edge_chars)
+                    {
+                        output_vec.edge_char_vec.push_back(edgeChar);
+                    }
+                }
+                bool isMaximalRepeat = this->checkMaximalRepeat(st_left, st_right);
+
+                output_vec.maximal_repeat_check_vec.push_back(isMaximalRepeat);
+            }
+            void executeWeinerLinkSearch(std::pair<INDEX, INDEX> &node,
+                                         std::vector<std::pair<INDEX, INDEX>> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
             {
                 this->clear();
                 RINTERVAL intv;
@@ -209,9 +258,9 @@ namespace stool
                 }
             }
 
-            std::vector<CharInterval<INDEX_SIZE>> getFirstChildren()
+            std::vector<CharInterval<INDEX>> getFirstChildren()
             {
-                std::vector<CharInterval<INDEX_SIZE>> r;
+                std::vector<CharInterval<INDEX>> r;
                 uint64_t count = this->heavyRangeSearcher.range_distinct(0, this->rlbwt->rle_size() - 1, this->charIntervalTmpVec);
                 //r.resize(count - 1);
 
@@ -222,9 +271,9 @@ namespace stool
                     uint64_t run = this->rlbwt->get_run(it.j) - 1;
                     uint64_t i = this->_RLBWTDS->get_fpos(it.i, 0);
                     uint64_t j = this->_RLBWTDS->get_fpos(it.j, run);
-                    r.push_back(CharInterval<INDEX_SIZE>(i, j, it.c));
+                    r.push_back(CharInterval<INDEX>(i, j, it.c));
                 }
-                sort(r.begin(), r.end(), [&](const CharInterval<INDEX_SIZE> &lhs, const CharInterval<INDEX_SIZE> &rhs) {
+                sort(r.begin(), r.end(), [&](const CharInterval<INDEX> &lhs, const CharInterval<INDEX> &rhs) {
                     return lhs.c < rhs.c;
                 });
                 return r;
@@ -291,12 +340,12 @@ namespace stool
                 }
             }
 #if DEBUG
-            bool check(const RInterval<INDEX_SIZE> &range)
+            bool check(const RInterval<INDEX> &range)
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
 
-                std::vector<CharInterval<INDEX_SIZE>> DEBUGcharIntervalTmpVec1;
-                std::vector<CharInterval<INDEX_SIZE>> DEBUGcharIntervalTmpVec2;
+                std::vector<CharInterval<INDEX>> DEBUGcharIntervalTmpVec1;
+                std::vector<CharInterval<INDEX>> DEBUGcharIntervalTmpVec2;
                 DEBUGcharIntervalTmpVec1.resize(CHARMAX);
                 DEBUGcharIntervalTmpVec2.resize(CHARMAX);
 
@@ -317,7 +366,7 @@ namespace stool
                 return true;
             }
 #endif
-            uint64_t range_distinct(const RInterval<INDEX_SIZE> &range)
+            uint64_t range_distinct(const RInterval<INDEX> &range)
             {
                 uint64_t count = 0;
                 if (range.endIndex - range.beginIndex <= range_distinct_threshold)
@@ -334,13 +383,13 @@ namespace stool
                 for (uint64_t x = 0; x < count; x++)
                 {
                     auto &it = this->charIntervalTmpVec[x];
-                    INDEX_SIZE cBeginIndex = it.i;
-                    INDEX_SIZE cEndIndex = it.j;
-                    INDEX_SIZE cBeginDiff = cBeginIndex == range.beginIndex ? range.beginDiff : 0;
+                    INDEX cBeginIndex = it.i;
+                    INDEX cEndIndex = it.j;
+                    INDEX cBeginDiff = cBeginIndex == range.beginIndex ? range.beginDiff : 0;
                     uint64_t end_run = this->rlbwt->get_run(cEndIndex);
-                    INDEX_SIZE cEndDiff = cEndIndex == range.endIndex ? range.endDiff : end_run - 1;
+                    INDEX cEndDiff = cEndIndex == range.endIndex ? range.endDiff : end_run - 1;
 
-                    RInterval<INDEX_SIZE> cInterval;
+                    RInterval<INDEX> cInterval;
                     cInterval.beginIndex = cBeginIndex;
                     cInterval.beginDiff = cBeginDiff;
                     cInterval.endIndex = cEndIndex;

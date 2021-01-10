@@ -33,7 +33,7 @@ namespace stool
 
             //std::vector<std::vector<STNODE_SUB_TRAVERSER *>> new_trees;
 
-            std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
+            std::vector<ExplicitWeinerLinkEmulator<RLBWTDS>> ems;
             uint64_t minimum_child_count = 1000;
             uint64_t sub_tree_limit_size = 2000;
 
@@ -51,6 +51,11 @@ namespace stool
         public:
             RLBWTDS *_RLBWTDS;
             using index_type = INDEX_SIZE;
+            ExplicitWeinerLinkEmulator<RLBWTDS> *get_interval_search_deta_structure() const
+            {
+                return &(this->ems[0]);
+            }
+
             bool has_edge_characters() const
             {
                 return this->store_edge_chars;
@@ -93,7 +98,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    ems.push_back(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>());
+                    ems.push_back(ExplicitWeinerLinkEmulator<RLBWTDS>());
                     ems[ems.size() - 1].initialize(&__RLBWTDS);
                 }
             }
@@ -239,7 +244,7 @@ namespace stool
                     }
                     else
                     {
-                        SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> tmp_traverser;
+                        SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkEmulator<RLBWTDS>> tmp_traverser;
                         tmp_traverser.initialize(&ems[0], this->store_edge_chars);
                         tmp_traverser.succ();
                         STNodeVector<INDEX_SIZE> tmp;
@@ -517,7 +522,7 @@ namespace stool
                 CHAR c = this->sub_trees[array_index]->get_edge_character(child_index);
                 return c;
             }
-            
+
             INDEX_SIZE get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
             {
                 return this->get_edge_character(iter.child_index + ith_child, iter.array_index);

@@ -143,9 +143,9 @@ namespace stool
                 }
                 return std::pair<uint64_t, uint64_t>(node_count, child_count - node_count);
             }
-
+            /*
             template <typename RLBWTDS>
-            void add(uint8_t c, uint64_t count, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, bool _store_edge_chars)
+            void add(uint8_t c, uint64_t count, ExplicitWeinerLinkEmulator<RLBWTDS> &em, bool _store_edge_chars)
             {
                 //RINTERVAL copy;
                 uint64_t st_left = UINT64_MAX;
@@ -186,13 +186,16 @@ namespace stool
 
                 this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
             }
+            */
+           /*
             template <typename RLBWTDS>
-            void import(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint8_t c, bool _store_edge_chars)
+            void import(ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint8_t c, bool _store_edge_chars)
             {
                 auto &currentVec = em.childrenVec[c];
                 uint64_t count = currentVec.size();
                 this->add(c, count, em, _store_edge_chars);
             }
+            */
 
             void print() const
             {

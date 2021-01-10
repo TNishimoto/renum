@@ -52,7 +52,7 @@ namespace stool
 
         template <typename INDEX_SIZE, typename RLBWTDS>
         void parallel_succ_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
-                                      std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t limit)
+                                      std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint64_t limit)
         {
             STNodeVector<INDEX_SIZE> tmp;
             //tmp.store_edge_chars = trees[0]->has_edge_characters();
@@ -81,7 +81,7 @@ namespace stool
 
         template <typename INDEX_SIZE, typename RLBWTDS>
         void parallel_count_stnodes(std::vector<STNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
-                                    std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS> &em, uint64_t &output_children_count)
+                                    std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint64_t &output_children_count)
         {
             output_children_count = 0;
             uint64_t pos = fst_position;

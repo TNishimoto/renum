@@ -39,8 +39,8 @@ namespace stool
 
             STNodeTraverser<INDEX_SIZE, RLBWTDS> standard_st_traverser;
             FastSTNodeTraverser<INDEX_SIZE, RLBWTDS> fast_st_traverser;
-            SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> single_st_traverser;
-            std::vector<ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>> ems;
+            SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkEmulator<RLBWTDS>> single_st_traverser;
+            std::vector<ExplicitWeinerLinkEmulator<RLBWTDS>> ems;
             bool store_edge_chars = false;
 
             //std::vector<SUCCINCT_STNODE_TRAVERSER *> succinct_sub_trees;
@@ -54,6 +54,13 @@ namespace stool
             uint mode = SINGLE_MODE;
             RLBWTDS *_RLBWTDS;
             stool::lcp_on_rlbwt::RLE<CHAR> *_RLBWT;
+
+            ExplicitWeinerLinkEmulator<RLBWTDS> *get_interval_search_deta_structure() const
+            {
+                ExplicitWeinerLinkEmulator<RLBWTDS>* r = const_cast<ExplicitWeinerLinkEmulator<RLBWTDS>*>(&ems[0]);
+                return r;
+            }
+
 
             bool has_edge_characters() const
             {
@@ -151,7 +158,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    ems.push_back(ExplicitWeinerLinkEmulator<INDEX_SIZE, RLBWTDS>());
+                    ems.push_back(ExplicitWeinerLinkEmulator<RLBWTDS>());
                     ems[ems.size() - 1].initialize(this->_RLBWTDS);
                 }
 
@@ -560,7 +567,7 @@ namespace stool
                 }
             }
 
-            bool check_maximal_repeat(ITERATOR &iter) const
+            bool check_maximal_repeat(const ITERATOR &iter) const
             {
                 if (this->mode == STANDARD_MODE)
                 {

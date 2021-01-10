@@ -55,8 +55,11 @@ add_executable(beller2.out src/main/beller2_main.cpp)
 target_link_libraries(beller2.out fn)
 
 
-add_executable(hyper.out src/main/hyper_main.cpp)
-target_link_libraries(hyper.out fn)
+add_executable(maximal_repeat.out src/main/maximal_repeat_main.cpp)
+target_link_libraries(maximal_repeat.out fn)
+
+add_executable(mus.out src/main/mus_main.cpp)
+target_link_libraries(mus.out fn)
 
 #add_executable(elias_test.out module/stool/src/test/elias_fano_test_main.cpp)
 #target_link_libraries(elias_test.out fn)
