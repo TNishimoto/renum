@@ -258,7 +258,7 @@ namespace stool
                     uint64_t right = this->get_child_right_boundary(L);
                     if (this->store_edge_chars)
                     {
-                        CHAR c = this->get_edge_character(L, false);
+                        CHAR c = this->get_edge_character(L);
                         output_edge_chars.push_back(c);
                         this->edge_char_vec.pop_front();
                     }
@@ -435,21 +435,15 @@ namespace stool
                 assert(child_end_pointer < this->childs_vec.size());
                 return this->childs_vec[child_end_pointer];
             }
-            CHAR get_edge_character(uint64_t child_pointer, bool decode) const
+            CHAR get_edge_character(uint64_t child_pointer) const
             {
                 assert(this->store_edge_chars);
-                if (decode)
-                {
-                    return this->em->decode(this->edge_char_vec[child_pointer]);
-                }
-                else
-                {
                     return this->edge_char_vec[child_pointer];
-                }
+
             }
             INDEX_SIZE get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
             {
-                return this->get_edge_character(iter.child_index + ith_child, true);
+                return this->get_edge_character(iter.child_index + ith_child);
             }
 
             INDEX_SIZE get_child_left_boundary(const ITERATOR &iter, uint64_t ith_child) const

@@ -78,6 +78,7 @@ namespace stool
         public:
             using index_type = INDEX_SIZE;
             RLBWTDS *_RLBWTDS;
+            stool::lcp_on_rlbwt::RLE<CHAR> *rlbwt;
 
             void set_peak(uint64_t _peak)
             {
@@ -121,6 +122,7 @@ namespace stool
             void initialize(uint64_t size, RLBWTDS &__RLBWTDS, bool _store_edge_chars)
             {
                 this->_RLBWTDS = &__RLBWTDS;
+                this->rlbwt = this->_RLBWTDS->get_rlbwt();
 
                 this->thread_count = size;
                 this->store_edge_chars = _store_edge_chars;
@@ -145,8 +147,8 @@ namespace stool
                 for (uint64_t i = 0; i < size; i++)
                 {
                     L = this->get_stnode(L, intv);
-                    uint64_t _left = this->_RLBWTDS->get_lpos(intv.beginIndex) + intv.beginDiff;
-                    uint64_t _right = this->_RLBWTDS->get_lpos(intv.endIndex) + intv.endDiff;
+                    uint64_t _left = this->rlbwt->get_lpos(intv.beginIndex) + intv.beginDiff;
+                    uint64_t _right = this->rlbwt->get_lpos(intv.endIndex) + intv.endDiff;
                     stool::LCPInterval<INDEX_SIZE> newLCPIntv(_left, _right, this->current_lcp);
                     output.push_back(newLCPIntv);
                 }
@@ -170,7 +172,7 @@ namespace stool
                 output.endIndex = this->children_intervals[(R * 4) + 2];
                 output.endDiff = this->children_intervals[(R * 4) + 3];
 
-                assert(output.beginIndex < this->_RLBWTDS->rle_size());
+                assert(output.beginIndex < this->rlbwt->rle_size());
 
                 return R + 1;
             }
@@ -358,7 +360,7 @@ namespace stool
                     {
                         L = this->get_stnode(L, output);
 
-                        auto intv = output.get_lcp_interval(this->current_lcp + i, this->_RLBWTDS->lpos_vec);
+                        auto intv = output.get_lcp_interval(this->current_lcp + i, *this->_RLBWTDS->get_lpos_vec_pointer());
                         std::cout << intv.to_string();
                     }
                     std::cout << std::endl;
@@ -582,13 +584,13 @@ namespace stool
                 uint64_t run = this->children_intervals[child_index * 4];
                 uint64_t diff = this->children_intervals[(child_index * 4) + 1];
 
-                return this->_RLBWTDS->get_lpos(run) + diff;
+                return this->rlbwt->get_lpos(run) + diff;
             }
 
             CHAR get_edge_character(uint64_t child_pointer) const
             {
                 assert(this->store_edge_chars);
-                return this->_RLBWTDS->decode(this->edge_char_vec[child_pointer]);
+                return this->edge_char_vec[child_pointer];
             }
 
             INDEX_SIZE get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
@@ -605,7 +607,7 @@ namespace stool
                 uint64_t run = this->children_intervals[(child_index * 4) + 2];
                 uint64_t diff = this->children_intervals[(child_index * 4) + 3];
 
-                return this->_RLBWTDS->get_lpos(run) + diff;
+                return this->rlbwt->get_lpos(run) + diff;
             }
 
             INDEX_SIZE get_child_right_boundary(const ITERATOR &iter, uint64_t ith_child) const
@@ -621,7 +623,7 @@ namespace stool
             {
                 RINTERVAL output;
                 this->get_stnode(child_index, output);
-                uint64_t _left = this->_RLBWTDS->get_lpos(output.beginIndex) + output.beginDiff;
+                uint64_t _left = this->rlbwt->get_lpos(output.beginIndex) + output.beginDiff;
                 return _left;
             }
 
@@ -633,7 +635,7 @@ namespace stool
             {
                 RINTERVAL output;
                 this->get_stnode(child_index, output);
-                uint64_t _right = this->_RLBWTDS->get_lpos(output.endIndex) + output.endDiff;
+                uint64_t _right = this->rlbwt->get_lpos(output.endIndex) + output.endDiff;
                 return _right;
             }
 

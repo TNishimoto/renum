@@ -515,7 +515,7 @@ namespace stool
             {
                 assert(this->store_edge_chars);
                 CHAR c = this->sub_trees[array_index]->get_edge_character(child_index);
-                return this->_RLBWTDS->decode(c);
+                return c;
             }
             
             INDEX_SIZE get_edge_character(const ITERATOR &iter, uint64_t ith_child) const

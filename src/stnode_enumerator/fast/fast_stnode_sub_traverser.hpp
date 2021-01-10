@@ -33,6 +33,8 @@ namespace stool
             uint64_t parent_current_lcp = 0;
 
             RLBWTDS *_RLBWTDS = nullptr;
+            stool::lcp_on_rlbwt::RLE<CHAR> *rlbwt;
+
             bool store_edge_chars = false;
 
         public:
@@ -41,6 +43,7 @@ namespace stool
             }
             FastSTNodeSubTraverser(RLBWTDS *__RLBWTDS, bool _store_edge_chars) : _RLBWTDS(__RLBWTDS), store_edge_chars(_store_edge_chars)
             {
+                this->rlbwt = this->_RLBWTDS->get_rlbwt();
             }
             bool has_edge_characters() const {
                 return this->store_edge_chars;
@@ -59,10 +62,10 @@ namespace stool
                     for (uint64_t j = 0; j < tmp.size(); j++)
                     {
                         this->first_child_flag_vec.push_back(j == 0);
-                        uint64_t lb = this->_RLBWTDS->get_lindex_containing_the_position(tmp[j].i);
-                        uint64_t ld = tmp[j].i - this->_RLBWTDS->get_lpos(lb);
-                        uint64_t rb = this->_RLBWTDS->get_lindex_containing_the_position(tmp[j].j);
-                        uint64_t rd = tmp[j].j - this->_RLBWTDS->get_lpos(rb);
+                        uint64_t lb = this->rlbwt->get_lindex_containing_the_position(tmp[j].i);
+                        uint64_t ld = tmp[j].i - this->rlbwt->get_lpos(lb);
+                        uint64_t rb = this->rlbwt->get_lindex_containing_the_position(tmp[j].j);
+                        uint64_t rd = tmp[j].j - this->rlbwt->get_lpos(rb);
                         this->childs_vec.push_back(lb);
                         this->childs_vec.push_back(ld);
                         this->childs_vec.push_back(rb);
@@ -410,7 +413,7 @@ namespace stool
                     {
                         L = this->read_st_node(L, output);
 
-                        auto intv = output.get_lcp_interval(this->current_lcp + i, this->_RLBWTDS->lpos_vec);
+                        auto intv = output.get_lcp_interval(this->current_lcp + i, *this->_RLBWTDS->get_lpos_vec_pointer());
                         std::cout << intv.to_string();
                     }
                     std::cout << std::endl;
@@ -423,7 +426,7 @@ namespace stool
                 for (uint64_t i = 0; i < this->current_node_count(); i++)
                 {
                     L = read_st_node(L, intv);
-                    intv.print2(this->_RLBWTDS->lpos_vec);
+                    intv.print2(*this->_RLBWTDS->get_lpos_vec_pointer());
                 }
 
                 std::cout << std::endl;
@@ -458,9 +461,9 @@ namespace stool
 
                 this->maximal_repeat_check_vec.swap(item.maximal_repeat_check_vec);
 
-                auto tmp3 = this->_RLBWTDS;
-                this->_RLBWTDS = item._RLBWTDS;
-                item._RLBWTDS = tmp3;
+                std::swap(this->_RLBWTDS, item._RLBWTDS);
+                std::swap(this->rlbwt, item.rlbwt);
+
             }
         public:
             bool is_empty()

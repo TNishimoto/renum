@@ -118,9 +118,6 @@ namespace stool
                 return currentVec.size();
             }
 
-            CHAR decode(CHAR c) const {
-                return c;
-            }
             void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
             {
                 this->clear();

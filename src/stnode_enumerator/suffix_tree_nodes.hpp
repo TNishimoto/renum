@@ -53,6 +53,8 @@ namespace stool
             bool use_fast_mode = true;
             uint mode = SINGLE_MODE;
             RLBWTDS *_RLBWTDS;
+            stool::lcp_on_rlbwt::RLE<CHAR> *_RLBWT;
+
             bool has_edge_characters() const
             {
                 return this->store_edge_chars;
@@ -144,6 +146,7 @@ namespace stool
             void initialize(uint64_t _thread_count, RLBWTDS &_RLBWTDS, bool _store_edge_chars)
             {
                 this->_RLBWTDS = &_RLBWTDS;
+                _RLBWT = this->_RLBWTDS->get_rlbwt();
                 this->store_edge_chars = _store_edge_chars;
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
@@ -242,7 +245,7 @@ namespace stool
 
             uint64_t get_input_text_length()
             {
-                return this->_RLBWTDS->str_size();
+                return this->_RLBWT->str_size();
             }
 
             bool succ()
@@ -252,7 +255,7 @@ namespace stool
 
 #if DEBUG
 
-                if (this->_RLBWTDS->str_size() < 100)
+                if (this->_RLBWT->str_size() < 100)
                 {
                     std::cout << "Start Enumerate" << std::endl;
                     //this->print();
@@ -305,7 +308,7 @@ namespace stool
 
 #if DEBUG
 
-                if (this->_RLBWTDS->str_size() < 100)
+                if (this->_RLBWT->str_size() < 100)
                 {
                     std::cout << "Enumerate END" << std::endl;
                     this->print();
@@ -375,7 +378,7 @@ namespace stool
                 std::cout << "LCP = " << this->current_lcp();
                 std::cout << ", Peak = " << this->peak_child_count;
                 std::cout << ", Current = " << this->child_count();
-                std::cout << ", current_total = " << (this->_RLBWTDS->str_size() - this->total_counter);
+                std::cout << ", current_total = " << (this->_RLBWT->str_size() - this->total_counter);
                 std::cout << ", Peak = " << this->debug_peak_memory / 1000 << "[KB]" << std::endl;
                 //std::cout << "Peak = " << debug_peak_counter << "[KB]" << std::endl;
             }
@@ -446,7 +449,7 @@ namespace stool
                 }
                 else if (this->mode == SINGLE_MODE)
                 {
-                    return this->single_st_traverser.get_edge_character(iter.child_index + ith_child, true);
+                    return this->single_st_traverser.get_edge_character(iter.child_index + ith_child);
                 }
                 else
                 {

@@ -24,6 +24,8 @@
 #include "../stnode_enumerator/application.hpp"
 #include "../stnode_enumerator/rlcp_interval_enumerator.hpp"
 #include "../rlbwt/io.hpp"
+#include "../rlbwt/rle.hpp"
+
 #include "../rlbwt/fpos_data_structure.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
 #include "../main/common.hpp"
@@ -112,17 +114,27 @@ public:
 template <typename INDEX>
 void testLCPIntervals(std::string inputFile, string mode, int thread_num)
 {
+    stool::rlbwt2::BWTAnalysisResult analysisResult;
+    stool::lcp_on_rlbwt::RLE<uint8_t> rlbwt;
+    rlbwt.load(inputFile, analysisResult);
 
+    /*
     sdsl::int_vector<> diff_char_vec;
     stool::EliasFanoVectorBuilder run_bits;
     auto bwtAnalysis = stool::rlbwt2::load_RLBWT_from_file(inputFile, diff_char_vec, run_bits);
+    */
+
+    /*
     stool::WT wt;
     construct_im(wt, diff_char_vec);
-
+    */
+   /*
     std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000 << "[KB]" << std::endl;
     std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
+    */
 
     //DEBUG
+    /*
     if (diff_char_vec.size() < 100)
     {
         std::cout << "Run heads: ";
@@ -132,22 +144,24 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
         }
         std::cout << std::endl;
     }
+    */
 
     stool::lcp_on_rlbwt::STNodeChecker stnc;
     stnc.initialize(inputFile);
-
+    
     std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
-
+    /*
     stool::EliasFanoVector lpos_vec;
     lpos_vec.build_from_builder(run_bits);
     //lpos_vec.build_from_bit_vector(run_bits);
     using LPOSDS = stool::EliasFanoVector;
 
     using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-    using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
-    FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
-    RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
-    ds.set_id_to_character_vec(&bwtAnalysis.id_to_character_vec);
+    */
+    using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX>;
+    //FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, run_bits, inputFile);
+    RDS ds = RDS(&rlbwt, inputFile);
+    //ds.set_id_to_character_vec(&bwtAnalysis.id_to_character_vec);
     //ds.stnc = &stnc;
 
     /*

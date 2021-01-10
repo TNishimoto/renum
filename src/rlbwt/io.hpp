@@ -33,14 +33,19 @@ namespace stool
             uint64_t alphabet_count = 0;
 
             std::vector<uint64_t> character_count_vec;
+            /*
             std::vector<uint64_t> character_to_id_vec;
             std::vector<uint64_t> id_to_character_vec;
+            */
 
             BWTAnalysisResult()
             {
                 uint64_t size = UINT8_MAX + 1;
+                
                 this->character_count_vec.resize(size, 0);
+                /*
                 this->character_to_id_vec.resize(size, 0);
+                */
             }
             uint64_t character_bit_size()
             {
@@ -110,7 +115,7 @@ namespace stool
                         this->alphabet_count++;
                     }
                 }
-
+                /*
                 uint64_t xp = 0;
                 for (uint64_t i = 0; i < this->character_count_vec.size(); i++)
                 {
@@ -128,6 +133,7 @@ namespace stool
                         this->character_to_id_vec[i] = UINT64_MAX;
                     }
                 }
+                */
             }
             void print()
             {
@@ -140,7 +146,7 @@ namespace stool
                 uint64_t x = run_count * (stool::Log::log2(str_size / run_count));
 
                 std::cout << "r log (n/r) = " << x << std::endl;
-
+                /*
                 for (uint64_t i = 0; i < this->id_to_character_vec.size(); i++)
                 {
                     if(this->id_to_character_vec[i] != UINT64_MAX){
@@ -148,14 +154,16 @@ namespace stool
                     }
                 }
                 std::cout << std::endl;
+                */
 
                 std::cout << "_______________________________________________________" << std::endl;
                 std::cout << "\033[39m" << std::endl;
             }
         };
-
+        /*
         static BWTAnalysisResult load_RLBWT_from_file(std::string filename, sdsl::int_vector<> &diff_char_vec, EliasFanoVectorBuilder &run_bits)
         {
+
             diff_char_vec.width(8);
 
             std::ifstream inp;
@@ -169,12 +177,6 @@ namespace stool
             //diff_char_vec.width(analysisResult.character_bit_size());
 
             diff_char_vec.resize(analysisResult.run_count);
-            /*
-            if (analysisResult.min_char != 0)
-            {
-                std::cout << "We replace the character " << (int)analysisResult.min_char << "(" << (char)analysisResult.min_char << ") with 0" << std::endl;
-            }
-            */
             run_bits.initialize(analysisResult.str_size + 1, analysisResult.run_count + 1);
 
             inp.open(filename, std::ios::binary);
@@ -189,6 +191,7 @@ namespace stool
             uint8_t prevChar = 255;
             uint64_t x = 0;
             uint64_t currentRunP = 0;
+
             while (true)
             {
                 bool b = stool::FileReader::read(inp, buffer, bufferSize, textSize);
@@ -199,25 +202,12 @@ namespace stool
 
                 for (uint64_t i = 0; i < buffer.size(); i++)
                 {
-                    //assert(buffer[i] >= 0);
                     uint8_t c = (uint8_t)buffer[i];
-                    /*
-                    if (c == analysisResult.min_char)
-                    {
-                        c = 0;
-                    }
-                    */
                     if (prevChar != c || x == 0)
                     {
                         run_bits.push_bit(true);
                         run_bits.push_bit(false);
-
-                        //run_bits.push_back(1);
-                        //run_bits.push_back(0);
-
-                        diff_char_vec[currentRunP++] = analysisResult.character_to_id_vec[c];
-                        //diff_char_vec[currentRunP++] = c;
-
+                        diff_char_vec[currentRunP++] = c;
                         prevChar = c;
                     }
                     else
@@ -237,6 +227,7 @@ namespace stool
             analysisResult.print();
             return analysisResult;
         }
+        */
         /*
         static std::vector<uint64_t> construct_lpos_array(std::vector<bool> &run_bits)
         {

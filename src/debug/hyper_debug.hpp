@@ -81,7 +81,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         if (FPOSMODE == '0')
         {
             using FPOSDS = std::vector<uint64_t>;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec_wrapper);
 
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
@@ -95,7 +95,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         else
         {
             using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec_wrapper, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
             ds.stnc = &stnc;
@@ -117,7 +117,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         if (FPOSMODE == '0')
         {
             using FPOSDS = std::vector<uint64_t>;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             ds.stnc = &stnc;
@@ -130,7 +130,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         else
         {
             using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
+            using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
             FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             ds.stnc = &stnc;

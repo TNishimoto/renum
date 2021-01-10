@@ -149,20 +149,20 @@ namespace stool
         class LightFPosDataStructure
         {
         public:
-            /*
-            std::vector<uint64_t> C;
-            stool::EliasFanoVector fposSortedArray;
-            */
-            const sdsl::int_vector<> &bwt;
-            const stool::WT &wt;
+            const sdsl::int_vector<> *bwt;
+            stool::WT *wt;
 
             std::vector<stool::EliasFanoVector> efv_vec;
             std::vector<uint64_t> C2;
 
-            template <typename LPOSVEC>
-            LightFPosDataStructure(const sdsl::int_vector<> &_bwt, const LPOSVEC &_lposvec, const stool::WT &_wt) : bwt(_bwt), wt(_wt)
+            LightFPosDataStructure()
             {
 
+            }
+            template <typename LPOSVEC>
+            void build(const sdsl::int_vector<> *_bwt, const LPOSVEC &_lposvec, stool::WT *_wt){
+                this->bwt = _bwt;
+                this->wt = _wt;
                 std::cout << "Building Fpos_vec(EliasFanoVector) ..." << std::flush;
                 /*
                 LightFPosDataStructure::construct_C(bwt, this->C);
@@ -177,12 +177,13 @@ namespace stool
 #if DEBUG
                 this->check(_lposvec);
 #endif
+
             }
             template <typename LPOSVEC>
             void check(const LPOSVEC &_lposvec)
             {
 
-                std::vector<uint64_t> collectVec = FPosDataStructure::construct(this->bwt, _lposvec);
+                std::vector<uint64_t> collectVec = FPosDataStructure::construct(*this->bwt, _lposvec);
                 /*
                 std::vector<uint64_t> C;
                 stool::EliasFanoVector fposSortedArray;
@@ -190,10 +191,10 @@ namespace stool
                 LightFPosDataStructure::construct_sorted_fpos_array(this->bwt, _lposvec, fposSortedArray);
                 */
 
-                for (uint64_t i = 0; i < this->bwt.size(); i++)
+                for (uint64_t i = 0; i < this->bwt->size(); i++)
                 {
-                    uint8_t c = (this->bwt)[i];
-                    uint64_t rank1 = wt.rank(i + 1, c);
+                    uint8_t c = (*this->bwt)[i];
+                    uint64_t rank1 = wt->rank(i + 1, c);
                     assert(rank1 < this->efv_vec[c].size());
                     uint64_t q = C2[c] + this->efv_vec[c][rank1];
 
@@ -231,11 +232,11 @@ namespace stool
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 std::vector<uint64_t> C_run_sum;
                 C_run_sum.resize(CHARMAX, 0);
-                uint64_t rle = this->bwt.size();
+                uint64_t rle = this->bwt->size();
                 for (uint64_t i = 0; i < rle; i++)
                 {
-                    uint8_t c = this->bwt[i];
-                    uint64_t rank1 = wt.rank(i + 1, c);
+                    uint8_t c = (*this->bwt)[i];
+                    uint64_t rank1 = wt->rank(i + 1, c);
                     assert(C_run_sum[c] == rank1);
                     C_run_sum[c]++;
                 }
@@ -256,14 +257,14 @@ namespace stool
                 this->C2.resize(CHARMAX, 0);
                 this->efv_vec.resize(CHARMAX);
                 builders.resize(CHARMAX);
-                uint64_t rle = this->bwt.size();
+                uint64_t rle = this->bwt->size();
 
 
 
                 for (uint64_t i = 0; i < rle; i++)
                 {
 
-                    uint8_t c = this->bwt[i];
+                    uint8_t c = (*this->bwt)[i];
                     uint64_t l = lposvec[i + 1] - lposvec[i];
                     C_run_sum[c] += l;
                     numVec[c]++;
@@ -284,7 +285,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < rle; i++)
                 {
-                    uint8_t c = this->bwt[i];
+                    uint8_t c = (*this->bwt)[i];
                     //std::cout << (uint64_t)c << "/" << numVec[c]<< std::endl;
                     builders[c].push(tmp_sum[c]);
                     //std::cout << "a" << std::endl;
@@ -349,8 +350,8 @@ namespace stool
             uint64_t operator[](uint64_t i) const
             {
 
-                uint8_t c = (this->bwt)[i];
-                uint64_t rank1 = wt.rank(i + 1, c);
+                uint8_t c = (*this->bwt)[i];
+                uint64_t rank1 = (*wt).rank(i + 1, c);
 
                 assert(rank1 < this->efv_vec[c].size());
                 uint64_t q = C2[c] + this->efv_vec[c][rank1];
@@ -358,7 +359,7 @@ namespace stool
             }
             uint64_t size() const
             {
-                return this->bwt.size();
+                return this->bwt->size();
             }
             uint64_t get_using_memory() const
             {

@@ -9,6 +9,7 @@
 #include <type_traits>
 #include "../rlbwt/range_distinct/light_range_distinct.hpp"
 #include "../debug/stnode_checker.hpp"
+#include "../rlbwt/rle.hpp"
 
 namespace stool
 {
@@ -36,6 +37,7 @@ namespace stool
             uint64_t indexCount = 0;
             uint64_t explicitChildCount = 0;
             uint64_t range_distinct_threshold = 16;
+            CHAR special_character = 0;
 
             // For range distinct
             std::vector<uint8_t> charTmpVec;
@@ -43,20 +45,20 @@ namespace stool
             std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
 
             RLBWTDS *_RLBWTDS;
+            stool::lcp_on_rlbwt::RLE<CHAR> *rlbwt;
             LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> lightRangeSearcher;
             SuccinctRangeDistinctDataStructure<INDEX_SIZE> heavyRangeSearcher;
             uint64_t get_input_text_length() const
             {
-                return this->_RLBWTDS->str_size();
-            }
-            CHAR decode(CHAR c) const {
-                return this->_RLBWTDS->decode(c);
+                return this->rlbwt->str_size();
             }
 
 
             void initialize(RLBWTDS *_rlbwtds)
             {
                 _RLBWTDS = _rlbwtds;
+                this->rlbwt = _RLBWTDS->get_rlbwt();
+                this->special_character = rlbwt->get_smallest_character();
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 childrenVec.resize(CHARMAX);
                 edgeCharVec.resize(CHARMAX);
@@ -70,10 +72,14 @@ namespace stool
 
                 charIntervalTmpVec.resize(CHARMAX);
 
-                uint8_t lastChar = _RLBWTDS->bwt[_RLBWTDS->bwt.size() - 1];
+                uint8_t lastChar = rlbwt->get_char_by_run_index(rlbwt->rle_size() - 1);
+                //rlbwt->bwt[rlbwt->bwt.size() - 1];
 
-                lightRangeSearcher.preprocess(&_RLBWTDS->bwt);
-                heavyRangeSearcher.initialize(&_RLBWTDS->wt, lastChar);
+                auto head_chars = _RLBWTDS->get_head_chars_pointer();
+                auto wt  = _RLBWTDS->get_wavelet_tree_pointer();
+
+                lightRangeSearcher.preprocess(head_chars);
+                heavyRangeSearcher.initialize(wt, lastChar);
             }
             uint64_t get_explicit_stnode_count()
             {
@@ -189,8 +195,8 @@ namespace stool
 #if DEBUG
                 if (this->stnc != nullptr && this->checker_on)
                 {
-                    uint64_t left = this->_RLBWTDS->get_lpos(node.beginIndex) + node.beginDiff;
-                    uint64_t right = this->_RLBWTDS->get_lpos(node.endIndex) + node.endDiff;
+                    uint64_t left = this->rlbwt->get_lpos(node.beginIndex) + node.beginDiff;
+                    uint64_t right = this->rlbwt->get_lpos(node.endIndex) + node.endDiff;
 
                     this->verify_next_lcp_interval(left, right);
                 }
@@ -206,14 +212,14 @@ namespace stool
             std::vector<CharInterval<INDEX_SIZE>> getFirstChildren()
             {
                 std::vector<CharInterval<INDEX_SIZE>> r;
-                uint64_t count = this->heavyRangeSearcher.range_distinct(0, this->_RLBWTDS->rle_size() - 1, this->charIntervalTmpVec);
+                uint64_t count = this->heavyRangeSearcher.range_distinct(0, this->rlbwt->rle_size() - 1, this->charIntervalTmpVec);
                 //r.resize(count - 1);
 
                 for (uint64_t x = 0; x < count; x++)
                 {
                     auto &it = this->charIntervalTmpVec[x];
                     //uint8_t c = it.c;
-                    uint64_t run = this->_RLBWTDS->get_run(it.j) - 1;
+                    uint64_t run = this->rlbwt->get_run(it.j) - 1;
                     uint64_t i = this->_RLBWTDS->get_fpos(it.i, 0);
                     uint64_t j = this->_RLBWTDS->get_fpos(it.j, run);
                     r.push_back(CharInterval<INDEX_SIZE>(i, j, it.c));
@@ -264,7 +270,7 @@ namespace stool
                     auto &it = this->rIntervalTmpVec[i];
 
                     //this->pushLCPInterval(it, c);
-                    if (c != 0)
+                    if (c != this->special_character)
                     {
                         this->stnodeVec[c] = it;
                         this->stnodeOccFlagArray[c] = true;
@@ -331,7 +337,7 @@ namespace stool
                     INDEX_SIZE cBeginIndex = it.i;
                     INDEX_SIZE cEndIndex = it.j;
                     INDEX_SIZE cBeginDiff = cBeginIndex == range.beginIndex ? range.beginDiff : 0;
-                    uint64_t end_run = (this->_RLBWTDS->lpos_vec)[cEndIndex + 1] - (this->_RLBWTDS->lpos_vec)[cEndIndex];
+                    uint64_t end_run = this->rlbwt->get_run(cEndIndex);
                     INDEX_SIZE cEndDiff = cEndIndex == range.endIndex ? range.endDiff : end_run - 1;
 
                     RInterval<INDEX_SIZE> cInterval;
@@ -385,7 +391,7 @@ namespace stool
                     uint64_t explicitChildrenCount = this->childrenVec[c].size();
 
 #if DEBUG
-                    if (this->_RLBWTDS->str_size() < 100)
+                    if (this->rlbwt->str_size() < 100)
                     {
                         std::cout << "FOUND ";
                         this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);

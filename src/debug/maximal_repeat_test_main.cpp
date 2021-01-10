@@ -202,7 +202,7 @@ void computeMaximalSubstrings(std::string inputFile, string mode, int thread_num
     construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
     std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
     std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
-    using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint32_t, LPOSDS, FPOSDS>;
+    using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<uint32_t, LPOSDS, FPOSDS>;
     RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
     std::cout << "Enumerate Maximal Substrings..." << std::endl;

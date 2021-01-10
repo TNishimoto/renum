@@ -22,7 +22,7 @@ namespace stool
             using RINTERVAL = RInterval<INDEX_SIZE>;
 
             NextRIntervalStorageConstructor<RLBWT_STR, INDEX_SIZE, RLBWTDS> wds;
-            //RLBWTDataStructures<RLBWT_STR, INDEX_SIZE, FPOSDS> *_RLBWTDS;
+            //RLEWaveletTree<RLBWT_STR, INDEX_SIZE, FPOSDS> *_RLBWTDS;
             RIntervalStorage<INDEX_SIZE> rintervalStorage;
             RIntervalStorage<INDEX_SIZE> rintervalTmpStorage;
             uint64_t current_lcp = 0;

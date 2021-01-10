@@ -8,7 +8,7 @@
 #include <vector>
 #include <type_traits>
 //#include "next_rinterval_storage_constructor.hpp"
-#include "../rlbwt/rlbwt_data_structures.hpp"
+#include "../rlbwt/rle_wavelet_tree.hpp"
 
 #include "suffix_tree_nodes.hpp"
 #include "weiner_link_emulator.hpp"

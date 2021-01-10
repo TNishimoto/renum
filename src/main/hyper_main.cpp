@@ -35,60 +35,55 @@ using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
 
-/*
-stool::rlbwt2::BWTAnalysisResult LoadBWT(std::string inputFile, sdsl::int_vector<> &diff_char_vec, stool::EliasFanoVectorBuilder &run_bits)
-{
-    auto bwtAnalysis = stool::rlbwt2::load_RLBWT_from_file(inputFile, diff_char_vec, run_bits);
-    std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000 << "[KB]" << std::endl;
-    std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
-    return bwtAnalysis;
-}
-template<typename T>
-void constructDataStructure(sdsl::int_vector<> &diff_char_vec, stool::EliasFanoVectorBuilder &run_bits){
-
-}
-*/
 
 void computeMaximalSubstrings(std::string inputFile, std::string outputFile, string mode, int thread_num)
 {
+
     auto start = std::chrono::system_clock::now();
+    string bit_size_mode = "UINT64_t";
+    std::chrono::system_clock::time_point mid;
 
     std::ofstream out(outputFile, std::ios::out | std::ios::binary);
     if (!out)
     {
         throw std::runtime_error("Cannot open the output file!");
     }
-
-    sdsl::int_vector<> diff_char_vec;
-    stool::EliasFanoVectorBuilder run_bits;
-    //std::vector<bool> run_bits;
-    auto bwtAnalysis = stool::rlbwt2::load_RLBWT_from_file(inputFile, diff_char_vec, run_bits);
-    std::cout << "BWT using memory = " << sdsl::size_in_bytes(diff_char_vec) / 1000 << "[KB]" << std::endl;
-    std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
-
-    uint64_t data_structure_bytes = 0;
-    sdsl::store_to_file(diff_char_vec, inputFile + ".tmp");
-
-    stool::WT wt;
-    construct(wt, inputFile + ".tmp");
-
-    string bit_size_mode = "UINT64_t";
-    data_structure_bytes += sdsl::size_in_bytes(wt);
-    std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+    stool::rlbwt2::BWTAnalysisResult analysisResult;
+    stool::lcp_on_rlbwt::RLE<uint8_t> rlbwt;
+    rlbwt.load(inputFile, analysisResult);
 
     char MODE = mode[0];
-    //char FPOSMODE = mode[1];
-
-    //std::cout << "LPOS Data Structure: " << MODE << std::endl;
-    //std::cout << "FPOS Data Structure: " << FPOSMODE << std::endl;
 
     uint64_t ms_count = 0;
     stool::lcp_on_rlbwt::STTreeAnalysisResult st_result;
 
-    double construction_time = 0;
-    std::chrono::system_clock::time_point mid;
+
+    if (analysisResult.str_size < UINT32_MAX - 10)
+    {
+        using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<uint32_t>;
+        RDS ds = RDS(&rlbwt, inputFile);
+        mid = std::chrono::system_clock::now();
+
+        std::cout << "Enumerate Maximal Substrings..." << std::endl;
+        stool::lcp_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
+        stnodeTraverser.initialize(thread_num, ds, false);
+        ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+        bit_size_mode = "UINT32_t";
+    }
+    else
+    {
+        using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<uint64_t>;
+        RDS ds = RDS(&rlbwt, inputFile);
+        mid = std::chrono::system_clock::now();
+
+        std::cout << "Enumerate Maximal Substrings..." << std::endl;
+        stool::lcp_on_rlbwt::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
+        stnodeTraverser.initialize(thread_num, ds, false);
+        ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+    }
     if (MODE == '0')
     {
+        /*
         std::vector<uint64_t> lpos_vec;
         run_bits.to_vector(lpos_vec);
 
@@ -97,7 +92,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         LPOSDS lpos_vec_wrapper(lpos_vec);
 
         using FPOSDS = std::vector<uint64_t>;
-        using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<INDEX, LPOSDS, FPOSDS>;
+        using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
 
         FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec_wrapper);
 
@@ -107,9 +102,11 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         stool::lcp_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds, false);
         ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+        */
     }
     else
     {
+        /*
         stool::EliasFanoVector lpos_vec;
         lpos_vec.build_from_builder(run_bits);
         std::cout << "LPOS Vec using memory = " << lpos_vec.get_using_memory() / 1000 << "[KB]" << std::endl;
@@ -126,35 +123,15 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
         construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
         std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
         std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
-
-        if (bwtAnalysis.str_size < UINT32_MAX - 10)
-        {
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint32_t, LPOSDS, FPOSDS>;
-            RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
-
-            std::cout << "Enumerate Maximal Substrings..." << std::endl;
-            stool::lcp_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
-            stnodeTraverser.initialize(thread_num, ds, false);
-            ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
-            bit_size_mode = "UINT32_t";
-        }
-        else
-        {
-            using RDS = stool::lcp_on_rlbwt::RLBWTDataStructures<uint64_t, LPOSDS, FPOSDS>;
-            RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
-
-            std::cout << "Enumerate Maximal Substrings..." << std::endl;
-            stool::lcp_on_rlbwt::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
-            stnodeTraverser.initialize(thread_num, ds, false);
-            ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
-        }
+        */
     }
 
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
     double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     double enumeration_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
+    double construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
 
-    double bps = ((double)bwtAnalysis.str_size / ((double)elapsed / 1000)) / 1000;
+    double bps = ((double)analysisResult.str_size / ((double)elapsed / 1000)) / 1000;
 
     std::cout << "\033[31m";
     std::cout << "______________________RESULT______________________" << std::endl;
@@ -162,13 +139,13 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, str
     std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
     std::cout << "LPOS and FPos Vector type \t\t\t\t : " << (MODE == '0' ? "std::vector<uint64_t>" : "EliasFano") << std::endl;
     std::cout << "Peak children count \t\t\t : " << st_result.max_nodes_at_level << std::endl;
-    std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
+    //std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
 
     std::cout << "Thread number \t\t\t\t : " << thread_num << std::endl;
     std::cout << "Integer Type \t\t\t\t : " << bit_size_mode << std::endl;
 
-    std::cout << "The length of the input text \t\t : " << bwtAnalysis.str_size << std::endl;
-    std::cout << "The number of runs on BWT \t\t : " << bwtAnalysis.run_count << std::endl;
+    std::cout << "The length of the input text \t\t : " << analysisResult.str_size << std::endl;
+    std::cout << "The number of runs on BWT \t\t : " << analysisResult.run_count << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
     std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
     std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
@@ -229,6 +206,5 @@ int main(int argc, char *argv[])
         }
     }
 
-        computeMaximalSubstrings(inputFile, outputFile, mode, thread_num);
-
+    computeMaximalSubstrings(inputFile, outputFile, mode, thread_num);
 }
