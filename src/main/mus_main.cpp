@@ -35,6 +35,71 @@ using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
 
+template <typename INDEX_SIZE>
+class MUSDetectionArray
+{
+public:
+    std::vector<INDEX_SIZE> counter_array;
+    std::vector<INDEX_SIZE> indexes;
+    std::vector<stool::LCPInterval<INDEX_SIZE>> mus_intervals;
+
+    MUSDetectionArray()
+    {
+        uint64_t x = UINT8_MAX + 1;
+        this->counter_array.resize(x, 0);
+    }
+    template <typename EM, typename NODE_ITERATOR>
+    void build(EM &em, const NODE_ITERATOR &it, uint64_t lcp)
+    {
+        //using CHAR = typename EM::CHAR;
+        for (auto it : indexes)
+        {
+            this->counter_array[it] = 0;
+        }
+        indexes.clear();
+        mus_intervals.clear();
+
+        uint64_t w = it.get_children_count();
+        for (uint64_t i = 0; i < w; i++)
+        {
+            uint8_t c = it.get_edge_character(i);
+            uint64_t L = it.get_child_left_boundary(i);
+            uint64_t R = it.get_child_right_boundary(i);
+                uint64_t count = R - L + 1;
+
+            this->counter_array[c] = count;
+
+            if (lcp == 0)
+            {
+                if (count == 1)
+                {
+                    this->mus_intervals.push_back(stool::LCPInterval<INDEX_SIZE>(L, R, 1));
+                }
+            }
+        }
+
+        auto output_vec = stool::lcp_on_rlbwt::WeinerLinkCommonFunctions::compute_weiner_links(em, it);
+        for (auto wnode_it = output_vec.begin(); wnode_it != output_vec.end(); wnode_it++)
+        {
+            uint64_t w = wnode_it.get_children_count();
+            for (uint64_t i = 0; i < w; i++)
+            {
+                uint8_t c = wnode_it.get_edge_character(i);
+                if (this->counter_array[c] >= 2)
+                {
+                    uint64_t L = wnode_it.get_child_left_boundary(i);
+                    uint64_t R = wnode_it.get_child_right_boundary(i);
+                    uint64_t count = R - L + 1;
+                    if (count == 1)
+                    {
+                        this->mus_intervals.push_back(stool::LCPInterval<INDEX_SIZE>(L, R, lcp + 2));
+                    }
+                }
+            }
+        }
+    }
+};
+
 class MUSEnumerator
 {
 public:
@@ -43,26 +108,41 @@ public:
     {
 
         std::vector<stool::LCPInterval<uint64_t>> r;
+        MUSDetectionArray<uint64_t> mus_arr;
+        auto em = stnodeSequencer.get_interval_search_deta_structure();
 
         auto it = stnodeSequencer.begin();
+
         while (it != stnodeSequencer.end())
         {
             std::vector<stool::LCPInterval<uint64_t>> r2;
-
+            uint64_t lcp = it.get_depth();
             for (auto node_it = it.begin(); node_it != it.end(); node_it++)
             {
-                //
+
                 if (node_it.is_maximal_repeat())
                 {
+
+                    mus_arr.build(*em, node_it, lcp);
+                    for (auto &it : mus_arr.mus_intervals)
+                    {
+                        r2.push_back(it);
+                    }
+                    /*
                     node_it.print();
-                    auto output_vec = node_it.compute_weiner_links();
+                    auto output_vec = stool::lcp_on_rlbwt::WeinerLinkCommonFunctions::compute_weiner_links(*em, node_it);
+                    for (auto wnode_it = output_vec.begin(); wnode_it != output_vec.end(); wnode_it++)
+                    {
+                        std::cout << wnode_it.get_left() << "/" << wnode_it.get_right() << std::endl;
+                    }
+                    //node_it.compute_weiner_links();
                     output_vec.print();
+                    */
                 }
 
                 /*
                 */
             }
-            std::cout << std::endl;
 
             for (auto &it : r2)
             {
@@ -76,15 +156,22 @@ public:
 };
 void debug(std::string inputFile)
 {
+    std::cout << "Constuct Test MUSs" << std::endl;
     std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
     vector<uint64_t> sa = stool::construct_suffix_array(text);
+    /*
     for (uint64_t p = 0; p < text.size(); p++)
     {
         std::cout << (text[p] == 0 ? "$" : std::string(1, text[p]));
     }
     std::cout << std::endl;
+    */
 
     auto MUSs = stool::esaxx::NaiveAlgorithms::naive_compute_MUSs(text, sa);
+    std::sort(MUSs.begin(), MUSs.end(), stool::LCPIntervalDepthOrderComp<uint64_t>());
+    std::cout << "Constuct Test MUSs[END]" << std::endl;
+
+    /*
     for (auto &it : MUSs)
     {
         string s = "";
@@ -94,6 +181,12 @@ void debug(std::string inputFile)
         }
         std::cout << s << std::endl;
     }
+    for (auto &it : MUSs)
+    {
+        std::cout << it.to_string();
+    }
+    std::cout << std::endl;
+    */
 
     stool::rlbwt2::BWTAnalysisResult analysisResult;
     stool::lcp_on_rlbwt::RLE<uint8_t> rlbwt;
@@ -104,7 +197,18 @@ void debug(std::string inputFile)
     std::cout << "Enumerate Maximal Substrings..." << std::endl;
     stool::lcp_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
     stnodeTraverser.initialize(1, ds, true);
-    MUSEnumerator::enumerate(stnodeTraverser);
+    auto test_MUSs = MUSEnumerator::enumerate(stnodeTraverser);
+
+    std::sort(test_MUSs.begin(), test_MUSs.end(), stool::LCPIntervalDepthOrderComp<uint64_t>());
+    /*
+    for (auto &it : test_MUSs)
+    {
+        std::cout << it.to_string();
+    }
+    std::cout << std::endl;
+    */
+    stool::beller::equal_check_lcp_intervals(MUSs, test_MUSs);
+    std::cout << "OK!" << MUSs.size() << std::endl;
 }
 
 void computeMUSs(std::string inputFile, std::string outputFile, string mode, int thread_num)

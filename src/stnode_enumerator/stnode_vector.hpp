@@ -8,6 +8,7 @@
 #include <deque>
 #include <vector>
 #include <type_traits>
+#include "./node_iterator.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
 
@@ -27,9 +28,12 @@ namespace stool
         template <typename INDEX_SIZE, typename CHAR = uint8_t>
         class STNodeVector
         {
-            using RINTERVAL = RInterval<INDEX_SIZE>;
 
         public:
+            using RINTERVAL = RInterval<INDEX_SIZE>;
+            using ITERATOR = STNodeIterator<STNodeVector<INDEX_SIZE, CHAR>>;
+            using index_type = INDEX_SIZE;
+
             std::vector<INDEX_SIZE> childs_vec;
             std::vector<CHAR> edge_char_vec;
             std::vector<bool> first_child_flag_vec;
@@ -107,9 +111,9 @@ namespace stool
                 {
                     this->first_child_flag_vec.pop_back();
                     this->childs_vec.pop_back();
-                    if(this->edge_char_vec.size() > 0){
+                    if (this->edge_char_vec.size() > 0)
+                    {
                         this->edge_char_vec.pop_back();
-
                     }
                 }
                 this->maximal_repeat_check_vec.pop_back();
@@ -143,59 +147,6 @@ namespace stool
                 }
                 return std::pair<uint64_t, uint64_t>(node_count, child_count - node_count);
             }
-            /*
-            template <typename RLBWTDS>
-            void add(uint8_t c, uint64_t count, ExplicitWeinerLinkEmulator<RLBWTDS> &em, bool _store_edge_chars)
-            {
-                //RINTERVAL copy;
-                uint64_t st_left = UINT64_MAX;
-                uint64_t st_right = 0;
-                std::pair<INDEX_SIZE, INDEX_SIZE> outputInterval;
-
-                for (uint64_t j = 0; j < count; j++)
-                {
-                    CHAR edgeChar = em.get_child(c, j, outputInterval);
-                    //uint64_t left = ds->get_fpos(copy.beginIndex, copy.beginDiff);
-                    //uint64_t right = ds->get_fpos(copy.endIndex, copy.endDiff);
-
-                    if (outputInterval.first < st_left)
-                    {
-                        st_left = outputInterval.first;
-                    }
-                    if (outputInterval.second > st_right)
-                    {
-                        st_right = outputInterval.second;
-                    }
-                    if (j == 0)
-                    {
-                        this->childs_vec.push_back(outputInterval.first);
-                        this->first_child_flag_vec.push_back(true);
-                        if (_store_edge_chars)
-                        {
-                            this->edge_char_vec.push_back(0);
-                        }
-                    }
-                    this->childs_vec.push_back(outputInterval.second);
-                    this->first_child_flag_vec.push_back(false);
-                    if (_store_edge_chars)
-                    {
-                        this->edge_char_vec.push_back(edgeChar);
-                    }
-                }
-                bool isMaximalRepeat = em.checkMaximalRepeat(st_left, st_right);
-
-                this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
-            }
-            */
-           /*
-            template <typename RLBWTDS>
-            void import(ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint8_t c, bool _store_edge_chars)
-            {
-                auto &currentVec = em.childrenVec[c];
-                uint64_t count = currentVec.size();
-                this->add(c, count, em, _store_edge_chars);
-            }
-            */
 
             void print() const
             {
@@ -205,6 +156,149 @@ namespace stool
                 stool::Printer::print("child_vec", this->childs_vec);
                 stool::Printer::print_bits("first_child_flag_vec", this->first_child_flag_vec);
                 stool::Printer::print_bits("maximal_repeat_check_vec", this->maximal_repeat_check_vec);
+            }
+            uint64_t increment(uint64_t L) const
+            {
+                assert(L > 0);
+                assert(this->first_child_flag_vec[L - 1]);
+                assert(!this->first_child_flag_vec[L]);
+
+                uint64_t R = L + 1;
+                while (R < this->first_child_flag_vec.size() && !this->first_child_flag_vec[R])
+                {
+                    R++;
+                }
+                return R + 1;
+            }
+            
+            uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
+            {
+                assert(L > 0);
+                assert(this->first_child_flag_vec[L - 1]);
+                assert(!this->first_child_flag_vec[L]);
+
+                uint64_t R = L + 1;
+                while (R < this->first_child_flag_vec.size() && !this->first_child_flag_vec[R])
+                {
+                    R++;
+                }
+                left = this->get_child_left_boundary(L);
+                right = this->get_child_right_boundary(R - 1);
+
+                return R + 1;
+            }
+            void increment(ITERATOR &iter) const
+            {
+                this->increment2(iter.child_index, iter.node_index, iter.array_index);
+            }
+            void increment2(INDEX_SIZE &child_index, INDEX_SIZE &node_index, INDEX_SIZE &array_index) const
+            {
+                child_index = this->increment(child_index);
+                if (child_index >= this->first_child_flag_vec.size())
+                {
+                    child_index = std::numeric_limits<INDEX_SIZE>::max();
+                    node_index = std::numeric_limits<INDEX_SIZE>::max();
+                    array_index = std::numeric_limits<INDEX_SIZE>::max();
+                }
+                else
+                {
+                    node_index++;
+                }
+            }
+            INDEX_SIZE get_children_count(const ITERATOR &iter) const
+            {
+                return this->get_children_count(iter.child_index);
+            }
+            INDEX_SIZE get_children_count(INDEX_SIZE child_index) const
+            {
+                uint64_t R = this->increment(child_index);
+                return R - child_index - 1;
+            }
+            inline uint64_t get_child_left_boundary(uint64_t child_end_pointer) const
+            {
+                assert(child_end_pointer > 0);
+                assert(child_end_pointer < this->childs_vec.size());
+                if (this->first_child_flag_vec[child_end_pointer - 1])
+                {
+                    return this->childs_vec[child_end_pointer - 1];
+                }
+                else
+                {
+                    return this->childs_vec[child_end_pointer - 1] + 1;
+                }
+            }
+            inline uint64_t get_child_right_boundary(uint64_t child_end_pointer) const
+            {
+                assert(child_end_pointer < this->childs_vec.size());
+                return this->childs_vec[child_end_pointer];
+            }
+            CHAR get_edge_character(uint64_t child_pointer) const
+            {
+                return this->edge_char_vec[child_pointer];
+            }
+            INDEX_SIZE get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_edge_character(iter.child_index + ith_child);
+            }
+
+            INDEX_SIZE get_child_left_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_child_left_boundary(iter.child_index + ith_child);
+            }
+            INDEX_SIZE get_child_right_boundary(const ITERATOR &iter, uint64_t ith_child) const
+            {
+                return this->get_child_right_boundary(iter.child_index + ith_child);
+            }
+
+            INDEX_SIZE get_left(const ITERATOR &iter) const
+            {
+                return this->get_child_left_boundary(iter.child_index);
+            }
+            INDEX_SIZE get_left(INDEX_SIZE child_index) const
+            {
+                return this->get_child_left_boundary(child_index);
+            }
+
+            INDEX_SIZE get_right(const ITERATOR &iter) const
+            {
+                uint64_t left = 0, right = 0;
+                this->increment(iter.child_index, left, right);
+                return right;
+            }
+            INDEX_SIZE get_right(INDEX_SIZE child_index) const
+            {
+                uint64_t left = 0, right = 0;
+                this->increment(child_index, left, right);
+                return right;
+            }
+
+            STNodeIterator<STNodeVector> begin() const
+            {
+                return STNodeIterator<STNodeVector>(this, true);
+            }
+            STNodeIterator<STNodeVector> end() const
+            {
+                return STNodeIterator<STNodeVector>(this, false);
+            }
+            
+            void set_current_first_iterator(ITERATOR &it) const
+            {
+                this->set_current_first_iterator(it.child_index, it.node_index, it.array_index);
+            }
+            void set_current_first_iterator(INDEX_SIZE &child_index, INDEX_SIZE &node_index, INDEX_SIZE &array_index) const
+            {
+                if (this->maximal_repeat_check_vec.size() == 0)
+                {
+                    child_index = std::numeric_limits<INDEX_SIZE>::max();
+                    node_index = std::numeric_limits<INDEX_SIZE>::max();
+                    array_index = std::numeric_limits<INDEX_SIZE>::max();
+                }
+                else
+                {
+                    child_index = 1;
+                    node_index = 0;
+                    array_index = std::numeric_limits<INDEX_SIZE>::max();
+                }
             }
         };
     } // namespace lcp_on_rlbwt

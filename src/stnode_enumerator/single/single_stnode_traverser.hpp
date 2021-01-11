@@ -459,13 +459,6 @@ namespace stool
                 return this->get_child_right_boundary(iter.child_index + ith_child);
             }
 
-            /*
-            INDEX_SIZE get_child_left_boundary(INDEX_SIZE child_index) const
-            {
-                return this->get_children_count(iter.child_index);
-            }
-            */
-
             INDEX_SIZE get_left(const ITERATOR &iter) const
             {
                 return this->get_child_left_boundary(iter.child_index);

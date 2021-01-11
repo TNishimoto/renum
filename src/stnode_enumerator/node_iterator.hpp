@@ -77,29 +77,6 @@ namespace stool
             {
                 return traverser->check_maximal_repeat(*this);
             }
-            /*
-                INDEX_SIZE get_lcp() const {
-                    return traverser->get_current_lcp();
-                }
-                INDEX_SIZE get_left() const {
-                    if(this->divided_array){
-                        return traverser->get_child_start_position(this->child_index);
-                    }else{
-                        return traverser->get_child_start_position(this->child_index);
-                    }
-                }
-                INDEX_SIZE get_right() const {
-                    uint64_t left = 0, right = 0;
-                    traverser->increment(this->child_index, left, right);
-                    return right;
-                }
-                */
-            /*
-            bool isEnd() const
-            {
-                return this->node_index == std::numeric_limits<INDEX_SIZE>::max();
-            }
-            */
 
             std::pair<INDEX_SIZE, INDEX_SIZE> operator*() const
             {
@@ -119,41 +96,7 @@ namespace stool
                 ++(*this);
                 return *this;
             }
-            stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> compute_weiner_links()
-            {
-                std::pair<INDEX_SIZE, INDEX_SIZE> node;
-                node.first = this->get_left();
-                node.second = this->get_right();
-
-                std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> children;
-                std::vector<CHAR> edgeChars;
-                std::vector<CHAR> output_chars;
-
-                uint64_t child_count = this->get_children_count();
-                //uint64_t depth = it.get_depth();
-                for (uint64_t i = 0; i < child_count; i++)
-                {
-                    uint64_t left = this->get_child_left_boundary(i);
-                    uint64_t right = this->get_child_right_boundary(i);
-                    children.push_back(std::pair<INDEX_SIZE, INDEX_SIZE>(left, right));
-                    char c = this->get_edge_character(i);
-                    edgeChars.push_back(c);
-                }
-                auto em = traverser->get_interval_search_deta_structure();
-                if (traverser->has_edge_characters())
-                {
-                    em->executeWeinerLinkSearch(node, children, &edgeChars, output_chars);
-                }
-                else
-                {
-                    em->executeWeinerLinkSearch(node, children, nullptr, output_chars);
-                }
-
-                stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> r;
-                WeinerLinkCommonFunctions::output(*em, traverser->has_edge_characters(), r);
-
-                return r;
-            }
+            
             bool operator!=(const STNodeIterator &rhs) const
             {
                 return this->node_index != rhs.node_index || this->child_index != rhs.child_index;
@@ -178,6 +121,9 @@ namespace stool
                     }
                 }
             }
+            bool has_edge_characters() const {
+                return this->traverser->has_edge_characters();
+            }  
         };
         template <typename TRAVERSER>
         class STDepthIterator

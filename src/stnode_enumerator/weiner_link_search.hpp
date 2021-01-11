@@ -340,6 +340,44 @@ namespace stool
                     output(em, c, _store_edge_chars, output_vec);
                 }
             }
+            template <typename EM, typename ITERATOR>
+            static stool::lcp_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> compute_weiner_links(EM &em, const ITERATOR &it)
+            {
+                using CHAR = typename EM::CHAR;
+                using INDEX = typename EM::INDEX;
+
+                std::pair<INDEX, INDEX> node;
+                node.first = it.get_left();
+                node.second = it.get_right();
+
+                std::vector<std::pair<INDEX, INDEX>> children;
+                std::vector<CHAR> edgeChars;
+                std::vector<CHAR> output_chars;
+
+                uint64_t child_count = it.get_children_count();
+                //uint64_t depth = it.get_depth();
+                for (uint64_t i = 0; i < child_count; i++)
+                {
+                    uint64_t left = it.get_child_left_boundary(i);
+                    uint64_t right = it.get_child_right_boundary(i);
+                    children.push_back(std::pair<INDEX, INDEX>(left, right));
+                    char c = it.get_edge_character(i);
+                    edgeChars.push_back(c);
+                }
+                if (it.has_edge_characters())
+                {
+                    em.executeWeinerLinkSearch(node, children, &edgeChars, output_chars);
+                }
+                else
+                {
+                    em.executeWeinerLinkSearch(node, children, nullptr, output_chars);
+                }
+
+                stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> r;
+                WeinerLinkCommonFunctions::output(em, it.has_edge_characters(), r);
+
+                return r;
+            }
         };
 
     } // namespace lcp_on_rlbwt
