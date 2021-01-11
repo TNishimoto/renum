@@ -246,29 +246,29 @@ namespace stool
                 this->lcp = 0;
             }
 
-            void pop_node(std::pair<INDEX_SIZE, INDEX_SIZE> &output_node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &output_children, std::vector<CHAR> &output_edge_chars)
+            void pop_node()
             {
                 assert(this->first_child_flag_vec[0]);
 
                 uint64_t L = 1;
                 uint64_t _left = 0, _right = 0;
                 uint64_t nextL = this->increment(L, _left, _right);
-                output_node.first = _left;
-                output_node.second = _right;
+                //output_node.first = _left;
+                //output_node.second = _right;
                 uint64_t _count = nextL - L - 1;
                 for (uint64_t i = 0; i < _count; i++)
                 {
-                    uint64_t left = this->get_child_left_boundary(L);
-                    uint64_t right = this->get_child_right_boundary(L);
+                    //uint64_t left = this->get_child_left_boundary(L);
+                    //uint64_t right = this->get_child_right_boundary(L);
                     if (this->store_edge_chars)
                     {
-                        CHAR c = this->get_edge_character(L);
-                        output_edge_chars.push_back(c);
+                        //CHAR c = this->get_edge_character(L);
+                        //output_edge_chars.push_back(c);
                         this->edge_char_vec.pop_front();
                     }
-                    output_children.push_back(std::pair<INDEX_SIZE, INDEX_SIZE>(left, right));
+                    //output_children.push_back(std::pair<INDEX_SIZE, INDEX_SIZE>(left, right));
 
-                    assert(left <= right);
+                    //assert(left <= right);
                     this->childs_vec.pop_front();
                     this->first_child_flag_vec.pop_front();
                 }
@@ -282,10 +282,29 @@ namespace stool
                 this->maximal_repeat_check_vec.pop_front();
                 this->_stnode_count--;
             }
+            void import(stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &item){
+                for(auto &it : item.childs_vec){
+                    this->childs_vec.push_back(it);
+                }
+                for(auto it : item.first_child_flag_vec){
+                    this->first_child_flag_vec.push_back(it);
+                }
+                for(auto it : item.maximal_repeat_check_vec){
+                    this->maximal_repeat_check_vec.push_back(it);
+                                    this->_stnode_count++;
+
+                }
+                for(auto &it : item.edge_char_vec){
+                    this->edge_char_vec.push_back(it);
+                }
+
+            }
             void computeNextLCPIntervalSet()
             {
                 //RINTERVAL intv;
                 //RINTERVAL child;
+
+                
 
                 uint64_t size = this->node_count();
                 std::pair<INDEX_SIZE, INDEX_SIZE> output_node;
@@ -293,14 +312,22 @@ namespace stool
                 std::vector<uint8_t> output_chars;
                 std::vector<CHAR> output_edge_chars;
 
+                stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> tmp;
+                auto beg = ITERATOR(this, true);
+                //auto beg = this->begin().begin();
                 for (uint64_t i = 0; i < size; i++)
                 {
+                    tmp.clear();
+                    WeinerLinkCommonFunctions::compute_weiner_links(*this->em, beg, tmp);
 
+                    this->import(tmp);
+                    this->pop_node();
+
+                    /*
                     output_children.clear();
                     output_chars.clear();
                     output_edge_chars.clear();
 
-                    this->pop_node(output_node, output_children, output_edge_chars);
                     if (this->store_edge_chars)
                     {
                         em->executeWeinerLinkSearch(output_node, output_children, &output_edge_chars, output_chars);
@@ -314,6 +341,7 @@ namespace stool
                     {
                         this->add(c, *em);
                     }
+                    */
                 }
 
                 this->lcp++;

@@ -58,12 +58,15 @@ public:
         while (it != stnodeSequencer.end())
         {
             std::vector<stool::LCPInterval<uint64_t>> r2;
-
+            std::cout << "Test, LCP = " <<  it.get_depth() << std::endl;
             for (auto node_it = it.begin(); node_it != it.end(); node_it++)
             {
+                if(checker != nullptr && checker->bwt.size() < 500){
                 node_it.print();
+                }
                 if (stnodeSequencer.has_edge_characters())
                 {
+                    
                     uint64_t child_count = node_it.get_children_count();
                     uint64_t depth = it.get_depth();
                     for (uint64_t i = 0; i < child_count; i++)
@@ -75,6 +78,7 @@ public:
                             checker->check_edge_character(left, right, c, depth);
                         }
                     }
+                    
                 }
 
                 /*
@@ -95,7 +99,7 @@ public:
                     checker->check_maximal_repeat(left, right, b);
                 }
             }
-            std::cout << std::endl;
+            //std::cout << std::endl;
             if (checker != nullptr)
             {
                 checker->increment(r2);

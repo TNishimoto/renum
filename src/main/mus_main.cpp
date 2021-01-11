@@ -77,8 +77,9 @@ public:
                 }
             }
         }
+        stool::lcp_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> output_vec;
 
-        auto output_vec = stool::lcp_on_rlbwt::WeinerLinkCommonFunctions::compute_weiner_links(em, it);
+        stool::lcp_on_rlbwt::WeinerLinkCommonFunctions::compute_weiner_links(em, it, output_vec);
         for (auto wnode_it = output_vec.begin(); wnode_it != output_vec.end(); wnode_it++)
         {
             uint64_t w = wnode_it.get_children_count();
