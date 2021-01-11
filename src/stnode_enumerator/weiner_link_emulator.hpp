@@ -284,7 +284,6 @@ namespace stool
                 return currentVec.size();
             }
 
-        private:
             bool pushExplicitWeinerInterval(const RINTERVAL &w, uint8_t c, uint8_t edgeChar)
             {
                 bool isValid = this->stnodeOccFlagArray[c];
@@ -339,6 +338,7 @@ namespace stool
                     this->pushExplicitWeinerInterval(it, c, edgeChar);
                 }
             }
+
 #if DEBUG
             bool check(const RInterval<INDEX> &range)
             {

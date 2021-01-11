@@ -341,7 +341,7 @@ namespace stool
                 }
             }
             template <typename EM, typename ITERATOR>
-            static void compute_weiner_links(EM &em, const ITERATOR &it, stool::lcp_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output)
+            static stool::lcp_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> compute_weiner_links(EM &em, const ITERATOR &it)
             {
                 using CHAR = typename EM::CHAR;
                 using INDEX = typename EM::INDEX;
@@ -373,10 +373,10 @@ namespace stool
                     em.executeWeinerLinkSearch(node, children, nullptr, output_chars);
                 }
 
-                //stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> r;
-                WeinerLinkCommonFunctions::output(em, it.has_edge_characters(), output);
+                stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> r;
+                WeinerLinkCommonFunctions::output(em, it.has_edge_characters(), r);
 
-                //return r;
+                return r;
             }
         };
 
