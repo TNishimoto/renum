@@ -48,18 +48,18 @@ add_library(fn STATIC ${STOOL_SOURCES})
 target_link_libraries(fn sdsl divsufsort divsufsort64)
 
 ### Debug
-#add_executable(beller.out src/main/beller_main.cpp)
-#target_link_libraries(beller.out fn)
+add_executable(beller.out src/main/beller_main.cpp)
+target_link_libraries(beller.out fn)
 
-#add_executable(beller2.out src/main/beller2_main.cpp)
-#target_link_libraries(beller2.out fn)
+add_executable(beller2.out src/main/beller2_main.cpp)
+target_link_libraries(beller2.out fn)
 
 
 add_executable(maximal_repeat.out src/main/maximal_repeat_main.cpp)
 target_link_libraries(maximal_repeat.out fn)
 
-#add_executable(mus.out src/main/mus_main.cpp)
-#target_link_libraries(mus.out fn)
+add_executable(mus.out src/main/mus_main.cpp)
+target_link_libraries(mus.out fn)
 
 
 add_executable(interval_test.out src/debug/lcp_interval_test_main.cpp)

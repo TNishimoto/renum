@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
-#include "./io.hpp"
+#include "./bwt_analysis_result.hpp"
 #include "stool/src/elias_fano_vector.hpp"
 
 namespace stool

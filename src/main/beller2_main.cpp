@@ -15,7 +15,6 @@
 
 #include "../main/common.hpp"
 #include "../debug/naive_algorithms.hpp"
-#include "../stnode_enumerator/weiner_link_search.hpp"
 #include "../stnode_enumerator/single/single_stnode_traverser.hpp"
 #include "../stnode_enumerator/application.hpp"
 
@@ -165,9 +164,9 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
     stool::IntervalSearchDataStructure range;
     range.initialize(&wt, &C, lastChar);
 
-    stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<uint32_t> wsearch;
+    stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t> wsearch;
     wsearch.initialize(&range, &bwt_bit_rank1, bwt.size());
-    stool::lcp_on_rlbwt::SingleSTNodeTraverser<uint32_t, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<uint32_t>> traverser;
+    stool::lcp_on_rlbwt::SingleSTNodeTraverser<uint32_t, stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>> traverser;
     traverser.initialize(&wsearch, false);
     auto test_Intervals = LCPIntervalTest::testLCPIntervals(traverser);
 
@@ -225,9 +224,9 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
     {
         using INDEX_TYPE = uint32_t;
 
-        stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE> wsearch;
+        stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
         wsearch.initialize(&range, &bwt_bit_rank1, input_text_size );
-        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE>> traverser;
+        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch, false);
         ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, traverser, st_result);
 
@@ -236,9 +235,9 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
     {
         using INDEX_TYPE = uint64_t;
 
-        stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE> wsearch;
+        stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
         wsearch.initialize(&range, &bwt_bit_rank1, input_text_size );
-        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE>> traverser;
+        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch, false);
         ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, traverser, st_result);
 

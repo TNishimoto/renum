@@ -10,8 +10,8 @@
 #include <array>
 
 #include <type_traits>
-#include "../weiner_link_emulator.hpp"
-#include "../weiner_link_search.hpp"
+#include "../explicit_weiner_link_computer_on_rlbwt.hpp"
+#include "../explicit_weiner_link_computer.hpp"
 
 #include "../../../module/stool/src/io.h"
 #include "../stnode_vector.hpp"
@@ -219,7 +219,7 @@ namespace stool
                 return nextL;
             }
 
-            void computeNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em, STNodeVector<INDEX_SIZE> &tmp)
+            void computeNextSTNodes(ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> &em, STNodeVector<INDEX_SIZE> &tmp)
             {
                 tmp.clear();
                 RINTERVAL intv;
@@ -230,30 +230,32 @@ namespace stool
 
                 std::pair<INDEX_SIZE, INDEX_SIZE> output_node;
                 std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> output_children;
-                std::vector<uint8_t> output_chars;
+                //std::vector<uint8_t> output_chars;
                 std::vector<CHAR> output_edge_chars;
 
                 for (uint64_t i = 0; i < size; i++)
                 {
                     output_children.clear();
-                    output_chars.clear();
+                    //output_chars.clear();
                     output_edge_chars.clear();
                     assert(this->first_child_flag_vec[L - 1]);
                     L = this->read_node(L, output_node, output_children, output_edge_chars);
+                    em.executeWeinerLinkSearch(output_node, output_children, this->store_edge_chars ? &output_edge_chars : nullptr, tmp);
+
+                    /*
                     if (this->store_edge_chars)
                     {
-                        em.executeWeinerLinkSearch(output_node, output_children, &output_edge_chars, output_chars);
                     }
                     else
                     {
                         em.executeWeinerLinkSearch(output_node, output_children, nullptr, output_chars);
                     }
-                        WeinerLinkCommonFunctions::output(em, this->store_edge_chars, tmp);
-
+                    */
+                    //WeinerLinkCommonFunctions::output(this->store_edge_chars, tmp);
                 }
             }
 
-            std::pair<uint64_t, uint64_t> countNextLCPIntervalSet(ExplicitWeinerLinkEmulator<RLBWTDS> &em)
+            std::pair<uint64_t, uint64_t> countNextLCPIntervalSet(ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> &em)
             {
                 STNodeVector<INDEX_SIZE> tmp;
                 this->computeNextSTNodes(em, tmp);

@@ -11,7 +11,7 @@
 #include "../rlbwt/rle_wavelet_tree.hpp"
 
 #include "suffix_tree_nodes.hpp"
-#include "weiner_link_emulator.hpp"
+#include "explicit_weiner_link_computer_on_rlbwt.hpp"
 #include <thread>
 #include "../debug/stnode_checker.hpp"
 

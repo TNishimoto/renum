@@ -22,14 +22,13 @@
 #include "../debug/hyper_debug.hpp"
 
 #include "../stnode_enumerator/application.hpp"
-#include "../stnode_enumerator/rlcp_interval_enumerator.hpp"
-#include "../rlbwt/io.hpp"
+#include "../rlbwt/bwt_analysis_result.hpp"
 #include "../rlbwt/rle.hpp"
 
 #include "../rlbwt/fpos_data_structure.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
 #include "../main/common.hpp"
-#include "../stnode_enumerator/weiner_link_search.hpp"
+#include "../stnode_enumerator/explicit_weiner_link_computer.hpp"
 
 #include "../stnode_enumerator/application.hpp"
 
@@ -161,7 +160,7 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
     {
 
         std::cout << "Single Test" << std::endl;
-        using INTERVAL_SEARCH = stool::lcp_on_rlbwt::ExplicitWeinerLinkEmulator<RDS>;
+        using INTERVAL_SEARCH = stool::lcp_on_rlbwt::ExplicitWeinerLinkComputerOnRLBWT<RDS>;
         stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX, INTERVAL_SEARCH> stnodeTraverser;
         INTERVAL_SEARCH em;
         em.initialize(&ds);
@@ -219,9 +218,9 @@ void computeLCPIntervals_beller(std::string inputFile)
     stool::IntervalSearchDataStructure range;
     range.initialize(&wt, &C, lastChar);
 
-    stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<uint32_t> wsearch;
+    stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t> wsearch;
     wsearch.initialize(&range, &bwt_bit_rank1, bwt.size());
-    stool::lcp_on_rlbwt::SingleSTNodeTraverser<uint32_t, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<uint32_t>> traverser;
+    stool::lcp_on_rlbwt::SingleSTNodeTraverser<uint32_t, stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>> traverser;
     traverser.initialize(&wsearch, true);
     auto test_Intervals = LCPIntervalTest::testLCPIntervals(traverser, &stnc);
 }

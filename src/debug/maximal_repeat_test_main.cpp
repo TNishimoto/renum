@@ -291,9 +291,9 @@ void computeMaximalSubstrings_beller(std::string inputFile)
 
         using INDEX_TYPE = uint32_t;
 
-        stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE> wsearch;
+        stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
         wsearch.initialize(&range, &bwt_bit_rank1, input_text_size);
-        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::lcp_on_rlbwt::ExplicitWeinerLinkSearch<INDEX_TYPE>> traverser;
+        stool::lcp_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::lcp_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch);
         ms_count = MaximalRepeatTest::test(traverser, plain_bwt);
     auto end = std::chrono::system_clock::now();

@@ -20,10 +20,11 @@ namespace stool
             This is a data structure to ...
         */
         template <typename RLBWTDS>
-        class ExplicitWeinerLinkEmulator
+        class ExplicitWeinerLinkComputerOnRLBWT
         {
 
             stool::lcp_on_rlbwt::STNodeChecker *stnc;
+
         public:
             using CHAR = typename RLBWTDS::CHAR;
             using INDEX = typename RLBWTDS::INDEX;
@@ -57,7 +58,6 @@ namespace stool
                 return this->rlbwt->str_size();
             }
 
-
             void initialize(RLBWTDS *_rlbwtds)
             {
                 _RLBWTDS = _rlbwtds;
@@ -80,12 +80,117 @@ namespace stool
                 //rlbwt->bwt[rlbwt->bwt.size() - 1];
 
                 auto head_chars = _RLBWTDS->get_head_chars_pointer();
-                auto wt  = _RLBWTDS->get_wavelet_tree_pointer();
+                auto wt = _RLBWTDS->get_wavelet_tree_pointer();
 
                 lightRangeSearcher.preprocess(head_chars);
                 heavyRangeSearcher.initialize(wt, lastChar);
             }
-            uint64_t get_explicit_stnode_count() const 
+            void executeWeinerLinkSearch(std::pair<INDEX, INDEX> &node, std::vector<std::pair<INDEX, INDEX>> &children, std::vector<uint8_t> *edgeChars, stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
+            {
+                bool _store_edge_chars = edgeChars != nullptr;
+
+                this->clear();
+                RINTERVAL intv;
+                this->_RLBWTDS->to_rinterval(node.first, node.second, intv);
+                this->computeSTNodeCandidates(intv);
+
+                RINTERVAL child;
+                if (_store_edge_chars)
+                {
+                    for (uint64_t i = 0; i < children.size(); i++)
+                    {
+                        this->_RLBWTDS->to_rinterval(children[i].first, children[i].second, child);
+                        this->computeSTChildren(child, (*edgeChars)[i]);
+                    }
+                }
+                else
+                {
+                    for (auto &it : children)
+                    {
+                        this->_RLBWTDS->to_rinterval(it.first, it.second, child);
+                        this->computeSTChildren(child, 0);
+                    }
+                }
+#if DEBUG
+                if (this->stnc != nullptr)
+                {
+                    this->verify_next_lcp_interval(node.first, node.second);
+                }
+#endif
+
+                this->fit();
+                this->output(_store_edge_chars, output_vec);
+            }
+            
+            std::vector<CharInterval<INDEX>> getFirstChildren()
+            {
+                std::vector<CharInterval<INDEX>> r;
+                uint64_t count = this->heavyRangeSearcher.range_distinct(0, this->rlbwt->rle_size() - 1, this->charIntervalTmpVec);
+                //r.resize(count - 1);
+
+                for (uint64_t x = 0; x < count; x++)
+                {
+                    auto &it = this->charIntervalTmpVec[x];
+                    //uint8_t c = it.c;
+                    uint64_t run = this->rlbwt->get_run(it.j) - 1;
+                    uint64_t i = this->_RLBWTDS->get_fpos(it.i, 0);
+                    uint64_t j = this->_RLBWTDS->get_fpos(it.j, run);
+                    r.push_back(CharInterval<INDEX>(i, j, it.c));
+                }
+                sort(r.begin(), r.end(), [&](const CharInterval<INDEX> &lhs, const CharInterval<INDEX> &rhs) {
+                    return lhs.c < rhs.c;
+                });
+                return r;
+            }
+            void executeWeinerLinkSearch(const RINTERVAL &node, std::vector<RINTERVAL> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
+            {
+
+                this->clear();
+
+                this->computeSTNodeCandidates(node);
+                if (edgeChars == nullptr)
+                {
+                    for (auto &it : children)
+                    {
+                        this->computeSTChildren(it, 0);
+                    }
+                }
+                else
+                {
+                    for (uint64_t i = 0; i < children.size(); i++)
+                    {
+                        this->computeSTChildren(children[i], (*edgeChars)[i]);
+                    }
+                }
+                this->fit();
+
+#if DEBUG
+                if (this->stnc != nullptr && this->checker_on)
+                {
+                    uint64_t left = this->rlbwt->get_lpos(node.beginIndex) + node.beginDiff;
+                    uint64_t right = this->rlbwt->get_lpos(node.endIndex) + node.endDiff;
+
+                    this->verify_next_lcp_interval(left, right);
+                }
+#endif
+
+                for (uint64_t i = 0; i < this->indexCount; i++)
+                {
+                    auto c = this->indexVec[i];
+                    output_chars.push_back(c);
+                }
+            }
+            
+            uint8_t get_child(uint8_t c, uint64_t index, RINTERVAL &output) const
+            {
+                auto &it = this->childrenVec[c][index];
+                uint64_t left = this->_RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
+                uint64_t right = this->_RLBWTDS->get_fpos(it.endIndex, it.endDiff);
+                this->_RLBWTDS->to_rinterval(left, right, output);
+                return this->edgeCharVec[c][index];
+            }
+            private:
+            uint64_t get_explicit_stnode_count() const
             {
                 return this->indexCount;
             }
@@ -113,14 +218,6 @@ namespace stool
                 indexCount = 0;
                 explicitChildCount = 0;
             }
-            uint8_t get_child(uint8_t c, uint64_t index, RINTERVAL &output) const
-            {
-                auto &it = this->childrenVec[c][index];
-                uint64_t left = this->_RLBWTDS->get_fpos(it.beginIndex, it.beginDiff);
-                uint64_t right = this->_RLBWTDS->get_fpos(it.endIndex, it.endDiff);
-                this->_RLBWTDS->to_rinterval(left, right, output);
-                return this->edgeCharVec[c][index];
-            }
             uint8_t get_child(uint8_t c, uint64_t index, std::pair<INDEX, INDEX> &output) const
             {
                 auto &it = this->childrenVec[c][index];
@@ -138,7 +235,7 @@ namespace stool
             void output(uint8_t c, bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
             {
                 //RINTERVAL copy;
-                
+
                 auto &currentVec = this->childrenVec[c];
                 uint64_t count = currentVec.size();
 
@@ -180,6 +277,7 @@ namespace stool
 
                 output_vec.maximal_repeat_check_vec.push_back(isMaximalRepeat);
             }
+            /*
             void executeWeinerLinkSearch(std::pair<INDEX, INDEX> &node,
                                          std::vector<std::pair<INDEX, INDEX>> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
             {
@@ -218,66 +316,57 @@ namespace stool
                     output_chars.push_back(c);
                 }
             }
-            void executeWeinerLinkSearch(const RINTERVAL &node, std::vector<RINTERVAL> &children, std::vector<uint8_t> *edgeChars, std::vector<uint8_t> &output_chars)
+            */
+            
+            void output(bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
             {
-
-                this->clear();
-
-                this->computeSTNodeCandidates(node);
-                if (edgeChars == nullptr)
-                {
-                    for (auto &it : children)
-                    {
-                        this->computeSTChildren(it, 0);
-
-                    }
-                }
-                else
-                {
-                    for (uint64_t i = 0; i < children.size(); i++)
-                    {
-                        this->computeSTChildren(children[i], (*edgeChars)[i]);
-                    }
-                }
-                this->fit();
-
-#if DEBUG
-                if (this->stnc != nullptr && this->checker_on)
-                {
-                    uint64_t left = this->rlbwt->get_lpos(node.beginIndex) + node.beginDiff;
-                    uint64_t right = this->rlbwt->get_lpos(node.endIndex) + node.endDiff;
-
-                    this->verify_next_lcp_interval(left, right);
-                }
-#endif
+                //RINTERVAL copy;
 
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
-                    auto c = this->indexVec[i];
-                    output_chars.push_back(c);
+                    CHAR c = this->indexVec[i];
+                    auto &currentVec = this->childrenVec[c];
+                    uint64_t count = currentVec.size();
+
+                    uint64_t st_left = UINT64_MAX;
+                    uint64_t st_right = 0;
+                    std::pair<INDEX, INDEX> outputInterval;
+
+                    for (uint64_t j = 0; j < count; j++)
+                    {
+                        CHAR edgeChar = this->get_child(c, j, outputInterval);
+                        if (outputInterval.first < st_left)
+                        {
+                            st_left = outputInterval.first;
+                        }
+                        if (outputInterval.second > st_right)
+                        {
+                            st_right = outputInterval.second;
+                        }
+                        if (j == 0)
+                        {
+                            output_vec.childs_vec.push_back(outputInterval.first);
+                            output_vec.first_child_flag_vec.push_back(true);
+
+                            if (_store_edge_chars)
+                            {
+                                output_vec.edge_char_vec.push_back(0);
+                            }
+                        }
+                        output_vec.childs_vec.push_back(outputInterval.second);
+                        output_vec.first_child_flag_vec.push_back(false);
+                        if (_store_edge_chars)
+                        {
+                            output_vec.edge_char_vec.push_back(edgeChar);
+                        }
+                    }
+                    bool isMaximalRepeat = this->checkMaximalRepeat(st_left, st_right);
+
+                    output_vec.maximal_repeat_check_vec.push_back(isMaximalRepeat);
                 }
             }
+            
 
-            std::vector<CharInterval<INDEX>> getFirstChildren()
-            {
-                std::vector<CharInterval<INDEX>> r;
-                uint64_t count = this->heavyRangeSearcher.range_distinct(0, this->rlbwt->rle_size() - 1, this->charIntervalTmpVec);
-                //r.resize(count - 1);
-
-                for (uint64_t x = 0; x < count; x++)
-                {
-                    auto &it = this->charIntervalTmpVec[x];
-                    //uint8_t c = it.c;
-                    uint64_t run = this->rlbwt->get_run(it.j) - 1;
-                    uint64_t i = this->_RLBWTDS->get_fpos(it.i, 0);
-                    uint64_t j = this->_RLBWTDS->get_fpos(it.j, run);
-                    r.push_back(CharInterval<INDEX>(i, j, it.c));
-                }
-                sort(r.begin(), r.end(), [&](const CharInterval<INDEX> &lhs, const CharInterval<INDEX> &rhs) {
-                    return lhs.c < rhs.c;
-                });
-                return r;
-            }
             uint64_t get_width(uint8_t c)
             {
                 auto &currentVec = this->childrenVec[c];

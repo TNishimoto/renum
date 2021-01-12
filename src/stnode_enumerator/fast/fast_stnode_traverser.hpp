@@ -8,7 +8,7 @@
 #include <deque>
 #include <vector>
 #include <type_traits>
-#include "../weiner_link_emulator.hpp"
+#include "../explicit_weiner_link_computer_on_rlbwt.hpp"
 #include "fast_stnode_sub_traverser.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
@@ -20,7 +20,7 @@ namespace stool
         std::mutex mtx3;
         template <typename INDEX_SIZE, typename RLBWTDS>
         void parallel_succ_fast_stnodes(std::vector<FastSTNodeSubTraverser<INDEX_SIZE, RLBWTDS> *> &trees, uint64_t fst_position,
-                                        std::stack<uint64_t> &position_stack, ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint64_t limit)
+                                        std::stack<uint64_t> &position_stack, ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> &em, uint64_t limit)
         {
 
             uint64_t pos = fst_position;
@@ -58,7 +58,7 @@ namespace stool
             std::deque<uint64_t> child_width_vec;
             std::deque<uint64_t> st_width_vec;
 
-            std::vector<ExplicitWeinerLinkEmulator<RLBWTDS>> ems;
+            std::vector<ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS>> ems;
             //uint64_t minimum_child_count = 1000;
             //uint64_t sub_tree_limit_size = 2000;
             uint64_t mmax = 0;
@@ -79,7 +79,7 @@ namespace stool
             using index_type = INDEX_SIZE;
             RLBWTDS *_RLBWTDS;
             stool::lcp_on_rlbwt::RLE<CHAR> *rlbwt;
-            ExplicitWeinerLinkEmulator<RLBWTDS> *get_interval_search_deta_structure() const
+            ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> *get_interval_search_deta_structure() const
             {
                 return &(this->ems[0]);
             }
@@ -135,7 +135,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    ems.push_back(ExplicitWeinerLinkEmulator<RLBWTDS>());
+                    ems.push_back(ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS>());
                     ems[ems.size() - 1].initialize(&__RLBWTDS);
                 }
             }

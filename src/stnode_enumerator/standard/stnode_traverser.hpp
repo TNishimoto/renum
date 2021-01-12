@@ -8,7 +8,7 @@
 #include <deque>
 #include <vector>
 #include <type_traits>
-#include "../weiner_link_emulator.hpp"
+#include "../explicit_weiner_link_computer_on_rlbwt.hpp"
 #include "stnode_sub_traverser.hpp"
 #include "../single/single_stnode_traverser.hpp"
 #include "multi_thread.hpp"
@@ -33,7 +33,7 @@ namespace stool
 
             //std::vector<std::vector<STNODE_SUB_TRAVERSER *>> new_trees;
 
-            std::vector<ExplicitWeinerLinkEmulator<RLBWTDS>> ems;
+            std::vector<ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS>> ems;
             uint64_t minimum_child_count = 1000;
             uint64_t sub_tree_limit_size = 2000;
 
@@ -51,7 +51,7 @@ namespace stool
         public:
             RLBWTDS *_RLBWTDS;
             using index_type = INDEX_SIZE;
-            ExplicitWeinerLinkEmulator<RLBWTDS> *get_interval_search_deta_structure() const
+            ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> *get_interval_search_deta_structure() const
             {
                 return &(this->ems[0]);
             }
@@ -98,7 +98,7 @@ namespace stool
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    ems.push_back(ExplicitWeinerLinkEmulator<RLBWTDS>());
+                    ems.push_back(ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS>());
                     ems[ems.size() - 1].initialize(&__RLBWTDS);
                 }
             }
@@ -244,7 +244,7 @@ namespace stool
                     }
                     else
                     {
-                        SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkEmulator<RLBWTDS>> tmp_traverser;
+                        SingleSTNodeTraverser<INDEX_SIZE, ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS>> tmp_traverser;
                         tmp_traverser.initialize(&ems[0], this->store_edge_chars);
                         tmp_traverser.succ();
                         STNodeVector<INDEX_SIZE> tmp;

@@ -8,7 +8,7 @@
 #include <deque>
 #include <vector>
 #include <type_traits>
-#include "../weiner_link_emulator.hpp"
+#include "../explicit_weiner_link_computer_on_rlbwt.hpp"
 #include "../../../module/stool/src/io.h"
 #include "../stnode_vector.hpp"
 #include "bit_deque.hpp"
@@ -41,8 +41,9 @@ namespace stool
 
         public:
             using index_type = INDEX_SIZE;
-            
-            INTERVAL_SEARCH* get_interval_search_deta_structure() const {
+
+            INTERVAL_SEARCH *get_interval_search_deta_structure() const
+            {
                 return this->em;
             }
 
@@ -59,7 +60,7 @@ namespace stool
                 this->store_edge_chars = _store_edge_chars;
                 this->lcp = -1;
                 /*
-                this->em = new ExplicitWeinerLinkEmulator<RLBWTDS>();
+                this->em = new ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS>();
                 this->em->initialize(__RLBWTDS);
                 */
             }
@@ -207,8 +208,8 @@ namespace stool
                     output.edge_char_vec.reserve(this->edge_char_vec.size());
                     while (this->edge_char_vec.size() > 0)
                     {
-                    output.edge_char_vec.push_back(this->edge_char_vec[0]);
-                    this->edge_char_vec.pop_front();
+                        output.edge_char_vec.push_back(this->edge_char_vec[0]);
+                        this->edge_char_vec.pop_front();
                     }
                 }
             }
@@ -282,6 +283,27 @@ namespace stool
                 this->maximal_repeat_check_vec.pop_front();
                 this->_stnode_count--;
             }
+
+            void import(stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &item)
+            {
+                for (auto &it : item.childs_vec)
+                {
+                    this->childs_vec.push_back(it);
+                }
+                for (auto it : item.first_child_flag_vec)
+                {
+                    this->first_child_flag_vec.push_back(it);
+                }
+                for (auto it : item.maximal_repeat_check_vec)
+                {
+                    this->maximal_repeat_check_vec.push_back(it);
+                    this->_stnode_count++;
+                }
+                for (auto &it : item.edge_char_vec)
+                {
+                    this->edge_char_vec.push_back(it);
+                }
+            }
             void computeNextLCPIntervalSet()
             {
                 //RINTERVAL intv;
@@ -290,35 +312,26 @@ namespace stool
                 uint64_t size = this->node_count();
                 std::pair<INDEX_SIZE, INDEX_SIZE> output_node;
                 std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> output_children;
-                std::vector<uint8_t> output_chars;
+                //std::vector<uint8_t> output_chars;
                 std::vector<CHAR> output_edge_chars;
+                stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> output_vec;
 
                 for (uint64_t i = 0; i < size; i++)
                 {
 
                     output_children.clear();
-                    output_chars.clear();
                     output_edge_chars.clear();
+                    output_vec.clear();
 
                     this->pop_node(output_node, output_children, output_edge_chars);
-                    if (this->store_edge_chars)
-                    {
-                        em->executeWeinerLinkSearch(output_node, output_children, &output_edge_chars, output_chars);
-                    }
-                    else
-                    {
-                        em->executeWeinerLinkSearch(output_node, output_children, nullptr, output_chars);
-                    }
+                    em->executeWeinerLinkSearch(output_node, output_children, this->store_edge_chars ? &output_edge_chars : nullptr, output_vec);
+                    this->import(output_vec);
 
-                    for (auto &c : output_chars)
-                    {
-                        this->add(c, *em);
-                    }
                 }
 
                 this->lcp++;
             }
-
+            /*
             void add(uint8_t c, INTERVAL_SEARCH &em)
             {
                 RINTERVAL copy;
@@ -363,6 +376,7 @@ namespace stool
                 this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
                 this->_stnode_count++;
             }
+            */
 
         public:
             uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
@@ -442,8 +456,7 @@ namespace stool
             CHAR get_edge_character(uint64_t child_pointer) const
             {
                 assert(this->store_edge_chars);
-                    return this->edge_char_vec[child_pointer];
-
+                return this->edge_char_vec[child_pointer];
             }
             INDEX_SIZE get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
             {

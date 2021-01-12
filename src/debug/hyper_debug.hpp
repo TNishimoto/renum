@@ -24,8 +24,7 @@
 #include "../debug/hyper_debug.hpp"
 
 #include "../stnode_enumerator/application.hpp"
-#include "../stnode_enumerator/rlcp_interval_enumerator.hpp"
-#include "../rlbwt/io.hpp"
+#include "../rlbwt/bwt_analysis_result.hpp"
 #include "../rlbwt/fpos_data_structure.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
 #include "../main/common.hpp"

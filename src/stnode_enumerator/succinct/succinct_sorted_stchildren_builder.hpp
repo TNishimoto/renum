@@ -8,7 +8,7 @@
 #include <deque>
 #include <vector>
 #include <type_traits>
-#include "../weiner_link_emulator.hpp"
+#include "../explicit_weiner_link_computer_on_rlbwt.hpp"
 #include "stool/src/elias_fano_vector.hpp"
 #include "succinct_sorted_stchildren.hpp"
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
@@ -206,7 +206,7 @@ namespace stool
                 }
             }
 
-            void computeNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint64_t st_index)
+            void computeNextSTNodes(ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> &em, uint64_t st_index)
             {
                 uint64_t st_left_index = prevSortedSTChildren->get_stnode_left_index(st_index);
                 uint64_t st_right_index = prevSortedSTChildren->get_stnode_right_index(st_index);
@@ -287,7 +287,7 @@ namespace stool
 #endif
                 }
             }
-            uint64_t countNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em, uint64_t st_index)
+            uint64_t countNextSTNodes(ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> &em, uint64_t st_index)
             {
                 uint64_t st_left_index = prevSortedSTChildren->get_stnode_left_index(st_index);
                 uint64_t st_right_index = prevSortedSTChildren->get_stnode_right_index(st_index);
@@ -335,7 +335,7 @@ namespace stool
 
                 return k;
             }
-            uint64_t countNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em)
+            uint64_t countNextSTNodes(ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> &em)
             {
                 assert(this->next_node_count == 0);
                 assert(this->next_child_count == 0);
@@ -349,7 +349,7 @@ namespace stool
                 return k;
             }
 
-            void computeNextSTNodes(ExplicitWeinerLinkEmulator<RLBWTDS> &em)
+            void computeNextSTNodes(ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> &em)
             {
                 assert(this->next_node_count == 0);
                 assert(this->next_child_count == 0);
