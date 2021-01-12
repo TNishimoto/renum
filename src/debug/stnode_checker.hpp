@@ -174,6 +174,9 @@ namespace stool
                     }
                 }
                 assert(mb == b);
+                if(mb != b){
+                    throw -1;
+                }
                 return mb;
             }
             bool check_edge_character(uint64_t left, uint64_t right, uint8_t c, uint64_t lcp){

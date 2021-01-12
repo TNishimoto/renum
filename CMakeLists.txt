@@ -73,5 +73,5 @@ target_link_libraries(interval_test.out fn)
 #add_executable(ptest.out src/main/ptest_main.cpp)
 #target_link_libraries(ptest.out fn)
 
-#add_executable(deque.out src/debug/bit_deque_main.cpp)
-#target_link_libraries(deque.out fn)
+add_executable(print.out src/main/print.cpp)
+target_link_libraries(print.out fn)

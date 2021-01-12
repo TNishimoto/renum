@@ -74,6 +74,11 @@ namespace stool
             static uint64_t outputMaximalSubstrings(std::ofstream &out, STNODES &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
                 using INDEX_SIZE = typename STNODES::index_type;
+                uint8_t print_type = 0;
+                out.write((char *)(&print_type), sizeof(print_type) );
+                uint8_t index_bits = sizeof(INDEX_SIZE);
+                out.write((char *)(&index_bits), sizeof(index_bits) );
+
 
                 uint64_t count = 0;
 
@@ -99,7 +104,7 @@ namespace stool
                             count++;
                             if (buffer.size() >= 8000)
                             {
-                                out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                                out.write((char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
                                 buffer.clear();
                             }
                         }
@@ -109,7 +114,7 @@ namespace stool
 
                 if (buffer.size() >= 1)
                 {
-                    out.write(reinterpret_cast<const char *>(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                    out.write((char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
                     buffer.clear();
                 }
                 std::cout << "Enumerated" << std::endl;
