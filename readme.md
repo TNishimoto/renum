@@ -35,7 +35,7 @@ options:
   -?, --help                 print this message  
   
 $ echo -n GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT > sample.txt  
-$ ./text_to_bwt.out -i sample.txt -s $
+$ ./text_to_bwt.out -i sample.txt -s $  
 Special character: $(36)  
 Input Text: GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT$  
 Output BWT: TCGCGCGGGATACAGAGGAT$GTGAGCATGGAAGTC  
