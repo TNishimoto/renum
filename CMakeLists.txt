@@ -73,5 +73,8 @@ target_link_libraries(interval_test.out fn)
 #add_executable(ptest.out src/main/ptest_main.cpp)
 #target_link_libraries(ptest.out fn)
 
+add_executable(text_to_bwt.out src/main/text_to_bwt_main.cpp)
+target_link_libraries(text_to_bwt.out divsufsort divsufsort64)
+
 add_executable(print.out src/main/print.cpp)
 target_link_libraries(print.out fn)

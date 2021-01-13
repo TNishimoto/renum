@@ -192,7 +192,7 @@ void debug(std::string inputFile)
     stool::lcp_on_rlbwt::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
     using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<uint32_t>;
-    RDS ds = RDS(&rlbwt, inputFile);
+    RDS ds = RDS(&rlbwt);
 
     std::cout << "Enumerate Maximal Substrings..." << std::endl;
     stool::lcp_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
@@ -235,7 +235,7 @@ void computeMUSs(std::string inputFile, std::string outputFile, string mode, int
     if (analysisResult.str_size < UINT32_MAX - 10)
     {
         using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<uint32_t>;
-        RDS ds = RDS(&rlbwt, inputFile);
+        RDS ds = RDS(&rlbwt);
         mid = std::chrono::system_clock::now();
 
         std::cout << "Enumerate Maximal Substrings..." << std::endl;
@@ -247,7 +247,7 @@ void computeMUSs(std::string inputFile, std::string outputFile, string mode, int
     else
     {
         using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<uint64_t>;
-        RDS ds = RDS(&rlbwt, inputFile);
+        RDS ds = RDS(&rlbwt);
         mid = std::chrono::system_clock::now();
 
         std::cout << "Enumerate Maximal Substrings..." << std::endl;

@@ -127,7 +127,7 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
     
     std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
     using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX>;
-    RDS ds = RDS(&rlbwt, inputFile);
+    RDS ds = RDS(&rlbwt);
 
     if (mode == "A")
     {

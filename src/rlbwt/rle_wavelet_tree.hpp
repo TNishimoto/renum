@@ -36,16 +36,20 @@ namespace stool
 
             stool::lcp_on_rlbwt::LightFPosDataStructure _fposDS;
 
-            RLEWaveletTree(stool::lcp_on_rlbwt::RLE<CHAR> *_rlbwt, string inputFile) : rlbwt(_rlbwt)
+            //RLEWaveletTree(stool::lcp_on_rlbwt::RLE<CHAR> *_rlbwt, string inputFile) : rlbwt(_rlbwt)
+
+            RLEWaveletTree(stool::lcp_on_rlbwt::RLE<CHAR> *_rlbwt) : rlbwt(_rlbwt)
             {
                 uint64_t data_structure_bytes = 0;
-                auto head_char_vec_pointer = rlbwt->get_head_char_vec();
+                const sdsl::int_vector<>* head_char_vec_pointer = rlbwt->get_head_char_vec();
                 auto lpos_vec_pointer = rlbwt->get_lpos_vec();
 
-                sdsl::store_to_file(*head_char_vec_pointer, inputFile + ".tmp");
+                //sdsl::store_to_file(*head_char_vec_pointer, inputFile + ".tmp");
 
                 stool::WT _wt;
-                construct(_wt, inputFile + ".tmp");
+                //construct(_wt, inputFile + ".tmp");
+                construct_im(_wt, *head_char_vec_pointer);
+
                 this->wt.swap(_wt);
 
                 data_structure_bytes += sdsl::size_in_bytes(wt);
