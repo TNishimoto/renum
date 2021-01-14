@@ -22,6 +22,10 @@ You need sdsl-lite(https://github.com/simongog/sdsl-lite) to excecute this progr
 > cmake -DCMAKE_BUILD_TYPE=Release ..  
 > make  
 
+## Library
+
+(in preparation)  
+
 ## Executions && Examples
 
 ### text_to_bwt.out  
