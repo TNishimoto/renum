@@ -54,19 +54,10 @@ namespace stool
 
                 data_structure_bytes += sdsl::size_in_bytes(wt);
                 std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
-
-                /*
-                this->lpos_vec.build_from_builder(run_bits);
-                std::cout << "LPOS Vec using memory = " << lpos_vec.get_using_memory() / 1000 << "[KB]" << std::endl;
-                data_structure_bytes += lpos_vec.get_using_memory();
-                */
-
-                //FPOSDS __fposds = stool::stnode_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
                 this->_fposDS.build(head_char_vec_pointer, *lpos_vec_pointer, &wt);
                 std::cout << "FPOS Vec using memory = " << _fposDS.get_using_memory() / 1000 << "[KB]" << std::endl;
                 data_structure_bytes += _fposDS.get_using_memory();
 
-                //rangeOnRLBWT.initialize(&wt, &bwt);
             }
             const stool::EliasFanoVector *get_lpos_vec_pointer() const
             {

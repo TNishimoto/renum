@@ -142,10 +142,10 @@ namespace stool
                 std::cout << "The length of the input text \t\t : " << this->str_size << std::endl;
                 std::cout << "The number of runs on BWT \t\t : " << this->run_count << std::endl;
                 std::cout << "Alphabet size \t\t : " << this->alphabet_count << std::endl;
-                std::cout << "log sigma \t\t : " << this->character_bit_size() << std::endl;
-                uint64_t x = run_count * (stool::Log::log2(str_size / run_count));
+                //std::cout << "log sigma \t\t : " << this->character_bit_size() << std::endl;
+                //uint64_t x = run_count * (stool::Log::log2(str_size / run_count));
 
-                std::cout << "r log (n/r) = " << x << std::endl;
+                //std::cout << "r log (n/r) = " << x << std::endl;
                 /*
                 for (uint64_t i = 0; i < this->id_to_character_vec.size(); i++)
                 {

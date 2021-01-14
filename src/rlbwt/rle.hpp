@@ -152,20 +152,20 @@ namespace stool
 
                 run_bits.push_bit(true);
                 run_bits.finish();
-    
-    std::cout << "BWT using memory = " << sdsl::size_in_bytes(head_char_vec) / 1000 << "[KB]" << std::endl;
-    std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
-    
+
+                std::cout << "BWT using memory = " << sdsl::size_in_bytes(head_char_vec) / 1000 << "[KB]" << std::endl;
+                std::cout << "Run bits using memory = " << run_bits.get_using_memory() / 1000 << "[KB]" << std::endl;
 
                 inp.close();
 
                 analysisResult.print();
                 this->lpos_vec.build_from_builder(run_bits);
             }
-            CHAR get_smallest_character() const {
+            CHAR get_smallest_character() const
+            {
                 return this->smallest_character;
             }
-            
+
             uint64_t get_lindex_containing_the_position(uint64_t lposition) const
             {
                 uint64_t x = this->lpos_vec.rank(lposition + 1) - 1;

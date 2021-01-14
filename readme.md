@@ -56,3 +56,19 @@ options:
   -o, --output_file    output file path (default: input_file_path.max) (string [=])  
   -p, --thread_num     thread number for parallel processing (int [=-1])  
   -?, --help           print this message  
+
+$ ./maximal_repeat.out -i ./sample.txt.bwt  
+______________________RESULT______________________  
+RLBWT File                               : ./sample.txt.bwt  
+Output                                   : ./sample.txt.bwt.max  
+Peak children count                      : 22  
+Thread number                            : 8  
+Integer Type                             : UINT32_t  
+The length of the input text             : 36  
+The number of runs on BWT                : 31  
+The number of maximum substrings         : 16  
+Excecution time                          : 0 [s]  
+Character per second                     : inf [KB/s]  
+         Preprocessing time              : 0 [s]  
+         Enumeration time                : 0 [s]  
+_______________________________________________________  

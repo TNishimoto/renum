@@ -80,11 +80,11 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, int
     }
 
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
-    double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    double enumeration_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
-    double construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
+    double elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    double enumeration_time = std::chrono::duration_cast<std::chrono::seconds>(end - mid).count();
+    double construction_time = std::chrono::duration_cast<std::chrono::seconds>(mid - start).count();
 
-    double bps = ((double)analysisResult.str_size / ((double)elapsed / 1000)) / 1000;
+    double bps = ((double)analysisResult.str_size / ((double)elapsed) / 1000);
 
     std::cout << "\033[31m";
     std::cout << "______________________RESULT______________________" << std::endl;
@@ -99,10 +99,10 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, int
     std::cout << "The length of the input text \t\t : " << analysisResult.str_size << std::endl;
     std::cout << "The number of runs on BWT \t\t : " << analysisResult.run_count << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
-    std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
-    std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
-    std::cout << "\t Preprocessing time \t\t : " << construction_time << "[ms]" << std::endl;
-    std::cout << "\t Enumeration time \t\t : " << enumeration_time << "[ms]" << std::endl;
+    std::cout << "Excecution time \t\t\t : " << elapsed << " [s]" << std::endl;
+    std::cout << "Character per second \t\t\t : " << bps << " [KB/s]" << std::endl;
+    std::cout << "\t Preprocessing time \t\t : " << construction_time << " [s]" << std::endl;
+    std::cout << "\t Enumeration time \t\t : " << enumeration_time << " [s]" << std::endl;
 
     std::cout << "_______________________________________________________" << std::endl;
 
@@ -119,17 +119,12 @@ int main(int argc, char *argv[])
 
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input bwt file path", true);
-    //p.add<bool>("mode", 'm', "mode", false, false);
     p.add<string>("output_file", 'o', "output file path (default: input_file_path.max)", false, "");
-    //p.add<string>("mode", 'm', "mode", false, "rlbwt");
     p.add<int>("thread_num", 'p', "thread number for parallel processing", false, -1);
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");
-    //string mode = p.get<string>("mode");
-
     string outputFile = p.get<string>("output_file");
-    string format = "binary";
     int thread_num = p.get<int>("thread_num");
     if (thread_num < 0)
     {
