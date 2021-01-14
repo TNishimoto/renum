@@ -1,5 +1,6 @@
 #include <cassert>
 #include <chrono>
+#include <stdio.h>
 #include "../module/stool/src/io.hpp"
 #include "../module/stool/src/sa_bwt_lcp.hpp"
 
@@ -30,7 +31,10 @@ using namespace std;
 using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
-
+int deleteFile(string fileName)
+{
+    return !(remove(fileName));
+}
 class LCPIntervalTest
 {
 public:
@@ -111,17 +115,19 @@ uint8_t get_last_char(std::string inputFile, std::vector<uint64_t> &C, sdsl::bit
         }
         bv[i] = b;
     }
-    //std::cout << std::endl;
+    /*
     if (k == 0)
     {
         std::cout << "Error: This bwt does not contain 0." << std::endl;
         throw -1;
     }
+    
     else if (k >= 2)
     {
         std::cout << "Error2: This bwt contains 0 twice or more." << std::endl;
         throw -1;
     }
+    */
     std::cout << "Constructing array C..." << std::endl;
 
     stool::FMIndex::constructC(bwt, C);
@@ -183,7 +189,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
     }
 }
 
-void computeMaximalSubstrings(std::string inputFile, std::string outputFile, bool correctCheck)
+void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 {
 
     //string text = "";
@@ -192,6 +198,8 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
     sdsl::bit_vector bv;
 
     std::cout << "Loading : " << inputFile << std::endl;
+
+
     uint8_t lastChar = get_last_char(inputFile, C, bv);
     sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
 
@@ -199,6 +207,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
     wt_huff<> wt;
     construct(wt, inputFile);
     std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+
 
     uint64_t ms_count = 0;
 
@@ -213,11 +222,8 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
     uint64_t input_text_size = wt.size();
 
     auto mid = std::chrono::system_clock::now();
-    double construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
-    std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
 
     std::cout << "Enumerating..." << std::endl;
-    uint64_t peak_count = 0;
             stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
 
     if (input_text_size - 10 < UINT32_MAX)
@@ -243,42 +249,49 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
 
     }
     auto end = std::chrono::system_clock::now();
-    double enumeration_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
+    double enumeration_time = std::chrono::duration_cast<std::chrono::seconds>(end - mid).count();
+    double construction_time = std::chrono::duration_cast<std::chrono::seconds>(mid - start).count();
+    //std::cout << "Construction time: " << construction_time << "[s]" << std::endl;
 
-    double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    double elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
     double bps = ((double)input_text_size / ((double)elapsed / 1000)) / 1000;
 
     std::cout << "\033[31m";
     std::cout << "______________________RESULT______________________" << std::endl;
-    std::cout << "RLBWT File \t\t\t\t\t : " << inputFile << std::endl;
-    std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
+    std::cout << "BWT File \t\t\t\t\t : " << inputFile << std::endl;
+    std::cout << "Output File \t\t\t\t\t : " << outputFile << std::endl;
     std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
     std::cout << "Peak count \t : " << st_result.max_nodes_at_level << std::endl;
     std::cout << "The usage of Wavelet tree : " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
-    std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
+    std::cout << "Excecution time \t\t\t : " << elapsed << "[s]" << std::endl;
     std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
 
-    std::cout << "\t Preprocessing time \t\t : " << construction_time << "[ms]" << std::endl;
-    std::cout << "\t Enumeration time \t\t : " << enumeration_time << "[ms]" << std::endl;
+    std::cout << "\t Preprocessing time \t\t : " << construction_time << "[s]" << std::endl;
+    std::cout << "\t Enumeration time \t\t : " << enumeration_time << "[s]" << std::endl;
 
     std::cout << "_______________________________________________________" << std::endl;
     std::cout << "\033[39m" << std::endl;
+
+    if (deleteFile(inputFile)) {
+        std::cout << "Deleted: " << inputFile << std::endl;   
+    }
+    else {
+        std::cout << "Failed to delete " << inputFile << std::endl;   
+
+    }
 }
 
 int main(int argc, char *argv[])
 {
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input file name", true);
-    p.add<string>("mode", 'm', "mode", false, "xx");
     p.add<string>("output_file", 'o', "output file name", false, "");
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");
-    string mode = p.get<string>("mode");
     string outputFile = p.get<string>("output_file");
-    string format = "binary";
 
     std::ifstream ifs(inputFile);
     bool inputFileExist = ifs.is_open();
@@ -288,58 +301,11 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if (mode == "iv")
-    {
-        std::vector<uint8_t> text = load_bwt(inputFile);
-
-        sdsl::int_vector<> bwt;
-        bwt.width(8);
-        bwt.resize(text.size());
-
-        uint64_t k = 0;
-        for (uint64_t i = 0; i < text.size(); i++)
-        {
-            bwt[i] = text[i];
-            if (bwt[i] == 0)
-            {
-                k++;
-            }
-        }
-        if (k != 1)
-        {
-            std::cout << "bwt error" << std::endl;
-            throw -1;
-        }
-        sdsl::store_to_file(bwt, inputFile + ".iv");
-        std::cout << "Finished." << std::endl;
-        return 0;
-    }
-    else if (mode == "wt")
-    {
-        wt_huff<> wt;
-        construct(wt, inputFile);
-        std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
-
-        std::cout << "Finished." << std::endl;
-        return 0;
-    }
-    else if (mode == "test")
-    {
-        computeLCPIntervals(inputFile, true);
-
-        return 0;
-    }
-
     if (outputFile.size() == 0)
     {
-        if (format == "csv")
-        {
-            outputFile = inputFile + ".max.csv";
-        }
-        else
-        {
             outputFile = inputFile + ".max";
-        }
     }
-    computeMaximalSubstrings(inputFile, outputFile, true);
+    computeMaximalSubstrings(inputFile, outputFile);
+
+
 }

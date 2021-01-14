@@ -115,25 +115,6 @@ namespace stool
                         this->alphabet_count++;
                     }
                 }
-                /*
-                uint64_t xp = 0;
-                for (uint64_t i = 0; i < this->character_count_vec.size(); i++)
-                {
-                    if (this->character_count_vec[i] > 0)
-                    {
-                        this->id_to_character_vec.push_back(i);
-                        this->character_to_id_vec[i] = xp++;
-                        if(xp == 8){
-                            this->id_to_character_vec.push_back(UINT64_MAX);
-                            xp++;
-                        }
-                    }
-                    else
-                    {
-                        this->character_to_id_vec[i] = UINT64_MAX;
-                    }
-                }
-                */
             }
             void print()
             {

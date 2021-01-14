@@ -13,6 +13,44 @@ namespace stool
 {
     namespace bwt
     {
+        /*
+        void load(string filename, sdsl::int_vector<> &output)
+        {
+            std::ifstream inp;
+            std::vector<char> buffer;
+            uint64_t bufferSize = 8192;
+            buffer.resize(8192);
+
+            inp.open(filename, std::ios::binary);
+            bool inputFileExist = inp.is_open();
+            if (!inputFileExist)
+            {
+                std::cout << filename << " cannot open." << std::endl;
+
+                throw std::runtime_error("error");
+            }
+            uint64_t textSize = stool::FileReader::getTextSize(inp);
+            uint8_t prevChar = 255;
+            uint64_t x = 0;
+            uint64_t count_run = 0;
+            output.resize(textSize);
+            uint64_t pos = 0;
+            while (true)
+            {
+                bool b = stool::FileReader::read(inp, buffer, bufferSize, textSize);
+                if (!b)
+                {
+                    break;
+                }
+
+                for (uint64_t i = 0; i < buffer.size(); i++)
+                {
+                    output[pos++] = (uint8_t)buffer[i];
+                }
+            }
+            inp.close();
+        }
+        */
 
         bool load(string &filename, std::vector<uint8_t> &output)
         {
@@ -73,7 +111,7 @@ namespace stool
             std::vector<uint8_t> bwt;
             load(filename, bwt);
             std::cout << "file: " << filename << std::endl;
-            
+
             std::vector<uint64_t> FreqArr, C;
             FreqArr.resize(256, 0);
             C.resize(256, 0);

@@ -112,3 +112,46 @@ File Type: LCPInterval
 Integer Type: uint32t  
 Count: 16  
 _______________________________________________________  
+
+### convert_bwt_into_int_vector.out  
+This program converts a given BWT in text format into the BWT in binary format(sdsl::int_vector).  
+
+usage: ./convert_bwt_into_int_vector.out --input_file=string [options] ...   
+options:  
+  -i, --input_file     input bwt file path (text format) (string)  
+  -o, --output_file    output bwt file path (binary file) (string [=])  
+  -?, --help           print this message  
+
+$ ./convert_bwt_into_int_vector.out -i ./sample.txt.bwt  
+Finished.  
+______________________RESULT______________________  
+Input BWT File                                   : ./sample.txt.bwt  
+Output BWT File                                  : ./sample.txt.bwt.iv  
+_______________________________________________________  
+
+
+### bbo_meximal_repeat.out
+
+This program outputs the LCP intervals for all the maximal repeats   
+in the string represented by a given BWT, using the algorithm described in (https://link.springer.com/chapter/10.1007/978-3-642-34109-0_11).  
+The format of the input BWT must be binary format (sdsl::int_vector).  
+The input file is deleted after finishing the program.  
+
+usage: ./bbo_meximal_repeat.out --input_file=string [options] ...   
+options:  
+  -i, --input_file     input file name (string)  
+  -o, --output_file    output file name (string [=])  
+  -?, --help           print this message  
+
+______________________RESULT______________________  
+BWT File                                         : ./sample.txt.bwt.iv  
+Output File                                      : ./sample.txt.bwt.iv.max  
+The length of the input text             : 36  
+The number of maximum substrings         : 16  
+Peak count       : 22  
+The usage of Wavelet tree : 3[KB]  
+Excecution time                          : 0[s]  
+Character per second                     : inf[KB/s]  
+         Preprocessing time              : 0[s]  
+         Enumeration time                : 0[s]  
+_______________________________________________________  

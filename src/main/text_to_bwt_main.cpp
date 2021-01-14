@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
     string inputFile = p.get<string>("input_file");
     string outputFile = p.get<string>("output_file");
     string specialCharacter = p.get<string>("special_character");
+
     uint8_t sc = 0;
     if(specialCharacter.size() > 0){
         sc = specialCharacter[0];
