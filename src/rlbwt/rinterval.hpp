@@ -8,7 +8,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
         template <typename INDEX_SIZE>
         struct RInterval
@@ -103,5 +103,5 @@ namespace stool
             }
         };
 
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

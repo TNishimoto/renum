@@ -12,7 +12,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
 
         template <typename CHAR = uint8_t>
@@ -285,5 +285,5 @@ namespace stool
     */
         };
 
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

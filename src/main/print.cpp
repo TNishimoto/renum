@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 
     /*
     stool::rlbwt2::BWTAnalysisResult analysisResult;
-    stool::lcp_on_rlbwt::RLE<uint8_t> rlbwt;
+    stool::stnode_on_rlbwt::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
     */
     BWTDecompressor dec;

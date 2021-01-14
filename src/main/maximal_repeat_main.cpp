@@ -48,35 +48,35 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, int
         throw std::runtime_error("Cannot open the output file!");
     }
     stool::rlbwt2::BWTAnalysisResult analysisResult;
-    stool::lcp_on_rlbwt::RLE<uint8_t> rlbwt;
+    stool::stnode_on_rlbwt::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
 
     uint64_t ms_count = 0;
-    stool::lcp_on_rlbwt::STTreeAnalysisResult st_result;
+    stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
 
 
     if (analysisResult.str_size < UINT32_MAX - 10)
     {
-        using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<uint32_t>;
+        using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint32_t>;
         RDS ds = RDS(&rlbwt);
         mid = std::chrono::system_clock::now();
 
         std::cout << "Enumerate Maximal Substrings..." << std::endl;
-        stool::lcp_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
+        stool::stnode_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds, false);
-        ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+        ms_count = stool::stnode_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
         bit_size_mode = "UINT32_t";
     }
     else
     {
-        using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<uint64_t>;
+        using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint64_t>;
         RDS ds = RDS(&rlbwt);
         mid = std::chrono::system_clock::now();
 
         std::cout << "Enumerate Maximal Substrings..." << std::endl;
-        stool::lcp_on_rlbwt::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
+        stool::stnode_on_rlbwt::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds, false);
-        ms_count = stool::lcp_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+        ms_count = stool::stnode_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
     }
 
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();

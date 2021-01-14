@@ -20,7 +20,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
 
         const uint SUCCINCT_MODE = 1;
@@ -53,7 +53,7 @@ namespace stool
             bool use_fast_mode = true;
             uint mode = SINGLE_MODE;
             RLBWTDS *_RLBWTDS;
-            stool::lcp_on_rlbwt::RLE<CHAR> *_RLBWT;
+            stool::stnode_on_rlbwt::RLE<CHAR> *_RLBWT;
 
             ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> *get_interval_search_deta_structure() const
             {
@@ -610,5 +610,5 @@ namespace stool
             }
         };
 
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

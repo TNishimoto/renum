@@ -55,7 +55,7 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         std::cout << std::endl;
     }
 
-    stool::lcp_on_rlbwt::STNodeChecker stnc;
+    stool::stnode_on_rlbwt::STNodeChecker stnc;
     stnc.initialize(inputFile);
 
     std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
@@ -74,34 +74,34 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         std::cout << "[Finished]" << std::endl;
 
         assert(diff_char_vec.size() + 1 == lpos_vec.size());
-        using LPOSDS = stool::lcp_on_rlbwt::RankSupportVectorWrapper<std::vector<uint64_t>>;
+        using LPOSDS = stool::stnode_on_rlbwt::RankSupportVectorWrapper<std::vector<uint64_t>>;
         LPOSDS lpos_vec_wrapper(lpos_vec);
 
         if (FPOSMODE == '0')
         {
             using FPOSDS = std::vector<uint64_t>;
-            using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
-            FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec_wrapper);
+            using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
+            FPOSDS fposds = stool::stnode_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec_wrapper);
 
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
             ds.stnc = &stnc;
-            stool::lcp_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
+            stool::stnode_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
 
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application::testLCPIntervals(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::stnode_on_rlbwt::Application::testLCPIntervals(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
         else
         {
-            using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-            using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
-            FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec_wrapper, wt);
+            using FPOSDS = stool::stnode_on_rlbwt::LightFPosDataStructure;
+            using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
+            FPOSDS fposds = stool::stnode_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec_wrapper, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec_wrapper, fposds);
             ds.stnc = &stnc;
 
-            stool::lcp_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
+            stool::stnode_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application::testLCPIntervals(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::stnode_on_rlbwt::Application::testLCPIntervals(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
     }
@@ -116,28 +116,28 @@ void testMaximalSubstrings(std::string inputFile, string mode, int thread_num)
         if (FPOSMODE == '0')
         {
             using FPOSDS = std::vector<uint64_t>;
-            using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
-            FPOSDS fposds = stool::lcp_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec);
+            using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
+            FPOSDS fposds = stool::stnode_on_rlbwt::FPosDataStructure::construct(diff_char_vec, lpos_vec);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             ds.stnc = &stnc;
 
-            stool::lcp_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
+            stool::stnode_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application::testLCPIntervals(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::stnode_on_rlbwt::Application::testLCPIntervals(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
         else
         {
-            using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
-            using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
-            FPOSDS fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
+            using FPOSDS = stool::stnode_on_rlbwt::LightFPosDataStructure;
+            using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<INDEX, LPOSDS, FPOSDS>;
+            FPOSDS fposds = stool::stnode_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
             RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
             ds.stnc = &stnc;
 
-            stool::lcp_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
+            stool::stnode_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
             stnodeTraverser.initialize(thread_num, ds);
 
-            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::lcp_on_rlbwt::Application::testLCPIntervals(stnodeTraverser);
+            std::vector<stool::LCPInterval<uint64_t>> tmp = stool::stnode_on_rlbwt::Application::testLCPIntervals(stnodeTraverser);
             test_Intervals.swap(tmp);
         }
     }

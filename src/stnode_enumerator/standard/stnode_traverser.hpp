@@ -17,7 +17,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
 
         template <typename INDEX_SIZE, typename RLBWTDS>
@@ -576,5 +576,5 @@ namespace stool
             }
         };
 
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

@@ -15,7 +15,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
         std::mutex mtx3;
         template <typename INDEX_SIZE, typename RLBWTDS>
@@ -78,7 +78,7 @@ namespace stool
         public:
             using index_type = INDEX_SIZE;
             RLBWTDS *_RLBWTDS;
-            stool::lcp_on_rlbwt::RLE<CHAR> *rlbwt;
+            stool::stnode_on_rlbwt::RLE<CHAR> *rlbwt;
             ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> *get_interval_search_deta_structure() const
             {
                 return &(this->ems[0]);
@@ -682,7 +682,7 @@ namespace stool
             {
                 return this->check_maximal_repeat(iter.node_index);
             }
-        }; // namespace lcp_on_rlbwt
+        }; // namespace stnode_on_rlbwt
 
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

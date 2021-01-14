@@ -13,7 +13,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
         class BitDeque
         {
@@ -212,5 +212,5 @@ namespace stool
                 return output;
             }
         };
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

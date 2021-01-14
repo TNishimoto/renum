@@ -11,7 +11,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
         template <typename T>
         class RankSupportVectorWrapper
@@ -372,5 +372,5 @@ namespace stool
                 return x;
             }
         };
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

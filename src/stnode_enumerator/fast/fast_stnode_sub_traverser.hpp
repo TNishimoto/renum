@@ -12,7 +12,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
 
         template <typename INDEX_SIZE, typename RLBWTDS, typename CHAR = uint8_t>
@@ -33,7 +33,7 @@ namespace stool
             uint64_t parent_current_lcp = 0;
 
             RLBWTDS *_RLBWTDS = nullptr;
-            stool::lcp_on_rlbwt::RLE<CHAR> *rlbwt;
+            stool::stnode_on_rlbwt::RLE<CHAR> *rlbwt;
 
             bool store_edge_chars = false;
 
@@ -539,5 +539,5 @@ namespace stool
             }
         };
 
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

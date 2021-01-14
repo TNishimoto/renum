@@ -14,7 +14,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
 
         template <typename INDEX_SIZE>
@@ -26,19 +26,19 @@ namespace stool
             using CHAR = uint8_t;
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             using CHAR_VEC = sdsl::int_vector<>;
-            using FPOSDS = stool::lcp_on_rlbwt::LightFPosDataStructure;
+            using FPOSDS = stool::stnode_on_rlbwt::LightFPosDataStructure;
 
         private:
-            stool::lcp_on_rlbwt::RLE<CHAR> *rlbwt;
+            stool::stnode_on_rlbwt::RLE<CHAR> *rlbwt;
             stool::WT wt;
 
         public:
 
-            stool::lcp_on_rlbwt::LightFPosDataStructure _fposDS;
+            stool::stnode_on_rlbwt::LightFPosDataStructure _fposDS;
 
-            //RLEWaveletTree(stool::lcp_on_rlbwt::RLE<CHAR> *_rlbwt, string inputFile) : rlbwt(_rlbwt)
+            //RLEWaveletTree(stool::stnode_on_rlbwt::RLE<CHAR> *_rlbwt, string inputFile) : rlbwt(_rlbwt)
 
-            RLEWaveletTree(stool::lcp_on_rlbwt::RLE<CHAR> *_rlbwt) : rlbwt(_rlbwt)
+            RLEWaveletTree(stool::stnode_on_rlbwt::RLE<CHAR> *_rlbwt) : rlbwt(_rlbwt)
             {
                 uint64_t data_structure_bytes = 0;
                 const sdsl::int_vector<>* head_char_vec_pointer = rlbwt->get_head_char_vec();
@@ -61,7 +61,7 @@ namespace stool
                 data_structure_bytes += lpos_vec.get_using_memory();
                 */
 
-                //FPOSDS __fposds = stool::lcp_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
+                //FPOSDS __fposds = stool::stnode_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
                 this->_fposDS.build(head_char_vec_pointer, *lpos_vec_pointer, &wt);
                 std::cout << "FPOS Vec using memory = " << _fposDS.get_using_memory() / 1000 << "[KB]" << std::endl;
                 data_structure_bytes += _fposDS.get_using_memory();
@@ -72,7 +72,7 @@ namespace stool
             {
                 return this->rlbwt->get_lpos_vec();
             }
-            stool::lcp_on_rlbwt::RLE<CHAR>* get_rlbwt() const {
+            stool::stnode_on_rlbwt::RLE<CHAR>* get_rlbwt() const {
                 return this->rlbwt;
             } 
             const sdsl::int_vector<> *get_head_chars_pointer() const
@@ -105,5 +105,5 @@ namespace stool
                 output.endDiff = right - this->rlbwt->get_lpos(output.endIndex);
             }
         };
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

@@ -11,7 +11,7 @@
 #include "./stnode_vector.hpp"
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
         /*
             This is a data structure to ...
@@ -63,7 +63,7 @@ namespace stool
                 this->searcher = _searcher;
                 this->strSize = _strSize;
             }
-            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
+            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
             {
                 bool _store_edge_chars = edgeChars != nullptr;
 
@@ -164,7 +164,7 @@ namespace stool
             }
 
 
-            void output(bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
+            void output(bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
             {
                 //RINTERVAL copy;
 
@@ -333,7 +333,7 @@ namespace stool
         public:
             /*
             template <typename EM>
-            static void output(const EM em, uint8_t c, bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
+            static void output(const EM em, uint8_t c, bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
             {
                 //RINTERVAL copy;
 
@@ -380,7 +380,7 @@ namespace stool
                 output_vec.maximal_repeat_check_vec.push_back(isMaximalRepeat);
             }
             template <typename EM>
-            static void output(const EM em, bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
+            static void output(const EM em, bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
             {
                 for (uint64_t i = 0; i < em.indexCount; i++)
                 {
@@ -390,7 +390,7 @@ namespace stool
             }
             */
             template <typename EM, typename ITERATOR>
-            static void compute_weiner_links(EM &em, const ITERATOR &it, stool::lcp_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output)
+            static void compute_weiner_links(EM &em, const ITERATOR &it, stool::stnode_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output)
             {
                 using CHAR = typename EM::CHAR;
                 using INDEX = typename EM::INDEX;
@@ -418,5 +418,5 @@ namespace stool
             
         };
 
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

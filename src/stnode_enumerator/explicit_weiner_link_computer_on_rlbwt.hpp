@@ -14,7 +14,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
         /*
             This is a data structure to ...
@@ -23,7 +23,7 @@ namespace stool
         class ExplicitWeinerLinkComputerOnRLBWT
         {
 
-            stool::lcp_on_rlbwt::STNodeChecker *stnc;
+            stool::stnode_on_rlbwt::STNodeChecker *stnc;
 
         public:
             using CHAR = typename RLBWTDS::CHAR;
@@ -50,7 +50,7 @@ namespace stool
             std::vector<CharInterval<INDEX>> charIntervalTmpVec;
 
             RLBWTDS *_RLBWTDS;
-            stool::lcp_on_rlbwt::RLE<CHAR> *rlbwt;
+            stool::stnode_on_rlbwt::RLE<CHAR> *rlbwt;
             LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX> lightRangeSearcher;
             SuccinctRangeDistinctDataStructure<INDEX> heavyRangeSearcher;
             uint64_t get_input_text_length() const
@@ -85,7 +85,7 @@ namespace stool
                 lightRangeSearcher.preprocess(head_chars);
                 heavyRangeSearcher.initialize(wt, lastChar);
             }
-            void executeWeinerLinkSearch(std::pair<INDEX, INDEX> &node, std::vector<std::pair<INDEX, INDEX>> &children, std::vector<uint8_t> *edgeChars, stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
+            void executeWeinerLinkSearch(std::pair<INDEX, INDEX> &node, std::vector<std::pair<INDEX, INDEX>> &children, std::vector<uint8_t> *edgeChars, stool::stnode_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
             {
                 bool _store_edge_chars = edgeChars != nullptr;
 
@@ -232,7 +232,7 @@ namespace stool
                 return this->_RLBWTDS->checkMaximalRepeat(left, right);
             }
 
-            void output(uint8_t c, bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
+            void output(uint8_t c, bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
             {
                 //RINTERVAL copy;
 
@@ -318,7 +318,7 @@ namespace stool
             }
             */
             
-            void output(bool _store_edge_chars, stool::lcp_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
+            void output(bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
             {
                 //RINTERVAL copy;
 
@@ -593,5 +593,5 @@ namespace stool
             }
         };
 
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

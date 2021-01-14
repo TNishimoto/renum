@@ -14,7 +14,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
 
         template <typename CHAR_VEC, typename INDEX_SIZE>
@@ -69,5 +69,5 @@ namespace stool
                 return count;
             }
         };
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

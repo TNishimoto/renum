@@ -26,7 +26,7 @@
 #include <mutex>
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
         template <typename CHAR_VEC, typename INDEX_SIZE>
         class LightRangeDistinctDataStructure2
@@ -94,7 +94,7 @@ namespace stool
             std::vector<stool::LCPInterval<uint64_t>> lcp_intervals;
             std::vector<std::unordered_map<uint64_t, uint64_t>> maps;
             //std::vector<std::unordered_set<uint64_t>> sets;
-            stool::lcp_on_rlbwt::LightRangeDistinctDataStructure2<sdsl::int_vector<>, uint64_t> lrdds;
+            stool::stnode_on_rlbwt::LightRangeDistinctDataStructure2<sdsl::int_vector<>, uint64_t> lrdds;
             sdsl::int_vector<> bwt;
             wt_gmr<> wt;
             std::vector<uint64_t> C;
@@ -321,5 +321,5 @@ namespace stool
                 }
             }
         };
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

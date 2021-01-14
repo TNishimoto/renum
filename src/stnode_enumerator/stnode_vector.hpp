@@ -14,7 +14,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
         /*
         int64_t debug_sum_counter = 0;
@@ -301,5 +301,5 @@ namespace stool
                 }
             }
         };
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool

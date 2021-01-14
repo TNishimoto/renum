@@ -18,7 +18,7 @@
 
 namespace stool
 {
-    namespace lcp_on_rlbwt
+    namespace stnode_on_rlbwt
     {
         template <typename INDEX_SIZE, typename INTERVAL_SEARCH, typename CHAR = uint8_t>
         class SingleSTNodeTraverser
@@ -284,7 +284,7 @@ namespace stool
                 this->_stnode_count--;
             }
 
-            void import(stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &item)
+            void import(stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &item)
             {
                 for (auto &it : item.childs_vec)
                 {
@@ -314,7 +314,7 @@ namespace stool
                 std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> output_children;
                 //std::vector<uint8_t> output_chars;
                 std::vector<CHAR> output_edge_chars;
-                stool::lcp_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> output_vec;
+                stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> output_vec;
 
                 for (uint64_t i = 0; i < size; i++)
                 {
@@ -524,5 +524,5 @@ namespace stool
             }
         };
 
-    } // namespace lcp_on_rlbwt
+    } // namespace stnode_on_rlbwt
 } // namespace stool
