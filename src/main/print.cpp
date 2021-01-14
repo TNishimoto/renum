@@ -123,9 +123,9 @@ int main(int argc, char *argv[])
 {
 
     cmdline::parser p;
-    p.add<string>("input_file", 'i', "input file name", true);
-    p.add<string>("lcp_interval_file", 'l', "LCP interval file name", true);
-    p.add<string>("output_file", 'o', "output file name", false, "");
+    p.add<string>("input_file", 'i', "input bwt file path", true);
+    p.add<string>("lcp_interval_file", 'l', "LCP interval file path", true);
+    p.add<string>("output_file", 'o', "output file path", false, "");
     p.add<bool>("string_flag", 's', "Output the string represented by each interval if this flag is 1", false, true);
 
     //p.add<string>("tree_file", 't', "file type", false, "NULL");
@@ -174,23 +174,47 @@ int main(int argc, char *argv[])
     {
         out << "(i, j, LCP)" << std::endl;
     }
+
     std::string tmpStr;
     if (info.index_bits == 4)
     {
         std::vector<stool::LCPInterval<uint32_t>> lcp_intervals;
         load_lcp_intervals(inp, lcp_intervals);
         inp.close();
+        if (lcp_intervals.size() < 100)
+        {
+            if (string_flag)
+            {
+                std::cout << "(i, j, LCP, substring)" << std::endl;
+            }
+            else
+            {
+                std::cout << "(i, j, LCP)" << std::endl;
+            }
+        }
 
         for (auto &it : lcp_intervals)
         {
             out << it.i << ", " << it.j << ", " << it.lcp;
-            if(string_flag){
+            if (lcp_intervals.size() < 100)
+            {
+                std::cout << it.i << ", " << it.j << ", " << it.lcp;
+            }
+            if (string_flag)
+            {
                 dec.extract(it.i, it.lcp, tmpStr);
                 out << ", " << tmpStr;
+                if (lcp_intervals.size() < 100)
+                {
+                    std::cout << ", " << tmpStr;
+                }
             }
             out << std::endl;
+            if (lcp_intervals.size() < 100)
+            {
+                std::cout << std::endl;
+            }
         }
-
     }
     else if (info.index_bits == 8)
     {
@@ -201,13 +225,13 @@ int main(int argc, char *argv[])
         for (auto &it : lcp_intervals)
         {
             out << it.i << ", " << it.j << ", " << it.lcp;
-            if(string_flag){
+            if (string_flag)
+            {
                 dec.extract(it.i, it.lcp, tmpStr);
                 out << ", " << tmpStr;
             }
             out << std::endl;
         }
-
     }
     else
     {
@@ -215,12 +239,11 @@ int main(int argc, char *argv[])
         throw -1;
     }
 
-
     std::cout << "\033[31m";
     std::cout << "______________________RESULT______________________" << std::endl;
     std::cout << "BWT File \t\t\t\t : " << inputFile << std::endl;
     std::cout << "Interval File \t\t\t\t : " << intervalFile << std::endl;
-    std::cout << "Output File \t\t\t\t\t : " << outputFile << std::endl;
+    std::cout << "Output File \t\t\t\t : " << outputFile << std::endl;
     info.print();
 
     std::cout << "_______________________________________________________" << std::endl;

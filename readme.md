@@ -44,8 +44,9 @@ wrote: sample.txt.bwt, time = 2
 
 ### maximal_repeat.out  
 
-This program outputs the suffix-tree intervals (a.k.a suffix-array interval) for all the maximal repeats 
+This program outputs the LCP intervals for all the maximal repeats 
 in the string represented by a given BWT.  
+The output file is econded in binary format, and print.out can decode the encoded file.  
 The program can use multithreading for computing maximal repeats.  
 It works with a single thread if you use "-p 1".  
 It uses all the processors in your computer if you use "-p -1" or you do not use the -p option.  
@@ -71,4 +72,43 @@ Excecution time                          : 0 [s]
 Character per second                     : inf [KB/s]  
          Preprocessing time              : 0 [s]  
          Enumeration time                : 0 [s]  
+_______________________________________________________  
+
+### print.out  
+This program converts the LCP intervals stored in a given binary file into a new file in text format.  
+It also outputs the string represented by each LCP interval if you use option -s 1.
+
+usage: ./print.out --input_file=string --lcp_interval_file=string [options] ...   
+options:  
+  -i, --input_file           input bwt file path (string)  
+  -l, --lcp_interval_file    LCP interval file path (string)  
+  -o, --output_file          output file path (string [=])  
+  -s, --string_flag          Output the string represented by each interval if this flag is 1 (bool [=1])  
+  -?, --help                 print this message  
+
+$ ./print.out -i ./sample.txt.bwt -l ./sample.txt.bwt.max -s 1  
+(i, j, LCP, substring)  
+0, 35, 0,  
+30, 35, 1, T  
+10, 15, 1, C  
+16, 29, 1, G  
+1, 9, 1, A  
+28, 29, 2, GT  
+8, 9, 2, AT  
+2, 4, 2, AC  
+22, 27, 2, GG  
+5, 7, 2, AG  
+32, 34, 2, TG  
+10, 12, 2, CA  
+16, 20, 2, GA  
+25, 26, 3, GGG  
+22, 23, 4, GGAC  
+18, 19, 4, GAGG  
+______________________RESULT______________________  
+BWT File                                 : ./sample.txt.bwt  
+Interval File                            : ./sample.txt.bwt.max  
+Output File                              : ./sample.txt.bwt.max.interval.log  
+File Type: LCPInterval  
+Integer Type: uint32t  
+Count: 16  
 _______________________________________________________  
