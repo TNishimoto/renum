@@ -290,7 +290,7 @@ namespace stool
                 this->update_info();
                 if (this->mode == SINGLE_MODE && this->thread_count > 1)
                 {
-                    std::cout << "Switch -> STANDARD" << std::endl;
+                    std::cout << "Switch[SINGLE -> STANDARD]" << std::endl;
                     this->mode = STANDARD_MODE;
                     STNodeVector<INDEX_SIZE> tmp;
                     this->single_st_traverser.convert_to_vector(tmp);
@@ -299,7 +299,7 @@ namespace stool
 
                 if (this->use_fast_mode && this->mode == STANDARD_MODE && (this->child_count() * 50 < this->peak_child_count))
                 {
-                    std::cout << "Switch" << std::endl;
+                    std::cout << "Switch[STANDARD -> FAST]" << std::endl;
                     STNodeVector<INDEX_SIZE> tmp;
                     uint64_t lcp = this->standard_st_traverser.get_current_lcp();
 
@@ -310,7 +310,6 @@ namespace stool
                     this->fast_st_traverser.import(tmp, lcp);
 
                     this->mode = FAST_MODE;
-                    std::cout << "Switch[END]" << std::endl;
                 }
 
 #if DEBUG

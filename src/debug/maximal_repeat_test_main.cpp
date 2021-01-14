@@ -199,7 +199,7 @@ void computeMaximalSubstrings(std::string inputFile, string mode, int thread_num
     data_structure_bytes += fposds.get_using_memory();
 
     mid = std::chrono::system_clock::now();
-    construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
+    construction_time = std::chrono::duration_cast<std::chrono::seconds>(mid - start).count();
     std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
     std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
     using RDS = stool::lcp_on_rlbwt::RLEWaveletTree<uint32_t, LPOSDS, FPOSDS>;
@@ -217,10 +217,10 @@ void computeMaximalSubstrings(std::string inputFile, string mode, int thread_num
     bit_size_mode = "UINT32_t";
 
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
-    double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    double enumeration_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
+    double elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+    double enumeration_time = std::chrono::duration_cast<std::chrono::seconds>(end - mid).count();
 
-    double bps = ((double)bwtAnalysis.str_size / ((double)elapsed / 1000)) / 1000;
+    double bps = ((double)bwtAnalysis.str_size / ((double)elapsed)) / 1000;
 
     std::cout << "\033[31m";
     std::cout << "______________________RESULT______________________" << std::endl;
@@ -238,10 +238,10 @@ void computeMaximalSubstrings(std::string inputFile, string mode, int thread_num
     std::cout << "The length of the input text \t\t : " << bwtAnalysis.str_size << std::endl;
     std::cout << "The number of runs on BWT \t\t : " << bwtAnalysis.run_count << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
-    std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
+    std::cout << "Excecution time \t\t\t : " << elapsed << "[s]" << std::endl;
     std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
-    std::cout << "\t Preprocessing time \t\t : " << construction_time << "[ms]" << std::endl;
-    std::cout << "\t Enumeration time \t\t : " << enumeration_time << "[ms]" << std::endl;
+    std::cout << "\t Preprocessing time \t\t : " << construction_time << "[s]" << std::endl;
+    std::cout << "\t Enumeration time \t\t : " << enumeration_time << "[s]" << std::endl;
 
     std::cout << "_______________________________________________________" << std::endl;
 

@@ -30,15 +30,46 @@ namespace stool
             int64_t current_lcp = -1;
             uint64_t current_child_count = 0;
             uint64_t print_interval_counter = 0;
+            std::chrono::system_clock::time_point start_time;
 
             void print_info()
             {
+                if (this->current_lcp == 0)
+                {
+                    std::cout << "["
+                              << "x"
+                              << "/" << this->print_interval << "] ";
+                    std::cout << "Current LCP";
+                    std::cout << ", The peak number of children";
+                    std::cout << ", The number of children with the current depth";
+                    std::cout << ", Processed characters: ["
+                              << "y"
+                              << "/" << this->input_text_length << "]";
+                    std::cout << ", Elapsed time [s]";
+                    std::cout << ", The number of processed characters per second [KB/s]";
+
+                    std::cout << std::endl;
+                }
+                std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+                double elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - start_time).count();
+                double aveg = 0;
+                if(elapsed > 0){
+                    aveg = ((double)this->position_counter / elapsed) / (1000);
+                }
+
                 std::cout << "[" << (this->print_interval_counter) << "/" << this->print_interval << "] ";
                 std::cout << "LCP = " << this->current_lcp;
-                std::cout << ", Peak = " << this->max_nodes_at_level;
-                std::cout << ", Current = " << this->current_child_count;
-                std::cout << ", current_total = " << (this->input_text_length - this->position_counter);
+                std::cout << ", " << this->max_nodes_at_level;
+                std::cout << ", " << this->current_child_count;
+                std::cout << ", [" << this->position_counter << "/" << this->input_text_length << "]";
+                std::cout << ", " << elapsed << "[s]";
+                std::cout << ", " << aveg << "[KB/s]";
+
                 std::cout << std::endl;
+            }
+            void start()
+            {
+                this->start_time = std::chrono::system_clock::now();
             }
 
             template <typename STNODES>
@@ -50,13 +81,24 @@ namespace stool
                 this->current_child_count = stnodeSequencer.child_count();
                 if (this->position_counter > 0)
                 {
-                    uint64_t x = this->input_text_length / this->print_interval;
-                    uint64_t pp_num = x * this->print_interval_counter;
-
-                    if (this->position_counter >= pp_num)
+                    bool b = false;
+                    while (true)
+                    {
+                        uint64_t x = (this->input_text_length / this->print_interval) + 1;
+                        uint64_t pp_num = x * this->print_interval_counter;
+                        if (this->position_counter >= pp_num)
+                        {
+                            b = true;
+                            this->print_interval_counter++;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (b)
                     {
                         this->print_info();
-                        this->print_interval_counter++;
                     }
                 }
 
@@ -73,12 +115,13 @@ namespace stool
             template <typename STNODES>
             static uint64_t outputMaximalSubstrings(std::ofstream &out, STNODES &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
+                analysis.start();
+                
                 using INDEX_SIZE = typename STNODES::index_type;
                 uint8_t print_type = 0;
-                out.write((char *)(&print_type), sizeof(print_type) );
+                out.write((char *)(&print_type), sizeof(print_type));
                 uint8_t index_bits = sizeof(INDEX_SIZE);
-                out.write((char *)(&index_bits), sizeof(index_bits) );
-
+                out.write((char *)(&index_bits), sizeof(index_bits));
 
                 uint64_t count = 0;
 

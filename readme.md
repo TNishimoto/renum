@@ -45,10 +45,14 @@ wrote: sample.txt.bwt, time = 2
 ### maximal_repeat.out  
 
 This program outputs the suffix-tree intervals (a.k.a suffix-array interval) for all the maximal repeats 
-in the string represented by a given BWT. 
+in the string represented by a given BWT.  
+The program can use multithreading for computing maximal repeats.  
+It works with a single thread if you use "-p 1".  
+It uses all the processors in your computer if you use "-p -1" or you do not use the -p option.  
 
-usage: ./enumMaximalSubstring.out --input_file=string [options] ...  
+usage: ./maximal_repeat.out --input_file=string [options] ...  
 options:  
-  -i, --input_file     input file name (string)  
-  -o, --output_file    output file name (string [=])  
+  -i, --input_file     input bwt file path (string)  
+  -o, --output_file    output file path (default: input_file_path.max) (string [=])  
+  -p, --thread_num     thread number for parallel processing (int [=-1])  
   -?, --help           print this message  
