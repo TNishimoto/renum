@@ -10,8 +10,8 @@
 #include "../module/libdivsufsort/sa.hpp"
 
 //#include "hpp/bwt.hpp"
-#include "../beller/fmindex.hpp"
-#include "../beller/beller_interval.hpp"
+#include "../basic/interval_search_data_structure.hpp"
+//#include "../beller/beller_interval.hpp"
 #include "../debug/beller_debug.hpp"
 
 #include "../main/common.hpp"
@@ -167,7 +167,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
 
     uint64_t lastChar = bwt[bwt.size() - 1];
 
-    stool::IntervalSearchDataStructure range;
+    stool::IntervalSearchDataStructure<uint8_t> range;
     range.initialize(&wt, &C, lastChar);
 
     stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t> wsearch;
@@ -211,7 +211,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 
     uint64_t ms_count = 0;
 
-    stool::IntervalSearchDataStructure range;
+    stool::IntervalSearchDataStructure<uint8_t> range;
     range.initialize(&wt, &C, lastChar);
 
     std::ofstream out(outputFile, std::ios::out | std::ios::binary);

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <set>
 
-#include "char_interval.hpp"
+#include "../basic/interval_search_data_structure.hpp"
 #include "../rlbwt/range_distinct/succinct_range_distinct.hpp"
 #include "beller_component.hpp"
 
@@ -19,7 +19,7 @@ namespace stool
     {
 
         template <typename INDEX>
-        std::vector<stool::LCPInterval<INDEX>> computeLCPIntervals(IntervalSearchDataStructure &range)
+        std::vector<stool::LCPInterval<INDEX>> computeLCPIntervals(IntervalSearchDataStructure<uint8_t> &range)
         {
             stool::beller::BellerComponent<INDEX> comp;
             comp.initialize(range);
@@ -42,7 +42,7 @@ namespace stool
             return os.outputIntervals;
         }
         template <typename INDEX>
-        uint64_t outputMaximalSubstrings(IntervalSearchDataStructure &range, stool::beller::OutputStructure<INDEX> &os)
+        uint64_t outputMaximalSubstrings(IntervalSearchDataStructure<uint8_t> &range, stool::beller::OutputStructure<INDEX> &os)
         {
             stool::beller::BellerComponent<INDEX> comp;
             comp.initialize(range);

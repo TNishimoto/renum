@@ -221,7 +221,7 @@ namespace stool
                 this->edge_char_vec.clear();
 
                 //em.computeFirstLCPIntervalSet();
-                std::vector<CharInterval<INDEX_SIZE>> r = em->getFirstChildren();
+                std::vector<CharInterval<INDEX_SIZE, uint8_t>> r = em->getFirstChildren();
                 for (uint64_t i = 0; i < r.size(); i++)
                 {
                     auto &it = r[i];

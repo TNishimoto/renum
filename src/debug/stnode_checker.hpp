@@ -12,9 +12,9 @@
 #include "../rlbwt/range_distinct/light_range_distinct.hpp"
 
 //#include "../weiner_interval.hpp"
-#include "../rlbwt/rinterval.hpp"
+#include "../basic/rinterval.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
-#include "../beller/fmindex.hpp"
+#include "../basic/fmindex.hpp"
 #include "../debug/beller_debug.hpp"
 
 #include <sdsl/bit_vectors.hpp>
@@ -41,7 +41,7 @@ namespace stool
             {
                 this->_char_vec = __char_vec;
             }
-            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
+            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE, uint8_t>> &output)
             {
                 int32_t charMaxSize = ((int32_t)UINT8_MAX) + 1;
 
@@ -75,7 +75,7 @@ namespace stool
                 }
                 for (uint64_t x = 0; x < count; x++)
                 {
-                    output[x] = CharInterval<INDEX_SIZE>(beginIndexes[x], endIndexes[x], charIndexes[x]);
+                    output[x] = CharInterval<INDEX_SIZE, uint8_t>(beginIndexes[x], endIndexes[x], charIndexes[x]);
                     checker[charIndexes[x]] = -1;
                 }
 
@@ -250,7 +250,7 @@ namespace stool
                 }
                 else
                 {
-                    std::vector<CharInterval<uint64_t>> output;
+                    std::vector<CharInterval<uint64_t, uint8_t>> output;
                     output.resize(256);
 
                     uint64_t count = this->lrdds.range_distinct(i, j, output);

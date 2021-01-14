@@ -54,7 +54,7 @@ namespace stool
             }
             void import(STNodeVector<INDEX_SIZE> &item, uint64_t lcp, uint64_t num)
             {
-                std::vector<stool::CharInterval<INDEX_SIZE>> tmp;
+                std::vector<stool::CharInterval<INDEX_SIZE, uint8_t>> tmp;
                 for (uint64_t i = 0; i < num; i++)
                 {
                     tmp.clear();

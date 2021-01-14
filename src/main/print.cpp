@@ -11,7 +11,7 @@
 #include "../rlbwt/rle.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
 
-#include "../beller/fmindex.hpp"
+#include "../basic/fmindex.hpp"
 
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/wt_gmr.hpp>

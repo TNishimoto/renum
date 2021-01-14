@@ -8,6 +8,7 @@
 #include <vector>
 #include <type_traits>
 #include "stool/src/elias_fano_vector.hpp"
+#include "../basic/type.hpp"
 
 namespace stool
 {

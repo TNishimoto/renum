@@ -43,13 +43,15 @@ include_directories(~/include)
 FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp module/libdivsufsort/sa.cpp)
 INCLUDE_DIRECTORIES(module)
 
+FILE(GLOB STNODE_SOURCES src/basic/*.cpp)
 
-add_library(fn STATIC ${STOOL_SOURCES})
+
+add_library(fn STATIC ${STOOL_SOURCES} ${STNODE_SOURCES})
 target_link_libraries(fn sdsl divsufsort divsufsort64)
 
 ### Debug
-add_executable(beller.out src/main/beller_main.cpp)
-target_link_libraries(beller.out fn)
+#add_executable(beller.out src/main/beller_main.cpp)
+#target_link_libraries(beller.out fn)
 
 add_executable(bbo_meximal_repeat.out src/main/bbo_meximal_repeat_main.cpp)
 target_link_libraries(bbo_meximal_repeat.out fn)
@@ -65,13 +67,6 @@ target_link_libraries(mus.out fn)
 add_executable(interval_test.out src/debug/lcp_interval_test_main.cpp)
 target_link_libraries(interval_test.out fn)
 
-#add_executable(maximal_repeat_test.out src/debug/maximal_repeat_test_main.cpp)
-#target_link_libraries(maximal_repeat_test.out fn)
-#add_executable(elias_test.out module/stool/src/test/elias_fano_test_main.cpp)
-#target_link_libraries(elias_test.out fn)
-
-#add_executable(ptest.out src/main/ptest_main.cpp)
-#target_link_libraries(ptest.out fn)
 
 add_executable(convert_bwt_into_int_vector.out src/main/convert_bwt_into_int_vector_main.cpp)
 target_link_libraries(convert_bwt_into_int_vector.out fn)

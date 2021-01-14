@@ -10,7 +10,8 @@
 
 #include "stool/src/debug.hpp"
 #include "stool/src/elias_fano_vector.hpp"
-#include "../../beller/char_interval.hpp"
+#include "../../basic/char_interval.hpp"
+#include <sdsl/bit_vectors.hpp>
 
 namespace stool
 {
@@ -38,7 +39,7 @@ namespace stool
                 endIndexes.resize(charMaxSize, 0);
                 charIndexes.resize(charMaxSize, 0);
             }
-            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
+            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE, uint8_t>> &output)
             {
                 //std::lock_guard<std::mutex> lock(std::mutex);
 
@@ -62,7 +63,7 @@ namespace stool
                 }
                 for (uint64_t x = 0; x < count; x++)
                 {
-                    output[x] = CharInterval<INDEX_SIZE>(beginIndexes[x], endIndexes[x], charIndexes[x]);
+                    output[x] = CharInterval<INDEX_SIZE, uint8_t>(beginIndexes[x], endIndexes[x], charIndexes[x]);
                     checker[charIndexes[x]] = -1;
                 }
                 assert(count > 0);

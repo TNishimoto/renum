@@ -215,7 +215,7 @@ void computeLCPIntervals_beller(std::string inputFile)
 
     uint64_t lastChar = bwt[bwt.size() - 1];
 
-    stool::IntervalSearchDataStructure range;
+    stool::IntervalSearchDataStructure<uint8_t> range;
     range.initialize(&wt, &C, lastChar);
 
     stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t> wsearch;

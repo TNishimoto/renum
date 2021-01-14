@@ -66,7 +66,7 @@ namespace stool
                 }
                 return this->first_child_flag_vec.size() - p;
             }
-            uint64_t mini_increment(uint64_t L, stool::CharInterval<INDEX_SIZE> &output, bool &leftmost) const
+            uint64_t mini_increment(uint64_t L, stool::CharInterval<INDEX_SIZE, uint8_t> &output, bool &leftmost) const
             {
                 assert(L < this->first_child_flag_vec.size());
                 if (this->first_child_flag_vec[L])
@@ -92,10 +92,10 @@ namespace stool
                     return L + 1;
                 }
             }
-            void get_last(std::vector<stool::CharInterval<INDEX_SIZE>> &output) const
+            void get_last(std::vector<stool::CharInterval<INDEX_SIZE, uint8_t>> &output) const
             {
                 uint64_t width = this->get_last_width() - 1;
-                stool::CharInterval<INDEX_SIZE> tmp;
+                stool::CharInterval<INDEX_SIZE, uint8_t> tmp;
                 bool b = false;
                 uint64_t L = this->first_child_flag_vec.size() - width;
                 for (uint64_t i = 0; i < width; i++)

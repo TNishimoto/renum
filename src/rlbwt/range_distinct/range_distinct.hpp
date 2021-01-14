@@ -204,7 +204,7 @@ namespace stool
                 this->RmQ.swap(prev_rmq);
             }
 
-            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
+            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE, uint8_t>> &output)
             {
                 uint64_t count = 0;
 
@@ -222,7 +222,7 @@ namespace stool
                 {
                     INDEX_SIZE p = tmpSearchStack.top();
                     uint8_t c = (uint8_t)(*_char_vec)[p];
-                    auto pair = stool::CharInterval<INDEX_SIZE>(tmpRangeDistinctResult[c], p, c);
+                    auto pair = stool::CharInterval<INDEX_SIZE, uint8_t>(tmpRangeDistinctResult[c], p, c);
                     output[count++] = pair;
 
                     tmpSearchStack.pop();

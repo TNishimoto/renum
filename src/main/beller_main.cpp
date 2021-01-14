@@ -9,7 +9,7 @@
 #include "../module/libdivsufsort/sa.hpp"
 
 //#include "hpp/bwt.hpp"
-#include "../beller/fmindex.hpp"
+#include "../basic/fmindex.hpp"
 #include "../beller/beller_interval.hpp"
 #include "../debug/beller_debug.hpp"
 

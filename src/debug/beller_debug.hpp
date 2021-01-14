@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <set>
 
-#include "../beller/char_interval.hpp"
+#include "../basic/char_interval.hpp"
 
 //#include "sa_lcp.hpp"
 using namespace std;
@@ -17,12 +17,12 @@ namespace stool
     {
 
         template <typename INDEX_SIZE>
-        bool check(std::vector<CharInterval<INDEX_SIZE>> &vec1, std::vector<CharInterval<INDEX_SIZE>> &vec2)
+        bool check(std::vector<CharInterval<INDEX_SIZE, uint8_t>> &vec1, std::vector<CharInterval<INDEX_SIZE, uint8_t>> &vec2)
         {
-            std::sort(vec1.begin(), vec1.end(), [](const CharInterval<INDEX_SIZE> &lhs, const CharInterval<INDEX_SIZE> &rhs) {
+            std::sort(vec1.begin(), vec1.end(), [](const CharInterval<INDEX_SIZE, uint8_t> &lhs, const CharInterval<INDEX_SIZE, uint8_t> &rhs) {
                 return lhs.c < rhs.c;
             });
-            std::sort(vec2.begin(), vec2.end(), [](const CharInterval<INDEX_SIZE> &lhs, const CharInterval<INDEX_SIZE> &rhs) {
+            std::sort(vec2.begin(), vec2.end(), [](const CharInterval<INDEX_SIZE, uint8_t> &lhs, const CharInterval<INDEX_SIZE, uint8_t> &rhs) {
                 return lhs.c < rhs.c;
             });
 

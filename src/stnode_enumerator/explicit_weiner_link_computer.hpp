@@ -7,12 +7,16 @@
 #include <queue>
 #include <vector>
 #include <type_traits>
-#include "../rlbwt/rinterval.hpp"
+#include "../basic/rinterval.hpp"
 #include "./stnode_vector.hpp"
+#include "../basic/interval_search_data_structure.hpp"
+
 namespace stool
 {
     namespace stnode_on_rlbwt
     {
+
+
         /*
             This is a data structure to ...
         */
@@ -35,9 +39,9 @@ namespace stool
 
             std::vector<uint8_t> charTmpVec;
             vector<RINTERVAL> rIntervalTmpVec;
-            std::vector<CharInterval<INDEX_SIZE>> charIntervalTmpVec;
+            std::vector<CharInterval<INDEX_SIZE, uint8_t>> charIntervalTmpVec;
 
-            stool::IntervalSearchDataStructure *searcher;
+            stool::IntervalSearchDataStructure<CHAR> *searcher;
             sdsl::bit_vector::rank_1_type *bwt_bit_rank1;
             uint64_t strSize = 0;
 
@@ -45,7 +49,7 @@ namespace stool
             //LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> lightRangeSearcher;
             //SuccinctRangeDistinctDataStructure<INDEX_SIZE> heavyRangeSearcher;
 
-            void initialize(IntervalSearchDataStructure *_searcher, sdsl::bit_vector::rank_1_type *_bwt_bit_rank1, uint64_t _strSize)
+            void initialize(IntervalSearchDataStructure<CHAR> *_searcher, sdsl::bit_vector::rank_1_type *_bwt_bit_rank1, uint64_t _strSize)
             {
                 this->bwt_bit_rank1 = _bwt_bit_rank1;
                 uint64_t CHARMAX = UINT8_MAX + 1;
@@ -86,10 +90,10 @@ namespace stool
                 this->fit();
                 this->output(_store_edge_chars, output_vec);
             }
-                        std::vector<CharInterval<INDEX_SIZE>> getFirstChildren()
+                        std::vector<CharInterval<INDEX_SIZE, uint8_t>> getFirstChildren()
             {
 
-                std::vector<CharInterval<INDEX_SIZE>> r;
+                std::vector<CharInterval<INDEX_SIZE, uint8_t>> r;
                 INDEX_SIZE left = 0;
                 INDEX_SIZE right = this->strSize - 1;
                 uint64_t count = this->searcher->getIntervals(left, right, this->charIntervalTmpVec);
@@ -99,9 +103,9 @@ namespace stool
                 for (uint64_t x = 0; x < count; x++)
                 {
                     auto &it = this->charIntervalTmpVec[x];
-                    r.push_back(CharInterval<INDEX_SIZE>(it.i, it.j, it.c));
+                    r.push_back(CharInterval<INDEX_SIZE, uint8_t>(it.i, it.j, it.c));
                 }
-                sort(r.begin(), r.end(), [&](const CharInterval<INDEX_SIZE> &lhs, const CharInterval<INDEX_SIZE> &rhs) {
+                sort(r.begin(), r.end(), [&](const CharInterval<INDEX_SIZE, uint8_t> &lhs, const CharInterval<INDEX_SIZE, uint8_t> &rhs) {
                     return lhs.c < rhs.c;
                 });
                 return r;

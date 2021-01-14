@@ -13,46 +13,24 @@
 #include <queue>
 #include "../module/stool/src/sa_bwt_lcp.hpp"
 #include "fmindex.hpp"
-
-//#include "sa_lcp.hpp"
-using namespace std;
-using namespace sdsl;
+#include "./char_interval.hpp"
+#include "./type.hpp"
 
 namespace stool
 {
-    using WT = sdsl::wt_huff<>;
-    template <typename index_type>
-    class CharInterval
-    {
-    public:
-        index_type i;
-        index_type j;
-        uint8_t c;
-        CharInterval()
-        {
-        }
-        CharInterval(index_type _i, index_type _j, uint8_t _c) : i(_i), j(_j), c(_c)
-        {
-        }
-
-        std::string to_string() const
-        {
-            std::string s = "a";
-            s[0] = c;
-            return "[" + std::to_string(i) + ", " + std::to_string(j) + ", " + s + "]";
-        }
-    };
+    template <typename CHAR>
     class IntervalSearchDataStructure
     {
-        public:
+    public:
         std::vector<uint64_t> *C;
         stool::WT *wt;
-        uint8_t lastChar;
-        std::vector<uint8_t> cs;
+        CHAR lastChar;
+        std::vector<CHAR> cs;
         std::vector<uint64_t> cs1;
         std::vector<uint64_t> cs2;
 
-        void initialize(stool::WT *_wt, std::vector<uint64_t> *_C, uint8_t _lastChar)
+
+        void initialize(stool::WT *_wt, std::vector<uint64_t> *_C, CHAR _lastChar)
         {
             this->wt = _wt;
             this->C = _C;
@@ -67,14 +45,13 @@ namespace stool
             cs2.resize(256, 0);
         }
         template <typename INDEX_SIZE>
-        uint64_t getIntervals(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
+        uint64_t getIntervals(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE, CHAR>> &output)
         {
-            using CHARINTV = CharInterval<INDEX_SIZE>;
+            using CHARINTV = CharInterval<INDEX_SIZE, CHAR>;
             std::vector<CHARINTV> r;
             uint64_t k;
             uint64_t newJ = j + 1 == wt->size() ? wt->size() : j + 2;
-            uint64_t p =0;
-
+            uint64_t p = 0;
 
             //std::cout << "@[" << i << "/" << j << ", " << wt->size() << "]" << std::endl;
 
@@ -109,13 +86,5 @@ namespace stool
 
             return p;
         }
-        /*
-        template <typename INDEX_SIZE>
-        uint64_t getIntervals2(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
-        {
-            return 0;
-        }
-        */
     };
-
 } // namespace stool

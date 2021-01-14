@@ -8,6 +8,8 @@
 #include <vector>
 #include <type_traits>
 #include "../rlbwt/range_distinct/light_range_distinct.hpp"
+#include "../rlbwt/range_distinct/succinct_range_distinct.hpp"
+
 #include "../debug/stnode_checker.hpp"
 #include "../rlbwt/rle.hpp"
 #include "./stnode_vector.hpp"
@@ -47,12 +49,12 @@ namespace stool
             // For range distinct
             std::vector<uint8_t> charTmpVec;
             vector<RINTERVAL> rIntervalTmpVec;
-            std::vector<CharInterval<INDEX>> charIntervalTmpVec;
+            std::vector<CharInterval<INDEX, uint8_t>> charIntervalTmpVec;
 
             RLBWTDS *_RLBWTDS;
             stool::stnode_on_rlbwt::RLE<CHAR> *rlbwt;
-            LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX> lightRangeSearcher;
-            SuccinctRangeDistinctDataStructure<INDEX> heavyRangeSearcher;
+            stool::stnode_on_rlbwt::LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX> lightRangeSearcher;
+            stool::stnode_on_rlbwt::SuccinctRangeDistinctDataStructure<INDEX> heavyRangeSearcher;
             uint64_t get_input_text_length() const
             {
                 return this->rlbwt->str_size();
@@ -122,9 +124,9 @@ namespace stool
                 this->output(_store_edge_chars, output_vec);
             }
             
-            std::vector<CharInterval<INDEX>> getFirstChildren()
+            std::vector<CharInterval<INDEX, uint8_t>> getFirstChildren()
             {
-                std::vector<CharInterval<INDEX>> r;
+                std::vector<CharInterval<INDEX, uint8_t>> r;
                 uint64_t count = this->heavyRangeSearcher.range_distinct(0, this->rlbwt->rle_size() - 1, this->charIntervalTmpVec);
                 //r.resize(count - 1);
 
@@ -135,9 +137,9 @@ namespace stool
                     uint64_t run = this->rlbwt->get_run(it.j) - 1;
                     uint64_t i = this->_RLBWTDS->get_fpos(it.i, 0);
                     uint64_t j = this->_RLBWTDS->get_fpos(it.j, run);
-                    r.push_back(CharInterval<INDEX>(i, j, it.c));
+                    r.push_back(CharInterval<INDEX, uint8_t>(i, j, it.c));
                 }
-                sort(r.begin(), r.end(), [&](const CharInterval<INDEX> &lhs, const CharInterval<INDEX> &rhs) {
+                sort(r.begin(), r.end(), [&](const CharInterval<INDEX, uint8_t> &lhs, const CharInterval<INDEX, uint8_t> &rhs) {
                     return lhs.c < rhs.c;
                 });
                 return r;
@@ -433,8 +435,8 @@ namespace stool
             {
                 uint64_t CHARMAX = UINT8_MAX + 1;
 
-                std::vector<CharInterval<INDEX>> DEBUGcharIntervalTmpVec1;
-                std::vector<CharInterval<INDEX>> DEBUGcharIntervalTmpVec2;
+                std::vector<CharInterval<INDEX, uint8_t>> DEBUGcharIntervalTmpVec1;
+                std::vector<CharInterval<INDEX, uint8_t>> DEBUGcharIntervalTmpVec2;
                 DEBUGcharIntervalTmpVec1.resize(CHARMAX);
                 DEBUGcharIntervalTmpVec2.resize(CHARMAX);
 

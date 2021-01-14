@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <set>
 
-#include "char_interval.hpp"
+#include "../basic/char_interval.hpp"
 #include "../rlbwt/range_distinct/succinct_range_distinct.hpp"
 
 //#include "sa_lcp.hpp"
@@ -16,6 +16,7 @@ namespace stool
 {
     namespace beller
     {
+        
 
         template <typename INDEX>
         class OutputStructure
@@ -98,12 +99,12 @@ namespace stool
             std::vector<bool> checker;
             std::vector<uint64_t> counter;
             std::vector<uint8_t> occurrenceChars;
-            std::vector<CharInterval<INDEX>> charIntervalTmpVec;
+            std::vector<CharInterval<INDEX, uint8_t>> charIntervalTmpVec;
 
             uint64_t lcp = 0;
             uint64_t debugCounter = 0;
 
-            void initialize(IntervalSearchDataStructure &range)
+            void initialize(IntervalSearchDataStructure<uint8_t> &range)
             {
                 uint64_t bwtSize = range.wt->size();
                 uint64_t CHARMAX = UINT8_MAX + 1;
@@ -118,7 +119,7 @@ namespace stool
                 this->first_process(range);
             }
 
-            void process(IntervalSearchDataStructure &range, BellerSmallComponent &bsc, stool::beller::OutputStructure<INDEX> &os)
+            void process(IntervalSearchDataStructure<uint8_t> &range, BellerSmallComponent &bsc, stool::beller::OutputStructure<INDEX> &os)
             {
                 uint64_t k = 0;
                 for (auto &c : this->occurrenceChars)
@@ -189,7 +190,7 @@ namespace stool
                     os.peak = k;
                 }
             }
-            void computeLCPIntervals(IntervalSearchDataStructure &range, bool &isEnd, stool::beller::OutputStructure<INDEX> &os)
+            void computeLCPIntervals(IntervalSearchDataStructure<uint8_t> &range, bool &isEnd, stool::beller::OutputStructure<INDEX> &os)
             {
                 using INTERVAL = stool::LCPInterval<INDEX>;
                 uint64_t max_interval_count = 0;
@@ -230,7 +231,7 @@ namespace stool
             }
 
         private:
-            void first_process(IntervalSearchDataStructure &range)
+            void first_process(IntervalSearchDataStructure<uint8_t> &range)
             {
                 uint64_t bwtSize = range.wt->size();
                 INTERVAL fst(0, bwtSize - 1, 0);

@@ -8,7 +8,7 @@
 
 #include "stool/src/debug.hpp"
 #include "stool/src/elias_fano_vector.hpp"
-#include "../../beller/char_interval.hpp"
+#include "../../basic/char_interval.hpp"
 #include <sdsl/rmq_support.hpp> // include header for range minimum queries
 namespace stool
 {
@@ -40,7 +40,7 @@ namespace stool
                 cs2.resize(CHARMAX, 0);
 
             }
-            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE>> &output)
+            uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE, uint8_t>> &output)
             {
                 assert(i <= j);
                 uint64_t k;
@@ -66,14 +66,14 @@ namespace stool
                         b = true;
                     }
                     //assert((*bwt)[left] == (*bwt)[right]);
-                    output[x] = CharInterval<INDEX_SIZE>(left, right, cs[x]);
+                    output[x] = CharInterval<INDEX_SIZE, uint8_t>(left, right, cs[x]);
                 }
                 if (!b)
                 {
                     uint64_t left = this->size - 1;
                     uint64_t right = left;
                     
-                    output[k++] = CharInterval<INDEX_SIZE>(left, right, lastChar);
+                    output[k++] = CharInterval<INDEX_SIZE, uint8_t>(left, right, lastChar);
                 }
 
                 return k;
