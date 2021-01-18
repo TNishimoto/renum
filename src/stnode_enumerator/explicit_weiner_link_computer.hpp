@@ -16,7 +16,6 @@ namespace stool
     namespace stnode_on_rlbwt
     {
 
-
         /*
             This is a data structure to ...
         */
@@ -90,7 +89,39 @@ namespace stool
                 this->fit();
                 this->output(_store_edge_chars, output_vec);
             }
-                        std::vector<CharInterval<INDEX_SIZE, uint8_t>> getFirstChildren()
+            void executeWeinerLinkSearch(stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &stack)
+            {
+                std::vector<stool::CharInterval<INDEX_SIZE, CHAR>> tmp;
+                stack.get_last(tmp);
+                uint64_t left = UINT64_MAX;
+                uint64_t right = 0;
+                for (auto &it : tmp)
+                {
+                    if (left > it.i)
+                    {
+                        left = it.i;
+                    }
+                    if (right < it.j)
+                    {
+                        right = it.j;
+                    }
+                }
+                this->clear();
+                this->computeSTNodeCandidates(left, right);
+                for (auto &it : tmp)
+                {
+                    this->computeSTChildren(it.i, it.j, it.c);
+                }
+                this->fit();
+
+                bool _store_edge_chars = stack.edge_char_vec.size() > 0;
+                int64_t lcp = stack.get_last_depth();
+                stack.pop();
+
+                this->sortedOutput(_store_edge_chars, lcp, stack);
+            }
+
+            std::vector<CharInterval<INDEX_SIZE, uint8_t>> getFirstChildren()
             {
 
                 std::vector<CharInterval<INDEX_SIZE, uint8_t>> r;
@@ -115,7 +146,7 @@ namespace stool
                 return this->searcher->wt->size();
             }
 
-            private:
+        private:
             bool checkMaximalRepeat(uint64_t left, uint64_t right) const
             {
 
@@ -167,7 +198,6 @@ namespace stool
                 return currentVec.size();
             }
 
-
             void output(bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
             {
                 //RINTERVAL copy;
@@ -215,7 +245,85 @@ namespace stool
                     output_vec.maximal_repeat_check_vec.push_back(isMaximalRepeat);
                 }
             }
+            int64_t get_largest_next_interval_index()
+            {
+                int64_t largest_index = -1;
+                int64_t largest_width = 0;
 
+                for (uint64_t i = 0; i < this->indexCount; i++)
+                {
+                    CHAR c = this->indexVec[i];
+                    uint64_t w = this->stnodeVec[c].second - this->stnodeVec[c].first + 1;
+                    if (largest_width < w)
+                    {
+                        largest_index = c;
+                        largest_width = w;
+                    }
+                }
+                return largest_index;
+            }
+            void output(CHAR c, bool _store_edge_chars, int64_t parent_lcp, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
+            {
+                auto &currentVec = this->childrenVec[c];
+                uint64_t count = currentVec.size();
+
+                uint64_t st_left = UINT64_MAX;
+                uint64_t st_right = 0;
+                std::pair<INDEX_SIZE, INDEX_SIZE> outputInterval;
+
+                for (uint64_t j = 0; j < count; j++)
+                {
+                    CHAR edgeChar = this->get_child(c, j, outputInterval);
+                    if (outputInterval.first < st_left)
+                    {
+                        st_left = outputInterval.first;
+                    }
+                    if (outputInterval.second > st_right)
+                    {
+                        st_right = outputInterval.second;
+                    }
+                    if (j == 0)
+                    {
+                        output_vec.childs_vec.push_back(outputInterval.first);
+                        output_vec.first_child_flag_vec.push_back(true);
+
+                        if (_store_edge_chars)
+                        {
+                            output_vec.edge_char_vec.push_back(0);
+                        }
+                    }
+                    output_vec.childs_vec.push_back(outputInterval.second);
+                    output_vec.first_child_flag_vec.push_back(false);
+                    if (_store_edge_chars)
+                    {
+                        output_vec.edge_char_vec.push_back(edgeChar);
+                    }
+                }
+                bool isMaximalRepeat = this->checkMaximalRepeat(st_left, st_right);
+                output_vec.maximal_repeat_check_vec.push_back(isMaximalRepeat);
+                if (parent_lcp != -1)
+                {
+                    output_vec.depth_vec.push_back(parent_lcp + 1);
+                }
+            }
+            void sortedOutput(bool _store_edge_chars, int64_t parent_lcp, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
+            {
+                //RINTERVAL copy;
+                if (this->indexCount > 0)
+                {
+                    int64_t largest_index = this->get_largest_next_interval_index();
+                    this->output(largest_index, _store_edge_chars, parent_lcp, output_vec);
+
+                    for (uint64_t i = 0; i < this->indexCount; i++)
+                    {
+                        int64_t c = this->indexVec[i];
+                        if(c != largest_index){
+                            this->output(c, _store_edge_chars, parent_lcp, output_vec);
+                        }
+
+                    }
+                }
+            }
 
         private:
             bool pushExplicitWeinerInterval(INDEX_SIZE left, INDEX_SIZE right, uint8_t c, uint8_t edgeChar)
@@ -417,9 +525,8 @@ namespace stool
                     char c = it.get_edge_character(i);
                     edgeChars.push_back(c);
                 }
-                    em.executeWeinerLinkSearch(node, children, it.has_edge_characters() ? &edgeChars : nullptr, output );
+                em.executeWeinerLinkSearch(node, children, it.has_edge_characters() ? &edgeChars : nullptr, output);
             }
-            
         };
 
     } // namespace stnode_on_rlbwt

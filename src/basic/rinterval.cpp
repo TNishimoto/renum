@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <set>
 #include <queue>
+#include <iostream>
+#include <fstream>
+
 #include "rinterval.hpp"
 
 //#include "sa_lcp.hpp"
@@ -23,13 +26,13 @@ namespace stool
         template <typename INDEX>
         bool RInterval<INDEX>::is_special() const
         {
-            return this->beginIndex == std::numeric_limits<INDEX_SIZE>::max();
+            return this->beginIndex == std::numeric_limits<INDEX>::max();
         }
         template <typename INDEX>
         RInterval<INDEX> RInterval<INDEX>::get_special()
         {
             RInterval r;
-            r.beginIndex = std::numeric_limits<INDEX_SIZE>::max();
+            r.beginIndex = std::numeric_limits<INDEX>::max();
             return r;
         }
     } // namespace stnode_on_rlbwt

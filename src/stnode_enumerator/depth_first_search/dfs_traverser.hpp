@@ -11,7 +11,6 @@
 #include "../explicit_weiner_link_computer_on_rlbwt.hpp"
 #include "../../../module/stool/src/io.h"
 #include "../stnode_vector.hpp"
-#include "bit_deque.hpp"
 #include "../node_iterator.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"
@@ -21,25 +20,117 @@ namespace stool
     namespace stnode_on_rlbwt
     {
         template <typename INDEX_SIZE, typename INTERVAL_SEARCH, typename CHAR = uint8_t>
-        class SingleSTNodeTraverser
+        class DFSTraverser
         {
+            /*
             using RINTERVAL = RInterval<INDEX_SIZE>;
             using ITERATOR = STNodeIterator<SingleSTNodeTraverser>;
             using DEPTH_ITERATOR = STDepthIterator<SingleSTNodeTraverser>;
+            */
 
-            uint64_t _stnode_count = 0;
-            std::deque<INDEX_SIZE> childs_vec;
-            std::deque<CHAR> edge_char_vec;
-
-            BitDeque first_child_flag_vec;
-            BitDeque maximal_repeat_check_vec;
+            uint64_t current_stnode_id = 0;
+            stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> stack;
             bool store_edge_chars = false;
-            //std::deque<bool> first_child_flag_vec;
-            //std::deque<bool> maximal_repeat_check_vec;
-            int64_t lcp = -1;
             INTERVAL_SEARCH *em;
 
         public:
+            class iterator
+            {
+                uint64_t _current_stnode_id = 0;
+
+                DFSTraverser *traverser;
+
+            public:
+                iterator() = default;
+
+                iterator(DFSTraverser *_traverser, bool is_start) : traverser(_traverser)
+                {
+
+                    if (is_start)
+                    {
+                        this->_current_stnode_id = _traverser->get_current_stnode_id();
+                    }
+                    else
+                    {
+                        this->_current_stnode_id = UINT64_MAX;
+                    }
+                }
+                iterator &operator++()
+                {
+                    traverser->compute();
+                    _current_stnode_id = traverser->get_current_stnode_id();
+                    return *this;
+                }
+
+                iterator &operator++(int)
+                {
+                    ++(*this);
+                    return *this;
+                }
+
+                bool operator!=(const iterator &rhs) const
+                {
+                    return this->_current_stnode_id != rhs._current_stnode_id;
+                }
+                void print() const
+                {
+                    uint64_t left = this->get_left();
+                    uint64_t right = this->get_right();
+                    uint64_t lcp = this->get_lcp();
+
+                    std::cout << "[" << left << ", " << right << ", " << lcp << "]" << std::endl;
+                }
+                
+                INDEX_SIZE get_children_count() const
+                {
+                    return traverser->get_children_count(*this);
+                }
+                INDEX_SIZE get_left() const
+                {
+                    return traverser->stack.get_last_left_boundary();
+                }
+                INDEX_SIZE get_right() const
+                {
+                    return traverser->stack.get_last_right_boundary();
+                }
+                INDEX_SIZE get_lcp() const
+                {
+                    return traverser->stack.get_last_depth();
+                }
+
+                /*
+                INDEX_SIZE get_child_left_boundary(uint64_t ith_child) const
+                {
+                    return traverser->get_child_left_boundary(*this, ith_child);
+                }
+                INDEX_SIZE get_child_right_boundary(uint64_t ith_child) const
+                {
+                    return traverser->get_child_right_boundary(*this, ith_child);
+                }
+
+                INDEX_SIZE get_edge_character(uint64_t ith_child) const
+                {
+                    return traverser->get_edge_character(*this, ith_child);
+                }
+                bool is_maximal_repeat() const
+                {
+                    return traverser->check_maximal_repeat(*this);
+                }
+
+                std::pair<INDEX_SIZE, INDEX_SIZE> operator*() const
+                {
+                    uint64_t left = traverser->get_left(*this);
+                    uint64_t right = traverser->get_right(*this);
+                    return std::pair<INDEX_SIZE, INDEX_SIZE>(left, right);
+                }
+
+                
+                bool has_edge_characters() const
+                {
+                    return this->traverser->has_edge_characters();
+                }
+                */
+            };
             using index_type = INDEX_SIZE;
 
             INTERVAL_SEARCH *get_interval_search_deta_structure() const
@@ -51,47 +142,88 @@ namespace stool
             {
                 return this->store_edge_chars;
             }
-            SingleSTNodeTraverser()
+
+            DFSTraverser()
             {
             }
             void initialize(INTERVAL_SEARCH *_interval_search, bool _store_edge_chars)
             {
+                this->stack.clear();
                 this->em = _interval_search;
                 this->store_edge_chars = _store_edge_chars;
-                this->lcp = -1;
+                this->first_compute();
                 /*
                 this->em = new ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS>();
                 this->em->initialize(__RLBWTDS);
                 */
             }
 
+            void first_compute()
+            {
+                std::vector<CharInterval<INDEX_SIZE, uint8_t>> r = em->getFirstChildren();
+                for (uint64_t i = 0; i < r.size(); i++)
+                {
+                    auto &it = r[i];
+                    if (i == 0)
+                    {
+                        stack.childs_vec.push_back(it.i);
+                        stack.first_child_flag_vec.push_back(true);
+                        if (store_edge_chars)
+                        {
+                            stack.edge_char_vec.push_back(0);
+                        }
+                    }
+                    stack.childs_vec.push_back(it.j);
+                    stack.first_child_flag_vec.push_back(false);
+                    if (store_edge_chars)
+                    {
+                        stack.edge_char_vec.push_back(it.c);
+                    }
+                }
+                stack.maximal_repeat_check_vec.push_back(true);
+                stack.depth_vec.push_back(0);
+                assert(stack.first_child_flag_vec[0]);
+                this->current_stnode_id = 0;
+            }
+            uint64_t get_current_stnode_id() const
+            {
+                return this->current_stnode_id;
+            }
+            bool compute()
+            {
+                em->executeWeinerLinkSearch(stack);
+                bool b = stack.maximal_repeat_check_vec.size() > 0;
+                if (b)
+                {
+                    this->current_stnode_id++;
+                }
+                else
+                {
+                    this->current_stnode_id = UINT64_MAX;
+                }
+                return b;
+            }
+            DFSTraverser::iterator begin()
+            {
+                this->initialize(this->em, this->store_edge_chars);
+                return DFSTraverser::iterator(this, true);
+            }
+            DFSTraverser::iterator end()
+            {
+                return DFSTraverser::iterator(this, false);
+            }
+            /*
+            void clear(){
+                this->stack.clear();
+                this->current_stnode_id = 0;
+                this->first_compute();
+            }
+            */
+
+            /*
             bool is_finished() const
             {
                 return this->get_current_lcp() >= 0 && this->node_count() == 0;
-            }
-            void load(std::ifstream &file)
-            {
-                assert(false);
-                throw -1;
-                /*
-                file.read((char *)&this->_stnode_count, sizeof(uint64_t));
-
-                stool::IO::load_deque(file, this->childs_vec);
-                stool::IO::load_bits(file, this->first_child_flag_vec);
-                stool::IO::load_bits(file, this->maximal_repeat_check_vec);
-                */
-            }
-            void write(std::ofstream &out)
-            {
-                assert(false);
-                throw -1;
-                /*
-                uint64_t _node_count = this->_stnode_count;
-                out.write(reinterpret_cast<const char *>(&_node_count), sizeof(uint64_t));
-                stool::IO::write_deque(out, this->childs_vec);
-                stool::IO::write_bits(out, this->first_child_flag_vec);
-                stool::IO::write_bits(out, this->maximal_repeat_check_vec);
-                */
             }
 
             int64_t get_current_lcp() const
@@ -223,37 +355,7 @@ namespace stool
             }
 
         private:
-            void first_compute()
-            {
-                this->first_child_flag_vec.clear();
-                this->edge_char_vec.clear();
-
-                //em.computeFirstLCPIntervalSet();
-                std::vector<CharInterval<INDEX_SIZE, uint8_t>> r = em->getFirstChildren();
-                for (uint64_t i = 0; i < r.size(); i++)
-                {
-                    auto &it = r[i];
-                    if (i == 0)
-                    {
-                        this->childs_vec.push_back(it.i);
-                        this->first_child_flag_vec.push_back(true);
-                        if (store_edge_chars)
-                        {
-                            this->edge_char_vec.push_back(0);
-                        }
-                    }
-                    this->childs_vec.push_back(it.j);
-                    this->first_child_flag_vec.push_back(false);
-                    if (store_edge_chars)
-                    {
-                        this->edge_char_vec.push_back(it.c);
-                    }
-                }
-                this->maximal_repeat_check_vec.push_back(true);
-                assert(this->first_child_flag_vec[0]);
-                this->_stnode_count++;
-                this->lcp = 0;
-            }
+            
 
             void pop_node(std::pair<INDEX_SIZE, INDEX_SIZE> &output_node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &output_children, std::vector<CHAR> &output_edge_chars)
             {
@@ -339,52 +441,6 @@ namespace stool
 
                 this->lcp++;
             }
-            /*
-            void add(uint8_t c, INTERVAL_SEARCH &em)
-            {
-                RINTERVAL copy;
-                uint64_t st_left = UINT64_MAX;
-                uint64_t st_right = 0;
-                std::pair<INDEX_SIZE, INDEX_SIZE> child;
-
-                uint64_t count = em.get_width(c);
-
-                for (uint64_t j = 0; j < count; j++)
-                {
-                    CHAR edge_char = em.get_child(c, j, child);
-                    uint64_t left = child.first;
-                    uint64_t right = child.second;
-
-                    if (left < st_left)
-                    {
-                        st_left = left;
-                    }
-                    if (right > st_right)
-                    {
-                        st_right = right;
-                    }
-                    if (j == 0)
-                    {
-                        this->childs_vec.push_back(left);
-                        this->first_child_flag_vec.push_back(true);
-                        if (store_edge_chars)
-                        {
-                            this->edge_char_vec.push_back(0);
-                        }
-                    }
-                    this->childs_vec.push_back(right);
-                    this->first_child_flag_vec.push_back(false);
-                    if (store_edge_chars)
-                    {
-                        this->edge_char_vec.push_back(edge_char);
-                    }
-                }
-                assert(this->first_child_flag_vec[0]);
-                bool isMaximalRepeat = this->em->checkMaximalRepeat(st_left, st_right);
-                this->maximal_repeat_check_vec.push_back(isMaximalRepeat);
-                this->_stnode_count++;
-            }
-            */
 
         public:
             uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
@@ -528,8 +584,10 @@ namespace stool
             }
             bool check_maximal_repeat(ITERATOR &iter) const
             {
-                return this->check_maximal_repeat(iter.node_index);
+                return this-
+                >check_maximal_repeat(iter.node_index);
             }
+            */
         };
 
     } // namespace stnode_on_rlbwt

@@ -38,6 +38,7 @@ namespace stool
             std::vector<CHAR> edge_char_vec;
             std::vector<bool> first_child_flag_vec;
             std::vector<bool> maximal_repeat_check_vec;
+            std::vector<INDEX_SIZE> depth_vec;
 
             STNodeVector()
             {
@@ -104,6 +105,37 @@ namespace stool
                     output.push_back(tmp);
                 }
             }
+            uint64_t get_last_left_boundary() const
+            {
+                assert(this->childs_vec.size() > 0);
+                uint64_t i = this->childs_vec.size() - this->get_last_width();
+                return this->childs_vec[i];
+            }
+            uint64_t get_last_right_boundary() const
+            {
+                assert(this->childs_vec.size() > 0);
+                return this->childs_vec[this->childs_vec.size()-1];
+            }
+
+            int64_t get_last_depth() const {
+                assert(this->depth_vec.size() != 0);
+                return this->depth_vec[this->depth_vec.size()-1];
+            }
+            /*
+            std::pair<INDEX_SIZE,INDEX_SIZE> get_last_node() const
+            {
+                uint64_t width = this->get_last_width() - 1;
+                stool::CharInterval<INDEX_SIZE, uint8_t> tmp;
+                bool b = false;
+                uint64_t L = this->first_child_flag_vec.size() - width;
+                for (uint64_t i = 0; i < width; i++)
+                {
+                    L = this->mini_increment(L, tmp, b);
+                    output.push_back(tmp);
+                }
+            }
+            */
+
             void pop()
             {
                 uint64_t width = this->get_last_width();
@@ -117,6 +149,9 @@ namespace stool
                     }
                 }
                 this->maximal_repeat_check_vec.pop_back();
+                if(this->depth_vec.size() > 0){
+                    this->depth_vec.pop_back();
+                }
             }
 
             std::pair<uint64_t, uint64_t> compute_import_positions(uint64_t capacity)

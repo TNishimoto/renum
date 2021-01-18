@@ -53,7 +53,7 @@ namespace stool
 
             RLBWTDS *_RLBWTDS;
             stool::stnode_on_rlbwt::RLE<CHAR> *rlbwt;
-            stool::stnode_on_rlbwt::LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX> lightRangeSearcher;
+            stool::stnode_on_rlbwt::LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX, CHAR> lightRangeSearcher;
             stool::stnode_on_rlbwt::SuccinctRangeDistinctDataStructure<INDEX> heavyRangeSearcher;
             uint64_t get_input_text_length() const
             {
@@ -84,7 +84,7 @@ namespace stool
                 auto head_chars = _RLBWTDS->get_head_chars_pointer();
                 auto wt = _RLBWTDS->get_wavelet_tree_pointer();
 
-                lightRangeSearcher.preprocess(head_chars);
+                lightRangeSearcher.initialize(head_chars);
                 heavyRangeSearcher.initialize(wt, lastChar);
             }
             void executeWeinerLinkSearch(std::pair<INDEX, INDEX> &node, std::vector<std::pair<INDEX, INDEX>> &children, std::vector<uint8_t> *edgeChars, stool::stnode_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)

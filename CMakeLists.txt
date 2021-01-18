@@ -43,36 +43,40 @@ include_directories(~/include)
 FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp module/libdivsufsort/sa.cpp)
 INCLUDE_DIRECTORIES(module)
 
-FILE(GLOB STNODE_SOURCES src/basic/*.cpp)
+FILE(GLOB STNODE_SOURCES src/basic/*.cpp src/rlbwt/range_distinct/*.cpp)
 
 
 add_library(fn STATIC ${STOOL_SOURCES} ${STNODE_SOURCES})
 target_link_libraries(fn sdsl divsufsort divsufsort64)
 
+#add_library(fn2 STATIC ${STOOL_SOURCES} ${STNODE_SOURCES} src/main/library.cpp)
+#target_link_libraries(fn2 sdsl divsufsort divsufsort64)
+
+
 ### Debug
 #add_executable(beller.out src/main/beller_main.cpp)
 #target_link_libraries(beller.out fn)
 
-add_executable(bbo_meximal_repeat.out src/main/bbo_meximal_repeat_main.cpp)
-target_link_libraries(bbo_meximal_repeat.out fn)
+#add_executable(bbo_meximal_repeat.out src/main/bbo_meximal_repeat_main.cpp)
+#target_link_libraries(bbo_meximal_repeat.out fn)
 
 
-add_executable(maximal_repeat.out src/main/maximal_repeat_main.cpp)
-target_link_libraries(maximal_repeat.out fn)
+#add_executable(maximal_repeat.out src/main/maximal_repeat_main.cpp)
+#target_link_libraries(maximal_repeat.out fn)
 
-add_executable(mus.out src/main/mus_main.cpp)
-target_link_libraries(mus.out fn)
+#add_executable(mus.out src/main/mus_main.cpp)
+#target_link_libraries(mus.out fn)
 
 
 add_executable(interval_test.out src/debug/lcp_interval_test_main.cpp)
 target_link_libraries(interval_test.out fn)
 
 
-add_executable(convert_bwt_into_int_vector.out src/main/convert_bwt_into_int_vector_main.cpp)
-target_link_libraries(convert_bwt_into_int_vector.out fn)
+#add_executable(convert_bwt_into_int_vector.out src/main/convert_bwt_into_int_vector_main.cpp)
+#target_link_libraries(convert_bwt_into_int_vector.out fn)
 
-add_executable(text_to_bwt.out src/main/text_to_bwt_main.cpp)
-target_link_libraries(text_to_bwt.out divsufsort divsufsort64)
+#add_executable(text_to_bwt.out src/main/text_to_bwt_main.cpp)
+#target_link_libraries(text_to_bwt.out divsufsort divsufsort64)
 
-add_executable(print.out src/main/print.cpp)
-target_link_libraries(print.out fn)
+#add_executable(print.out src/main/print.cpp)
+#target_link_libraries(print.out fn)
