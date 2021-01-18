@@ -80,7 +80,7 @@ namespace stool
 
                     std::cout << "[" << left << ", " << right << ", " << lcp << "]" << std::endl;
                 }
-                
+
                 INDEX_SIZE get_children_count() const
                 {
                     return traverser->get_children_count(*this);
@@ -96,6 +96,14 @@ namespace stool
                 INDEX_SIZE get_lcp() const
                 {
                     return traverser->stack.get_last_depth();
+                }
+                bool is_maximal_repeat()
+                {
+                    return traverser->stack.maximal_repeat_check_vec[traverser->stack.maximal_repeat_check_vec.size() - 1];
+                }
+                uint64_t child_count() const
+                {
+                    return traverser->stack.get_last_width() - 1;
                 }
 
                 /*
@@ -161,6 +169,7 @@ namespace stool
             void first_compute()
             {
                 std::vector<CharInterval<INDEX_SIZE, uint8_t>> r = em->getFirstChildren();
+                uint64_t k = 0;
                 for (uint64_t i = 0; i < r.size(); i++)
                 {
                     auto &it = r[i];
@@ -175,6 +184,7 @@ namespace stool
                     }
                     stack.childs_vec.push_back(it.j);
                     stack.first_child_flag_vec.push_back(false);
+                    k++;
                     if (store_edge_chars)
                     {
                         stack.edge_char_vec.push_back(it.c);
@@ -182,6 +192,7 @@ namespace stool
                 }
                 stack.maximal_repeat_check_vec.push_back(true);
                 stack.depth_vec.push_back(0);
+                stack.width_vec.push_back(k);
                 assert(stack.first_child_flag_vec[0]);
                 this->current_stnode_id = 0;
             }
@@ -203,6 +214,10 @@ namespace stool
                 }
                 return b;
             }
+            uint64_t get_stack_size() const
+            {
+                return this->stack.maximal_repeat_check_vec.size();
+            }
             DFSTraverser::iterator begin()
             {
                 this->initialize(this->em, this->store_edge_chars);
@@ -211,6 +226,11 @@ namespace stool
             DFSTraverser::iterator end()
             {
                 return DFSTraverser::iterator(this, false);
+            }
+
+            uint64_t get_input_text_length()
+            {
+                return this->em->get_input_text_length();
             }
             /*
             void clear(){

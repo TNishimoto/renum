@@ -20,6 +20,7 @@
 #include "../stnode_enumerator/application.hpp"
 
 #include <sdsl/wt_algorithm.hpp>
+#include "../stnode_enumerator/depth_first_search/dfs_traverser.hpp"
 
 //#include "../postorder_maximal_substring_intervals.hpp"
 //#include "../forward_bwt.hpp"
@@ -31,43 +32,115 @@ using namespace std;
 using CHAR = char;
 using INDEX = uint64_t;
 using LCPINTV = stool::LCPInterval<uint64_t>;
-int deleteFile(string fileName)
-{
-    return !(remove(fileName));
-}
-class LCPIntervalTest
+
+class DFSApplication
 {
 public:
-    template <typename STNODES>
-    static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(STNODES &stnodeSequencer)
+    template <typename INDEX_SIZE, typename INTERVAL_SEARCH, typename CHAR = uint8_t>
+    static uint64_t outputMaximalSubstrings(std::ofstream &out, stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR> &stnodeSequencer, stool::stnode_on_rlbwt::STTreeAnalysisResult &analysis)
     {
 
-        std::vector<stool::LCPInterval<uint64_t>> r;
+        using INDEX_SIZE = typename stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR>::index_type;
+        uint8_t print_type = 0;
+        out.write((char *)(&print_type), sizeof(print_type));
+        uint8_t index_bits = sizeof(INDEX_SIZE);
+        out.write((char *)(&index_bits), sizeof(index_bits));
+
+        std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
+        uint64_t count = 0;
+
+        analysis.start(stnodeSequencer.get_input_text_length());
 
         auto it = stnodeSequencer.begin();
         while (it != stnodeSequencer.end())
         {
-            std::vector<stool::LCPInterval<uint64_t>> r2;
+            analysis.analyze(it.child_count(), stnodeSequencer.get_stack_size());
+            bool b = it.is_maximal_repeat();
+            if (b)
+            {
+                uint64_t left = it.get_left();
+                uint64_t right = it.get_right();
+                uint64_t lcp = it.get_lcp();
 
-            for (auto interval : it)
-            {
-                stool::LCPInterval<uint64_t> copy;
-                copy.i = interval.first;
-                copy.j = interval.second;
-                copy.lcp = stnodeSequencer.get_current_lcp();
-                r2.push_back(copy);
+                stool::LCPInterval<INDEX_SIZE> intv(left, right, lcp);
+                buffer.push_back(intv);
+                count++;
+                if (buffer.size() >= 8000)
+                {
+                    out.write((char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                    buffer.clear();
+                }
             }
-            for (auto &it : r2)
-            {
-                r.push_back(it);
-            }
+
             it++;
         }
+        if (buffer.size() >= 1)
+        {
+            out.write((char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+            buffer.clear();
+        }
+        std::cout << "Enumerated" << std::endl;
 
-        std::cout << "STOP" << std::endl;
-        return r;
+        std::cout
+            << "STOP" << std::endl;
+        return count;
+        /*
+        analysis.start();
+
+        using INDEX_SIZE = typename STNODES::index_type;
+        uint8_t print_type = 0;
+        out.write((char *)(&print_type), sizeof(print_type));
+        uint8_t index_bits = sizeof(INDEX_SIZE);
+        out.write((char *)(&index_bits), sizeof(index_bits));
+
+        uint64_t count = 0;
+
+        analysis.input_text_length = stnodeSequencer.get_input_text_length();
+
+        std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
+
+        auto depth_iterator = stnodeSequencer.begin();
+        while (depth_iterator != stnodeSequencer.end())
+        {
+            analysis.analyze(stnodeSequencer);
+            std::vector<stool::LCPInterval<uint64_t>> r2;
+
+            for (auto node_it = depth_iterator.begin(); node_it != depth_iterator.end(); node_it++)
+            {
+                bool b = stnodeSequencer.check_maximal_repeat(node_it);
+                if (b)
+                {
+                    INDEX_SIZE left = stnodeSequencer.get_left(node_it);
+                    INDEX_SIZE right = stnodeSequencer.get_right(node_it);
+                    stool::LCPInterval<INDEX_SIZE> intv(left, right, stnodeSequencer.get_current_lcp());
+                    buffer.push_back(intv);
+                    count++;
+                    if (buffer.size() >= 8000)
+                    {
+                        out.write((char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                        buffer.clear();
+                    }
+                }
+            }
+            depth_iterator++;
+        }
+
+        if (buffer.size() >= 1)
+        {
+            out.write((char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+            buffer.clear();
+        }
+        std::cout << "Enumerated" << std::endl;
+
+        return count;
+        */
     }
 };
+
+int deleteFile(string fileName)
+{
+    return !(remove(fileName));
+}
 
 std::vector<uint8_t> load_bwt(std::string filename)
 {
@@ -135,60 +208,6 @@ uint8_t get_last_char(std::string inputFile, std::vector<uint64_t> &C, sdsl::bit
     return bwt[bwt.size() - 1];
 }
 
-void computeLCPIntervals(std::string inputFile, bool correctCheck)
-{
-
-    //string text = "";
-    std::cout << "Loading : " << inputFile << std::endl;
-    std::vector<uint8_t> text = stool::load_text_from_file(inputFile, true);
-    vector<INDEX> sa = stool::construct_suffix_array(text);
-    sdsl::int_vector<> bwt;
-    stool::FMIndex::constructBWT(text, sa, bwt);
-
-    sdsl::bit_vector bv;
-    bv.resize(bwt.size());
-    bool b = true;
-    //std::cout << bwt.size() << std::endl;
-    for (uint64_t i = 0; i < bwt.size(); i++)
-    {
-        if (i > 0 && bwt[i] != bwt[i - 1])
-        {
-            b = !b;
-        }
-        bv[i] = b;
-    }
-    sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
-
-    std::vector<uint64_t> C;
-    stool::FMIndex::constructC(bwt, C);
-
-    wt_huff<> wt;
-    construct_im(wt, bwt);
-
-    uint64_t lastChar = bwt[bwt.size() - 1];
-
-    stool::IntervalSearchDataStructure<uint8_t> range;
-    range.initialize(&wt, &C, lastChar);
-
-    stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t> wsearch;
-    wsearch.initialize(&range, &bwt_bit_rank1, bwt.size());
-    stool::stnode_on_rlbwt::SingleSTNodeTraverser<uint32_t, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>> traverser;
-    traverser.initialize(&wsearch, false);
-    auto test_Intervals = LCPIntervalTest::testLCPIntervals(traverser);
-
-    //auto test_Intervals = stool::beller::computeLCPIntervals<uint64_t>(range);
-    //test_Intervals.push_back(LCPINTV(0, text.size() - 1, 0));
-
-    if (correctCheck)
-    {
-        auto correctLCP = stool::constructLCP(text, sa);
-        std::cout << "Correct" << std::endl;
-        std::vector<LCPINTV> correct_intervals = stool::esaxx::NaiveAlgorithms::naive_compute_lcp_intervals(text, sa);
-        stool::beller::equal_check_lcp_intervals(test_Intervals, correct_intervals);
-        std::cout << "OK!" << std::endl;
-    }
-}
-
 void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 {
 
@@ -199,7 +218,6 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 
     std::cout << "Loading : " << inputFile << std::endl;
 
-
     uint8_t lastChar = get_last_char(inputFile, C, bv);
     sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
 
@@ -207,7 +225,6 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     wt_huff<> wt;
     construct(wt, inputFile);
     std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
-
 
     uint64_t ms_count = 0;
 
@@ -224,29 +241,27 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     auto mid = std::chrono::system_clock::now();
 
     std::cout << "Enumerating..." << std::endl;
-            stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
+    stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
 
     if (input_text_size - 10 < UINT32_MAX)
     {
         using INDEX_TYPE = uint32_t;
 
         stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
-        wsearch.initialize(&range, &bwt_bit_rank1, input_text_size );
-        stool::stnode_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
+        wsearch.initialize(&range, &bwt_bit_rank1, input_text_size);
+        stool::stnode_on_rlbwt::DFSTraverser<INDEX_TYPE, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch, false);
-        ms_count = stool::stnode_on_rlbwt::Application::outputMaximalSubstrings(out, traverser, st_result);
-
+        ms_count = DFSApplication::outputMaximalSubstrings(out, traverser, st_result);
     }
     else
     {
         using INDEX_TYPE = uint64_t;
 
         stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
-        wsearch.initialize(&range, &bwt_bit_rank1, input_text_size );
-        stool::stnode_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
+        wsearch.initialize(&range, &bwt_bit_rank1, input_text_size);
+        stool::stnode_on_rlbwt::DFSTraverser<INDEX_TYPE, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch, false);
-        ms_count = stool::stnode_on_rlbwt::Application::outputMaximalSubstrings(out, traverser, st_result);
-
+        ms_count = DFSApplication::outputMaximalSubstrings(out, traverser, st_result);
     }
     auto end = std::chrono::system_clock::now();
     double enumeration_time = std::chrono::duration_cast<std::chrono::seconds>(end - mid).count();
@@ -262,7 +277,6 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     std::cout << "Output File \t\t\t\t\t : " << outputFile << std::endl;
     std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
-    std::cout << "Peak count \t : " << st_result.max_nodes_at_level << std::endl;
     std::cout << "The usage of Wavelet tree : " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
     std::cout << "Excecution time \t\t\t : " << elapsed << "[s]" << std::endl;
@@ -274,12 +288,13 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     std::cout << "_______________________________________________________" << std::endl;
     std::cout << "\033[39m" << std::endl;
 
-    if (deleteFile(inputFile)) {
-        std::cout << "Deleted: " << inputFile << std::endl;   
+    if (deleteFile(inputFile))
+    {
+        std::cout << "Deleted: " << inputFile << std::endl;
     }
-    else {
-        std::cout << "Failed to delete " << inputFile << std::endl;   
-
+    else
+    {
+        std::cout << "Failed to delete " << inputFile << std::endl;
     }
 }
 
@@ -303,9 +318,7 @@ int main(int argc, char *argv[])
 
     if (outputFile.size() == 0)
     {
-            outputFile = inputFile + ".max";
+        outputFile = inputFile + ".max";
     }
     computeMaximalSubstrings(inputFile, outputFile);
-
-
 }

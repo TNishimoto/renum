@@ -91,26 +91,19 @@ namespace stool
             }
             void executeWeinerLinkSearch(stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &stack)
             {
-                std::vector<stool::CharInterval<INDEX_SIZE, CHAR>> tmp;
-                stack.get_last(tmp);
-                uint64_t left = UINT64_MAX;
-                uint64_t right = 0;
-                for (auto &it : tmp)
-                {
-                    if (left > it.i)
-                    {
-                        left = it.i;
-                    }
-                    if (right < it.j)
-                    {
-                        right = it.j;
-                    }
-                }
+                uint64_t left = stack.get_last_left_boundary();
+                uint64_t right = stack.get_last_right_boundary();
+
                 this->clear();
                 this->computeSTNodeCandidates(left, right);
-                for (auto &it : tmp)
-                {
-                    this->computeSTChildren(it.i, it.j, it.c);
+
+                stool::CharInterval<INDEX_SIZE, uint8_t> tmp;
+                uint64_t L = stack.childs_vec.size() - stack.get_last_width();
+                bool b = false;
+                while(L < stack.childs_vec.size()){
+                    L = stack.mini_increment(L, tmp, b);
+                    this->computeSTChildren(tmp.i, tmp.j, tmp.c);
+
                 }
                 this->fit();
 
@@ -304,6 +297,7 @@ namespace stool
                 if (parent_lcp != -1)
                 {
                     output_vec.depth_vec.push_back(parent_lcp + 1);
+                    output_vec.width_vec.push_back(count);
                 }
             }
             void sortedOutput(bool _store_edge_chars, int64_t parent_lcp, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)

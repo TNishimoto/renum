@@ -30,6 +30,8 @@ namespace stool
             int64_t current_lcp = -1;
             uint64_t current_child_count = 0;
             uint64_t print_interval_counter = 0;
+
+            uint64_t plx;
             std::chrono::system_clock::time_point start_time;
 
             void print_info()
@@ -67,9 +69,11 @@ namespace stool
 
                 std::cout << std::endl;
             }
-            void start()
+            void start(uint64_t len)
             {
+                this->input_text_length = len;
                 this->start_time = std::chrono::system_clock::now();
+                this->plx = (this->input_text_length / this->print_interval) + 1;
             }
 
             template <typename STNODES>
@@ -84,7 +88,7 @@ namespace stool
                     bool b = false;
                     while (true)
                     {
-                        uint64_t x = (this->input_text_length / this->print_interval) + 1;
+                        uint64_t x = this->plx;
                         uint64_t pp_num = x * this->print_interval_counter;
                         if (this->position_counter >= pp_num)
                         {
@@ -107,6 +111,41 @@ namespace stool
                     this->max_nodes_at_level = stnodeSequencer.child_count();
                 }
             }
+            void analyze(uint64_t child_count, uint64_t stack_size)
+            {
+
+                this->position_counter += child_count - 1;
+                this->current_child_count = stack_size;
+                
+                if (this->position_counter > 0)
+                {
+                    bool b = false;
+                    while (true)
+                    {
+                        uint64_t x = (this->input_text_length / this->print_interval) + 1;
+                        uint64_t pp_num = x * this->print_interval_counter;
+                        if (this->position_counter >= pp_num)
+                        {
+                            b = true;
+                            this->print_interval_counter++;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (b)
+                    {
+                        this->print_info();
+                    }
+                }
+                
+
+                if (this->max_nodes_at_level < this->current_child_count )
+                {
+                    this->max_nodes_at_level = this->current_child_count;
+                }
+            }
         };
 
         class Application
@@ -115,7 +154,7 @@ namespace stool
             template <typename STNODES>
             static uint64_t outputMaximalSubstrings(std::ofstream &out, STNODES &stnodeSequencer, STTreeAnalysisResult &analysis)
             {
-                analysis.start();
+                analysis.start(stnodeSequencer.get_input_text_length());
                 
                 using INDEX_SIZE = typename STNODES::index_type;
                 uint8_t print_type = 0;
@@ -125,7 +164,6 @@ namespace stool
 
                 uint64_t count = 0;
 
-                analysis.input_text_length = stnodeSequencer.get_input_text_length();
 
                 std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
 

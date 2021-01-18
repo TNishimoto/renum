@@ -39,6 +39,7 @@ namespace stool
             std::vector<bool> first_child_flag_vec;
             std::vector<bool> maximal_repeat_check_vec;
             std::vector<INDEX_SIZE> depth_vec;
+            std::vector<CHAR> width_vec;
 
             STNodeVector()
             {
@@ -56,16 +57,24 @@ namespace stool
             }
             uint64_t get_last_width() const
             {
-                uint64_t p = UINT64_MAX;
-                for (int64_t i = this->first_child_flag_vec.size() - 1; i >= 0; i--)
+                if (this->width_vec.size() == 0)
                 {
-                    if (this->first_child_flag_vec[i])
+                    uint64_t p = UINT64_MAX;
+                    for (int64_t i = this->first_child_flag_vec.size() - 1; i >= 0; i--)
                     {
-                        p = i;
-                        break;
+                        if (this->first_child_flag_vec[i])
+                        {
+                            p = i;
+                            break;
+                        }
                     }
+                    return this->first_child_flag_vec.size() - p;
                 }
-                return this->first_child_flag_vec.size() - p;
+                else
+                {
+
+                    return this->width_vec[this->width_vec.size() - 1] + 1;
+                }
             }
             uint64_t mini_increment(uint64_t L, stool::CharInterval<INDEX_SIZE, uint8_t> &output, bool &leftmost) const
             {
@@ -114,12 +123,13 @@ namespace stool
             uint64_t get_last_right_boundary() const
             {
                 assert(this->childs_vec.size() > 0);
-                return this->childs_vec[this->childs_vec.size()-1];
+                return this->childs_vec[this->childs_vec.size() - 1];
             }
 
-            int64_t get_last_depth() const {
+            int64_t get_last_depth() const
+            {
                 assert(this->depth_vec.size() != 0);
-                return this->depth_vec[this->depth_vec.size()-1];
+                return this->depth_vec[this->depth_vec.size() - 1];
             }
             /*
             std::pair<INDEX_SIZE,INDEX_SIZE> get_last_node() const
@@ -149,8 +159,10 @@ namespace stool
                     }
                 }
                 this->maximal_repeat_check_vec.pop_back();
-                if(this->depth_vec.size() > 0){
+                if (this->depth_vec.size() > 0)
+                {
                     this->depth_vec.pop_back();
+                    this->width_vec.pop_back();
                 }
             }
 
@@ -205,7 +217,7 @@ namespace stool
                 }
                 return R + 1;
             }
-            
+
             uint64_t increment(uint64_t L, uint64_t &left, uint64_t &right) const
             {
                 assert(L > 0);
@@ -315,7 +327,7 @@ namespace stool
             {
                 return STNodeIterator<STNodeVector>(this, false);
             }
-            
+
             void set_current_first_iterator(ITERATOR &it) const
             {
                 this->set_current_first_iterator(it.child_index, it.node_index, it.array_index);
