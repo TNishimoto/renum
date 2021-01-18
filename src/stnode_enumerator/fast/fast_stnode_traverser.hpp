@@ -364,8 +364,10 @@ namespace stool
                     {
                         L = this->get_stnode(L, output);
 
+                        /*
                         auto intv = output.get_lcp_interval(this->current_lcp + i, *this->_RLBWTDS->get_lpos_vec_pointer());
                         std::cout << intv.to_string();
+                        */
                     }
                     std::cout << std::endl;
                 }

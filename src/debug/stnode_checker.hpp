@@ -320,6 +320,38 @@ namespace stool
                     }
                 }
             }
+            bool check_lcp_interval(uint64_t i, uint64_t j, uint64_t lcp)
+            {
+                std::lock_guard<std::mutex> lock(std::mutex);
+
+                auto it = this->maps[lcp].find(i);
+                if (it == this->maps[lcp].end())
+                {
+                    std::cout << "LCP Interval CHECK ERROR!(1)" << std::endl;
+                    std::cout << "Test LCP Interval = "
+                              << "[" << i << ", " << j << "]"
+                              << ", Current LCP = " << lcp << std::endl;
+
+                    throw -1;
+                }
+                else
+                {
+                    if (it->second == j)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        std::cout << "LCP Interval CHECK ERROR!(2)" << std::endl;
+                        std::cout << "Test LCP Interval = "
+                                  << "[" << i << ", " << j << "]" << std::endl;
+                        std::cout << "Collect LCP Interval = "
+                                  << "[" << i << ", " << it->second << "]" << std::endl;
+
+                        throw -1;
+                    }
+                }
+            }
         };
     } // namespace stnode_on_rlbwt
 } // namespace stool

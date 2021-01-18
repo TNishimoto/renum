@@ -19,26 +19,27 @@ namespace stool
         /*
             This is a data structure to ...
         */
-        template <typename INDEX_SIZE>
+        template <typename INDEX_SIZE, typename CHAR = uint8_t>
         class ExplicitWeinerLinkComputer
         {
             using RINTERVAL = std::pair<INDEX_SIZE, INDEX_SIZE>;
-            std::vector<std::vector<RINTERVAL>> childrenVec;
-            std::vector<RINTERVAL> stnodeVec;
+            using CHAR_INTERVAL = CharInterval<INDEX_SIZE, CHAR>;
+            std::vector<std::vector<CHAR_INTERVAL>> childrenVec;
+            //std::vector<RINTERVAL> stnodeVec;
             std::vector<uint64_t> indexVec;
-            std::vector<std::vector<uint8_t>> edgeCharVec;
-            using CHAR = uint8_t;
+            //std::vector<std::vector<uint8_t>> edgeCharVec;
+            //using CHAR = uint8_t;
             using INDEX = INDEX_SIZE;
 
             std::vector<bool> stnodeOccFlagArray;
 
             uint64_t indexCount = 0;
-            uint64_t explicitChildCount = 0;
+            //uint64_t explicitChildCount = 0;
             uint64_t range_distinct_threshold = 16;
 
             std::vector<uint8_t> charTmpVec;
             vector<RINTERVAL> rIntervalTmpVec;
-            std::vector<CharInterval<INDEX_SIZE, uint8_t>> charIntervalTmpVec;
+            std::vector<CHAR_INTERVAL> charIntervalTmpVec;
 
             stool::IntervalSearchDataStructure<CHAR> *searcher;
             sdsl::bit_vector::rank_1_type *bwt_bit_rank1;
@@ -54,10 +55,10 @@ namespace stool
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 childrenVec.resize(CHARMAX);
                 indexVec.resize(CHARMAX);
-                edgeCharVec.resize(CHARMAX);
+                //edgeCharVec.resize(CHARMAX);
 
                 stnodeOccFlagArray.resize(CHARMAX, false);
-                stnodeVec.resize(CHARMAX);
+                //stnodeVec.resize(CHARMAX);
 
                 rIntervalTmpVec.resize(CHARMAX);
                 charTmpVec.resize(CHARMAX);
@@ -71,7 +72,7 @@ namespace stool
                 bool _store_edge_chars = edgeChars != nullptr;
 
                 this->clear();
-                this->computeSTNodeCandidates(node.first, node.second);
+                //this->computeSTNodeCandidates(node.first, node.second);
                 if (_store_edge_chars)
                 {
                     for (uint64_t i = 0; i < children.size(); i++)
@@ -91,19 +92,19 @@ namespace stool
             }
             void executeWeinerLinkSearch(stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &stack)
             {
-                uint64_t left = stack.get_last_left_boundary();
-                uint64_t right = stack.get_last_right_boundary();
+                //uint64_t left = stack.get_last_left_boundary();
+                //uint64_t right = stack.get_last_right_boundary();
 
                 this->clear();
-                this->computeSTNodeCandidates(left, right);
+                //this->computeSTNodeCandidates(left, right);
 
                 stool::CharInterval<INDEX_SIZE, uint8_t> tmp;
                 uint64_t L = stack.childs_vec.size() - stack.get_last_width();
                 bool b = false;
-                while(L < stack.childs_vec.size()){
+                while (L < stack.childs_vec.size())
+                {
                     L = stack.mini_increment(L, tmp, b);
                     this->computeSTChildren(tmp.i, tmp.j, tmp.c);
-
                 }
                 this->fit();
 
@@ -149,7 +150,7 @@ namespace stool
 
                 return !isNotMaximalRepeat;
             }
-
+            /*
             uint64_t get_explicit_stnode_count() const
             {
                 return this->indexCount;
@@ -164,32 +165,41 @@ namespace stool
                 }
                 return k;
             }
+            */
 
+            void clear(CHAR c)
+            {
+                childrenVec[c].clear();
+                stnodeOccFlagArray[c] = false;
+            }
             void clear()
             {
+
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     auto &it = this->indexVec[i];
                     childrenVec[it].clear();
-                    edgeCharVec[it].clear();
+                    //edgeCharVec[it].clear();
 
                     stnodeOccFlagArray[it] = false;
                 }
                 indexCount = 0;
-                explicitChildCount = 0;
+                //explicitChildCount = 0;
             }
             uint8_t get_child(uint8_t c, uint64_t index, std::pair<INDEX_SIZE, INDEX_SIZE> &output) const
             {
                 auto &it = this->childrenVec[c][index];
-                output.first = it.first;
-                output.second = it.second;
-                return this->edgeCharVec[c][index];
+                output.first = it.i;
+                output.second = it.j;
+                return it.c;
             }
+            /*
             uint64_t get_width(uint8_t c) const
             {
                 auto &currentVec = this->childrenVec[c];
                 return currentVec.size();
             }
+            */
 
             void output(bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
             {
@@ -198,45 +208,30 @@ namespace stool
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     CHAR c = this->indexVec[i];
-                    auto &currentVec = this->childrenVec[c];
-                    uint64_t count = currentVec.size();
-
-                    uint64_t st_left = UINT64_MAX;
-                    uint64_t st_right = 0;
-                    std::pair<INDEX_SIZE, INDEX_SIZE> outputInterval;
-
-                    for (uint64_t j = 0; j < count; j++)
-                    {
-                        CHAR edgeChar = this->get_child(c, j, outputInterval);
-                        if (outputInterval.first < st_left)
-                        {
-                            st_left = outputInterval.first;
-                        }
-                        if (outputInterval.second > st_right)
-                        {
-                            st_right = outputInterval.second;
-                        }
-                        if (j == 0)
-                        {
-                            output_vec.childs_vec.push_back(outputInterval.first);
-                            output_vec.first_child_flag_vec.push_back(true);
-
-                            if (_store_edge_chars)
-                            {
-                                output_vec.edge_char_vec.push_back(0);
-                            }
-                        }
-                        output_vec.childs_vec.push_back(outputInterval.second);
-                        output_vec.first_child_flag_vec.push_back(false);
-                        if (_store_edge_chars)
-                        {
-                            output_vec.edge_char_vec.push_back(edgeChar);
-                        }
-                    }
-                    bool isMaximalRepeat = this->checkMaximalRepeat(st_left, st_right);
-
-                    output_vec.maximal_repeat_check_vec.push_back(isMaximalRepeat);
+                    this->output(c, _store_edge_chars, -1, output_vec);
                 }
+            }
+            std::pair<INDEX_SIZE, INDEX_SIZE> get_node_ianterval(CHAR c)
+            {
+                auto &currentVec = this->childrenVec[c];
+                uint64_t count = currentVec.size();
+                uint64_t st_left = UINT64_MAX;
+                uint64_t st_right = 0;
+                std::pair<INDEX_SIZE, INDEX_SIZE> outputInterval;
+
+                for (uint64_t j = 0; j < count; j++)
+                {
+                    this->get_child(c, j, outputInterval);
+                    if (outputInterval.first < st_left)
+                    {
+                        st_left = outputInterval.first;
+                    }
+                    if (outputInterval.second > st_right)
+                    {
+                        st_right = outputInterval.second;
+                    }
+                }
+                return std::pair<INDEX_SIZE, INDEX_SIZE>(st_left, st_right);
             }
             int64_t get_largest_next_interval_index()
             {
@@ -246,7 +241,8 @@ namespace stool
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
                     CHAR c = this->indexVec[i];
-                    uint64_t w = this->stnodeVec[c].second - this->stnodeVec[c].first + 1;
+                    std::pair<INDEX_SIZE, INDEX_SIZE> p = this->get_node_ianterval(c);
+                    uint64_t w = p.second - p.first + 1;
                     if (largest_width < w)
                     {
                         largest_index = c;
@@ -311,17 +307,18 @@ namespace stool
                     for (uint64_t i = 0; i < this->indexCount; i++)
                     {
                         int64_t c = this->indexVec[i];
-                        if(c != largest_index){
+                        if (c != largest_index)
+                        {
                             this->output(c, _store_edge_chars, parent_lcp, output_vec);
                         }
-
                     }
                 }
             }
 
         private:
-            bool pushExplicitWeinerInterval(INDEX_SIZE left, INDEX_SIZE right, uint8_t c, uint8_t edgeChar)
+            void pushExplicitWeinerInterval(INDEX_SIZE left, INDEX_SIZE right, uint8_t c, uint8_t edgeChar)
             {
+                /*
                 bool isValid = this->stnodeOccFlagArray[c];
                 if (!isValid)
                     return false;
@@ -329,22 +326,30 @@ namespace stool
                 bool isLastChild = lcpIntv.second == right;
                 bool isFirstChild = lcpIntv.first == left;
                 bool b = !(isFirstChild && isLastChild);
+                */
+                bool firstOccurance = !this->stnodeOccFlagArray[c];
+                if (firstOccurance)
+                {
+                    this->stnodeOccFlagArray[c] = true;
+                    this->indexVec[this->indexCount++] = c;
+                }
+                this->childrenVec[c].push_back(CHAR_INTERVAL(left, right, edgeChar));
+                //explicitChildCount++;
 
-                if (b)
+                //this->edgeCharVec[c].push_back(edgeChar);
+
+                /*
+                if (this->childrenVec[c].size() == 0)
                 {
 
-                    if (this->childrenVec[c].size() == 0)
-                    {
-
-                        this->indexVec[this->indexCount] = c;
-                        this->indexCount++;
-                    }
-                    this->childrenVec[c].push_back(RINTERVAL(left, right));
-                    this->edgeCharVec[c].push_back(edgeChar);
-                    explicitChildCount++;
+                    this->indexVec[this->indexCount] = c;
+                    this->indexCount++;
                 }
-                return b;
+                */
+
+                //return b;
             }
+            /*
             void computeSTNodeCandidates(INDEX_SIZE left, INDEX_SIZE right)
             {
 
@@ -360,6 +365,7 @@ namespace stool
                     }
                 }
             }
+            */
             void computeSTChildren(INDEX_SIZE left, INDEX_SIZE right, uint8_t edgeChar)
             {
 
@@ -383,12 +389,13 @@ namespace stool
                     auto c = this->indexVec[i];
                     uint64_t explicitChildrenCount = this->childrenVec[c].size();
 
-                    if (explicitChildrenCount > 0)
+                    if (explicitChildrenCount >= 2)
                     {
-
                         this->indexVec[k] = this->indexVec[i];
 
                         k++;
+                    }else{
+                        this->clear(this->indexVec[i]);
                     }
                 }
                 this->indexCount = k;
@@ -404,12 +411,12 @@ namespace stool
                     for (uint64_t i = 0; i < count; i++)
                     {
                         auto &it = currentVec[i];
-                        bool isLeft = it.first < currentVec[minCharIndex].first;
+                        bool isLeft = it.i < currentVec[minCharIndex].i;
                         if (isLeft)
                         {
                             minCharIndex = i;
                         }
-                        bool isRight = it.second > currentVec[maxCharIndex].second;
+                        bool isRight = it.j > currentVec[maxCharIndex].j;
                         if (isRight)
                         {
                             maxCharIndex = i;

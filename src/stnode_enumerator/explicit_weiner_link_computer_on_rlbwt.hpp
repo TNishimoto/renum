@@ -498,7 +498,10 @@ namespace stool
                 std::vector<stool::LCPInterval<uint64_t>> wlinks;
                 for (uint64_t i = 0; i < this->indexCount; i++)
                 {
-                    stool::LCPInterval<uint64_t> intv = this->stnodeVec[this->indexVec[i]].get_lcp_interval(lcp, this->_RLBWTDS->_fposDS);
+                    uint64_t left = this->_RLBWTDS->_fposDS[this->stnodeVec[this->indexVec[i]].beginIndex] + this->stnodeVec[this->indexVec[i]].beginDiff;
+                    uint64_t right = this->_RLBWTDS->_fposDS[this->stnodeVec[this->indexVec[i]].endIndex] + this->stnodeVec[this->indexVec[i]].endDiff;
+                    stool::LCPInterval<uint64_t> intv = stool::LCPInterval<uint64_t>(left, right, lcp);
+                    //stool::LCPInterval<uint64_t> intv = this->stnodeVec[this->indexVec[i]].get_lcp_interval(lcp, this->_RLBWTDS->_fposDS);
                     wlinks.push_back(intv);
                 }
                 return wlinks;
@@ -531,12 +534,14 @@ namespace stool
                     uint64_t explicitChildrenCount = this->childrenVec[c].size();
 
 #if DEBUG
+                    /*
                     if (this->rlbwt->str_size() < 100)
                     {
                         std::cout << "FOUND ";
                         this->stnodeVec[c].print2(this->_RLBWTDS->_fposDS);
                         std::cout << std::endl;
                     }
+                    */
                     /*
                     if (this->stnc != nullptr && this->checker_on)
                     {

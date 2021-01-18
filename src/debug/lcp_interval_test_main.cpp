@@ -113,7 +113,7 @@ public:
     }
 
     template <typename INDEX_SIZE, typename INTERVAL_SEARCH, typename CHAR = uint8_t>
-    static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR> &stnodeSequencer)
+    static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR> &stnodeSequencer, stool::stnode_on_rlbwt::STNodeChecker *checker)
     {
 
         std::vector<stool::LCPInterval<uint64_t>> r;
@@ -124,7 +124,19 @@ public:
             uint64_t left = it.get_left();
             uint64_t right = it.get_right();
             uint64_t lcp = it.get_lcp();
-            r.push_back(stool::LCPInterval<uint64_t>(left, right, lcp));
+            auto intv = stool::LCPInterval<uint64_t>(left, right, lcp);
+            if(checker != nullptr){
+                checker->check_lcp_interval(left, right, lcp);
+            }
+            if (stnodeSequencer.get_input_text_length() < 100)
+            {
+                std::cout << intv.to_string() << std::endl;
+            }
+            if(intv.lcp > stnodeSequencer.get_input_text_length()){
+                assert(false);
+                throw -1;
+            }
+            r.push_back(intv);
 
             it++;
         }
@@ -295,7 +307,7 @@ void computeLCPIntervals_DFS(std::string inputFile)
     stool::stnode_on_rlbwt::DFSTraverser<uint32_t, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>> traverser;
     traverser.initialize(&wsearch, true);
 
-    auto test_Intervals = LCPIntervalTest::testLCPIntervals<uint32_t, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>, uint8_t>(traverser);
+    auto test_Intervals = LCPIntervalTest::testLCPIntervals<uint32_t, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>, uint8_t>(traverser, &stnc);
     stool::beller::equal_check_lcp_intervals(test_Intervals, stnc.lcp_intervals);
     std::cout << "OK!" << std::endl;
 }
