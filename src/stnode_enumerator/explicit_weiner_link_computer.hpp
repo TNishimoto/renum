@@ -10,6 +10,7 @@
 #include "../basic/rinterval.hpp"
 #include "./stnode_vector.hpp"
 #include "../basic/interval_search_data_structure.hpp"
+#include "../basic/sdsl_functions.hpp"
 
 namespace stool
 {
@@ -42,16 +43,16 @@ namespace stool
             std::vector<CHAR_INTERVAL> charIntervalTmpVec;
 
             stool::IntervalSearchDataStructure<CHAR> *searcher;
-            sdsl::bit_vector::rank_1_type *bwt_bit_rank1;
+            //sdsl::bit_vector::rank_1_type *bwt_bit_rank1;
             uint64_t strSize = 0;
 
         public:
             //LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX_SIZE> lightRangeSearcher;
             //SuccinctRangeDistinctDataStructure<INDEX_SIZE> heavyRangeSearcher;
 
-            void initialize(IntervalSearchDataStructure<CHAR> *_searcher, sdsl::bit_vector::rank_1_type *_bwt_bit_rank1, uint64_t _strSize)
+            void initialize(IntervalSearchDataStructure<CHAR> *_searcher, uint64_t _strSize)
             {
-                this->bwt_bit_rank1 = _bwt_bit_rank1;
+                //this->bwt_bit_rank1 = _bwt_bit_rank1;
                 uint64_t CHARMAX = UINT8_MAX + 1;
                 childrenVec.resize(CHARMAX);
                 indexVec.resize(CHARMAX);
@@ -141,15 +142,28 @@ namespace stool
             }
 
         private:
+            /*
             bool checkMaximalRepeat(uint64_t left, uint64_t right) const
             {
 
                 uint64_t k1 = left == 0 ? 0 : (*bwt_bit_rank1)(left);
                 uint64_t k2 = (*bwt_bit_rank1)(right + 1);
                 bool isNotMaximalRepeat = ((k2 - k1 == 0) || ((k2 - k1) == (right - left + 1)));
-
+            
                 return !isNotMaximalRepeat;
             }
+            */
+            bool checkMaximalRepeat(uint64_t left, uint64_t right) const
+            {
+                uint8_t right_c = SDSLFunction::get_Char((*this->searcher->wt), right, this->searcher->lastChar);
+                uint64_t right_c_num = SDSLFunction::get_rank((*this->searcher->wt), right + 1, right_c, this->searcher->lastChar);
+                uint64_t left_c_num = SDSLFunction::get_rank((*this->searcher->wt), left, right_c, this->searcher->lastChar);
+
+                bool isNotMaximalRepeat = ((right_c_num - left_c_num == 0) || ((right_c_num - left_c_num) == (right - left + 1)));
+                return !isNotMaximalRepeat;
+
+            }
+
             /*
             uint64_t get_explicit_stnode_count() const
             {
@@ -394,7 +408,9 @@ namespace stool
                         this->indexVec[k] = this->indexVec[i];
 
                         k++;
-                    }else{
+                    }
+                    else
+                    {
                         this->clear(this->indexVec[i]);
                     }
                 }

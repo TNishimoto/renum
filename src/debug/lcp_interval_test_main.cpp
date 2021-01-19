@@ -221,7 +221,7 @@ void computeLCPIntervals_beller(std::string inputFile)
     {
         bwt[i] = bwt2[i];
     }
-
+    /*
     sdsl::bit_vector bv;
     bv.resize(bwt.size());
     bool b = true;
@@ -236,6 +236,7 @@ void computeLCPIntervals_beller(std::string inputFile)
     }
     std::cout << std::endl;
     sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
+    */
 
     std::vector<uint64_t> C;
     stool::FMIndex::constructC(bwt, C);
@@ -249,7 +250,7 @@ void computeLCPIntervals_beller(std::string inputFile)
     range.initialize(&wt, &C, lastChar);
 
     stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t> wsearch;
-    wsearch.initialize(&range, &bwt_bit_rank1, bwt.size());
+    wsearch.initialize(&range, bwt.size());
     stool::stnode_on_rlbwt::SingleSTNodeTraverser<uint32_t, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>> traverser;
     traverser.initialize(&wsearch, true);
 
@@ -274,7 +275,7 @@ void computeLCPIntervals_DFS(std::string inputFile)
     {
         bwt[i] = bwt2[i];
     }
-
+    /*
     sdsl::bit_vector bv;
     bv.resize(bwt.size());
     bool b = true;
@@ -289,6 +290,7 @@ void computeLCPIntervals_DFS(std::string inputFile)
     }
     std::cout << std::endl;
     sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
+    */
 
     std::vector<uint64_t> C;
     stool::FMIndex::constructC(bwt, C);
@@ -302,7 +304,7 @@ void computeLCPIntervals_DFS(std::string inputFile)
     range.initialize(&wt, &C, lastChar);
 
     stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t> wsearch;
-    wsearch.initialize(&range, &bwt_bit_rank1, bwt.size());
+    wsearch.initialize(&range, bwt.size());
     stool::stnode_on_rlbwt::DFSTraverser<uint32_t, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>> traverser;
     traverser.initialize(&wsearch, true);
 

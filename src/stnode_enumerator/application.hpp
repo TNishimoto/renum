@@ -22,8 +22,9 @@ namespace stool
         class STTreeAnalysisResult
         {
         public:
-            uint64_t max_nodes_at_level;
+            uint64_t max_nodes_at_level = 0;
             uint64_t print_interval = 100;
+            uint64_t peak_memory_of_queue = 0;
 
             uint64_t position_counter = 0;
             uint64_t input_text_length = 0;
@@ -79,6 +80,7 @@ namespace stool
             template <typename STNODES>
             void analyze(STNODES &stnodeSequencer)
             {
+                this->peak_memory_of_queue = std::max(this->peak_memory_of_queue, stnodeSequencer.get_using_memory());
 
                 this->current_lcp++;
                 this->position_counter += stnodeSequencer.child_count() - stnodeSequencer.node_count();

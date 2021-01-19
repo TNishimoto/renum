@@ -586,8 +586,6 @@ namespace stool
                     throw -1;
                 }
             }
-
-        private:
             uint64_t get_using_memory()
             {
                 if (this->mode == STANDARD_MODE)
@@ -608,6 +606,7 @@ namespace stool
                     throw -1;
                 }
             }
+
         };
 
     } // namespace stnode_on_rlbwt

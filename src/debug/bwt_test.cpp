@@ -134,6 +134,29 @@ void testDBitArray(std::string bwt_iv_file){
         }
     }
 }
+void testBWT_WT(std::string bwt_iv_file){
+    sdsl::int_vector<> bwt;
+    sdsl::load_from_file(bwt, bwt_iv_file);
+
+    uint8_t c = stool::stnode_on_rlbwt::SDSLFunction::get_last_char(bwt_iv_file);
+
+
+    wt_huff<> wt;
+    construct(wt, bwt_iv_file);
+    std::cout << "Size/" << bwt.size() << "/" << wt.size() << std::endl;
+
+    for(uint64_t x=0;x<bwt.size();x++){
+        uint8_t c1 = bwt[x];
+        uint8_t c2 = stool::stnode_on_rlbwt::SDSLFunction::get_Char(wt, x, c);
+
+        if(c1 != c2){
+            std::cout << "Error! " << c1 << "/" << c2 << "/" << x << std::endl;
+            throw -1;
+        }
+    }
+
+
+}
 
 int main(int argc, char *argv[])
 {
@@ -151,8 +174,11 @@ int main(int argc, char *argv[])
         return -1;
     }
     std::string ivFile = inputFile + ".iv";
+    /*
     testDBitArray(ivFile);
     
     testCArray(ivFile);
+    */
+   testBWT_WT(ivFile);
     std::cout << "OK!" << std::endl;
 }

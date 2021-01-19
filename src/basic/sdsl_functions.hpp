@@ -41,6 +41,33 @@ namespace stool
 
                 return c;
             }
+            static uint8_t get_Char(wt_huff<> &wt, uint64_t i, uint8_t last_char)
+            {
+                if (i + 1 != wt.size())
+                {
+                    return wt[i+1];
+                }
+                else
+                {
+                    return last_char;
+                }
+            }
+            static uint64_t get_rank(wt_huff<> &wt, uint64_t i, uint8_t c, uint8_t last_char)
+            {
+                if (i == 0)
+                {
+                    return 0;
+                }
+                else if (i == wt.size())
+                {
+                    return wt.rank(i, c) + (c == last_char ? 1 : 0);
+                }
+                else
+                {
+                    return wt.rank(i+1, c);
+                }
+            }
+
             static uint8_t load_wavelet_tree(string bwt_iv_file, wt_huff<> &wt, std::vector<uint64_t> &output_C_array)
             {
                 uint8_t c = get_last_char(bwt_iv_file);
@@ -78,7 +105,6 @@ namespace stool
                 uint64_t textSize = (n - k + 1) - 9;
                 stream.seekg(9, std::ios::beg);
 
-
                 bv.resize(textSize);
 
                 std::vector<char> buffer;
@@ -99,6 +125,8 @@ namespace stool
                     for (uint64_t i = 0; i < buffer.size(); i++)
                     {
                         uint8_t c = (uint8_t)buffer[i];
+
+                        
 
                         if (prevChar != c || x == 0)
                         {

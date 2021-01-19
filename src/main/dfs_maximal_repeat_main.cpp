@@ -207,12 +207,13 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 
     //string text = "";
     auto start = std::chrono::system_clock::now();
-    sdsl::bit_vector bv;
+    //sdsl::bit_vector bv;
 
     std::cout << "Loading : " << inputFile << std::endl;
     std::cout << "Constructing dbit array for maximal repeats : " << std::endl;
-    stool::stnode_on_rlbwt::SDSLFunction::constructDBitArray(inputFile, bv);
-    sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
+    //stool::stnode_on_rlbwt::SDSLFunction::constructDBitArray(inputFile, bv);
+    //sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
+
 
 
     std::cout << "Constructing Wavelet Tree..." << std::endl;
@@ -249,7 +250,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
         using INDEX_TYPE = uint32_t;
 
         stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
-        wsearch.initialize(&range, &bwt_bit_rank1, input_text_size);
+        wsearch.initialize(&range, input_text_size);
         stool::stnode_on_rlbwt::DFSTraverser<INDEX_TYPE, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch, false);
         ms_count = DFSApplication::outputMaximalSubstrings(out, traverser, st_result);
@@ -259,7 +260,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
         using INDEX_TYPE = uint64_t;
 
         stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
-        wsearch.initialize(&range, &bwt_bit_rank1, input_text_size);
+        wsearch.initialize(&range, input_text_size);
         stool::stnode_on_rlbwt::DFSTraverser<INDEX_TYPE, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch, false);
         ms_count = DFSApplication::outputMaximalSubstrings(out, traverser, st_result);
@@ -279,7 +280,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
     std::cout << "The usage of Wavelet tree \t\t : " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
-    std::cout << "The usage of DBit array \t\t : " << sdsl::size_in_bytes(bv) / 1000 << "[KB]" << std::endl;
+    //std::cout << "The usage of DBit array \t\t : " << sdsl::size_in_bytes(bv) / 1000 << "[KB]" << std::endl;
 
     std::cout << "Excecution time \t\t\t : " << elapsed << "[s]" << std::endl;
     std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
