@@ -53,11 +53,12 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, int
     uint64_t ms_count = 0;
     stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
 
-
+    uint64_t ds_memory_usage = 0;
     if (analysisResult.str_size < UINT32_MAX - 10)
     {
         using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint32_t>;
         RDS ds = RDS(&rlbwt);
+        ds_memory_usage = ds.get_using_memory();
         mid = std::chrono::system_clock::now();
 
         std::cout << "Enumerate Maximal Substrings..." << std::endl;
@@ -70,6 +71,8 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, int
     {
         using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint64_t>;
         RDS ds = RDS(&rlbwt);
+        ds_memory_usage = ds.get_using_memory();
+
         mid = std::chrono::system_clock::now();
 
         std::cout << "Enumerate Maximal Substrings..." << std::endl;
@@ -98,14 +101,24 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, int
     std::cout << "The length of the input text \t\t : " << analysisResult.str_size << std::endl;
     std::cout << "The number of runs on BWT \t\t : " << analysisResult.run_count << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
+
+
+    std::cout << "\033[33m";
+    std::cout << "______________________Execution Time______________________" << std::endl;
     std::cout << "Excecution time \t\t\t : " << elapsed << " [s]" << std::endl;
     std::cout << "Character per second \t\t\t : " << bps << " [KB/s]" << std::endl;
     std::cout << "\t Preprocessing time \t\t : " << construction_time << " [s]" << std::endl;
     std::cout << "\t Enumeration time \t\t : " << enumeration_time << " [s]" << std::endl;
-
+    
+    std::cout << "\033[32m";
+    std::cout << "______________________Memory Usage______________________" << std::endl;
+    std::cout << "RLBWT \t : " << (rlbwt.get_using_memory() / 1000) << " [KB]" << std::endl;
+    std::cout << "WT \t : " << (ds_memory_usage / 1000) << " [KB]" << std::endl;
+    std::cout << "Queue \t : " << st_result.peak_memory_of_queue / 1000 << " [KB]" << std::endl;
     std::cout << "_______________________________________________________" << std::endl;
 
     std::cout << "\033[39m" << std::endl;
+
 }
 
 int main(int argc, char *argv[])

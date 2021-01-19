@@ -151,6 +151,9 @@ namespace stool
                 }
                 return std::numeric_limits<INDEX>::max();
             }
+            uint64_t get_using_memory() const {
+                return sdsl::size_in_bytes(this->head_char_vec) + this->lpos_vec.get_using_memory();
+            }
         };
 
     } // namespace stnode_on_rlbwt

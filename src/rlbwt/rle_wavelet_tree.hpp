@@ -95,6 +95,10 @@ namespace stool
                 output.endIndex = this->rlbwt->get_lindex_containing_the_position(right);
                 output.endDiff = right - this->rlbwt->get_lpos(output.endIndex);
             }
+            
+            uint64_t get_using_memory() const {
+                return sdsl::size_in_bytes(this->wt) + this->_fposDS.get_using_memory();
+            }
         };
     } // namespace stnode_on_rlbwt
 } // namespace stool

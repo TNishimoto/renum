@@ -280,6 +280,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
     std::cout << "The usage of Wavelet tree \t\t : " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+
     //std::cout << "The usage of DBit array \t\t : " << sdsl::size_in_bytes(bv) / 1000 << "[KB]" << std::endl;
 
     std::cout << "Excecution time \t\t\t : " << elapsed << "[s]" << std::endl;
