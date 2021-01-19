@@ -13,7 +13,7 @@
 #include "../beller/beller_interval.hpp"
 #include "../debug/beller_debug.hpp"
 
-#include "../main/common.hpp"
+
 #include "../debug/naive_algorithms.hpp"
 #include <sdsl/wt_algorithm.hpp>
 

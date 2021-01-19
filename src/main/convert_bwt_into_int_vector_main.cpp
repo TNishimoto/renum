@@ -13,7 +13,7 @@
 #include "../beller/beller_interval.hpp"
 #include "../debug/beller_debug.hpp"
 
-#include "../main/common.hpp"
+
 #include "../debug/naive_algorithms.hpp"
 #include "../stnode_enumerator/single/single_stnode_traverser.hpp"
 #include "../stnode_enumerator/application.hpp"

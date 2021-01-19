@@ -14,13 +14,14 @@
 //#include "../beller/beller_interval.hpp"
 #include "../debug/beller_debug.hpp"
 
-#include "../main/common.hpp"
+
 #include "../debug/naive_algorithms.hpp"
 #include "../stnode_enumerator/single/single_stnode_traverser.hpp"
 #include "../stnode_enumerator/application.hpp"
 
 #include <sdsl/wt_algorithm.hpp>
 #include "../stnode_enumerator/depth_first_search/dfs_traverser.hpp"
+#include "../basic/sdsl_functions.hpp"
 
 //#include "../postorder_maximal_substring_intervals.hpp"
 //#include "../forward_bwt.hpp"
@@ -136,7 +137,7 @@ public:
         */
     }
 };
-
+/*
 int deleteFile(string fileName)
 {
     return !(remove(fileName));
@@ -174,6 +175,12 @@ uint8_t get_last_char(std::string inputFile, std::vector<uint64_t> &C, sdsl::bit
     bv.resize(bwt.size());
     bool b = true;
     //std::cout << bwt.size() << std::endl;
+    if(bwt.size() < 200){
+        for(uint64_t i=0;i<bwt.size();i++){
+        std::cout << bwt[i] << ", " << std::flush;
+        }
+        std::cout << std::endl;
+    }
     for (uint64_t i = 0; i < bwt.size(); i++)
     {
         //std::cout << (uint) bwt[i];
@@ -188,43 +195,37 @@ uint8_t get_last_char(std::string inputFile, std::vector<uint64_t> &C, sdsl::bit
         }
         bv[i] = b;
     }
-    /*
-    if (k == 0)
-    {
-        std::cout << "Error: This bwt does not contain 0." << std::endl;
-        throw -1;
-    }
-    
-    else if (k >= 2)
-    {
-        std::cout << "Error2: This bwt contains 0 twice or more." << std::endl;
-        throw -1;
-    }
-    */
     std::cout << "Constructing array C..." << std::endl;
 
     stool::FMIndex::constructC(bwt, C);
 
     return bwt[bwt.size() - 1];
 }
-
+*/
 void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 {
 
     //string text = "";
     auto start = std::chrono::system_clock::now();
-    std::vector<uint64_t> C;
     sdsl::bit_vector bv;
 
     std::cout << "Loading : " << inputFile << std::endl;
-
-    uint8_t lastChar = get_last_char(inputFile, C, bv);
+    std::cout << "Constructing dbit array for maximal repeats : " << std::endl;
+    stool::stnode_on_rlbwt::SDSLFunction::constructDBitArray(inputFile, bv);
     sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
+
 
     std::cout << "Constructing Wavelet Tree..." << std::endl;
     wt_huff<> wt;
-    construct(wt, inputFile);
-    std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+    std::vector<uint64_t> C;
+    uint8_t lastChar = stool::stnode_on_rlbwt::SDSLFunction::load_wavelet_tree(inputFile, wt, C);
+
+
+
+
+
+
+
 
     uint64_t ms_count = 0;
 
@@ -273,11 +274,12 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 
     std::cout << "\033[31m";
     std::cout << "______________________RESULT______________________" << std::endl;
-    std::cout << "BWT File \t\t\t\t\t : " << inputFile << std::endl;
-    std::cout << "Output File \t\t\t\t\t : " << outputFile << std::endl;
+    std::cout << "BWT File \t\t\t\t : " << inputFile << std::endl;
+    std::cout << "Output File \t\t\t\t : " << outputFile << std::endl;
     std::cout << "The length of the input text \t\t : " << input_text_size << std::endl;
     std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
-    std::cout << "The usage of Wavelet tree : " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+    std::cout << "The usage of Wavelet tree \t\t : " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
+    std::cout << "The usage of DBit array \t\t : " << sdsl::size_in_bytes(bv) / 1000 << "[KB]" << std::endl;
 
     std::cout << "Excecution time \t\t\t : " << elapsed << "[s]" << std::endl;
     std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
@@ -288,15 +290,8 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     std::cout << "_______________________________________________________" << std::endl;
     std::cout << "\033[39m" << std::endl;
 
-    if (deleteFile(inputFile))
-    {
-        std::cout << "Deleted: " << inputFile << std::endl;
-    }
-    else
-    {
-        std::cout << "Failed to delete " << inputFile << std::endl;
-    }
 }
+
 
 int main(int argc, char *argv[])
 {

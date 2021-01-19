@@ -57,8 +57,8 @@ target_link_libraries(fn sdsl divsufsort divsufsort64)
 #add_executable(beller.out src/main/beller_main.cpp)
 #target_link_libraries(beller.out fn)
 
-add_executable(bbo_meximal_repeat.out src/main/bbo_meximal_repeat_main.cpp)
-target_link_libraries(bbo_meximal_repeat.out fn)
+add_executable(bbo_maximal_repeat.out src/main/bbo_meximal_repeat_main.cpp)
+target_link_libraries(bbo_maximal_repeat.out fn)
 
 add_executable(dfs_maximal_repeat.out src/main/dfs_maximal_repeat_main.cpp)
 target_link_libraries(dfs_maximal_repeat.out fn)
@@ -83,3 +83,6 @@ target_link_libraries(text_to_bwt.out divsufsort divsufsort64)
 
 add_executable(print.out src/main/print.cpp)
 target_link_libraries(print.out fn)
+
+#add_executable(bwt_test.out src/debug/bwt_test.cpp)
+#target_link_libraries(bwt_test.out fn)

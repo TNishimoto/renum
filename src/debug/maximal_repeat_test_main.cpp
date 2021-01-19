@@ -19,14 +19,13 @@
 #include "../debug/beller_debug.hpp"
 #include "../debug/naive_algorithms.hpp"
 #include "../debug/stnode_checker.hpp"
-#include "../debug/hyper_debug.hpp"
 
 #include "../stnode_enumerator/application.hpp"
 #include "../stnode_enumerator/rlcp_interval_enumerator.hpp"
 #include "../rlbwt/io.hpp"
 #include "../rlbwt/fpos_data_structure.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
-#include "../main/common.hpp"
+
 #include "../stnode_enumerator/weiner_link_search.hpp"
 
 using namespace std;

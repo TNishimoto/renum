@@ -13,6 +13,8 @@
 
 #include <queue>
 #include "../module/stool/src/sa_bwt_lcp.hpp"
+#include "../module/stool/src/print.hpp"
+
 
 //#include "sa_lcp.hpp"
 using namespace std;
@@ -54,6 +56,46 @@ namespace stool
             }
         }
 
+        static void constructFrequencyArray(wt_huff<> &wt, uint8_t last_char, std::vector<uint64_t> &output)
+        {
+            uint64_t CHARMAX = UINT8_MAX + 1;
+
+            output.resize(CHARMAX, 0);
+            for(uint64_t i=0;i<CHARMAX;i++){
+                uint64_t k = wt.rank(wt.size(), i);
+                if(i == 0){
+                    /*
+                    if(k == 2){
+                        k = 1;
+                    }else{
+                        std::cout << "Error: constructFrequencyArray" << std::endl; 
+                        assert(false);
+                        throw -1;
+                    }
+                    */
+                }else if(i == last_char){
+                    k++;
+                }else if(i == 8){
+                    k = 0;
+                }
+                output[i] = k;
+            }
+        }
+        static void constructCArray(wt_huff<> &wt, uint8_t last_char, std::vector<uint64_t> &output)
+        {
+            uint64_t CHARMAX = UINT8_MAX + 1;
+            std::vector<uint64_t> freqArr;
+            constructFrequencyArray(wt, last_char,freqArr);
+            //stool::Printer::print(freqArr);
+
+            output.resize(CHARMAX, 0);
+
+            for(uint64_t i=1;i<CHARMAX;i++){
+                output[i] = output[i-1] + freqArr[i-1];
+            }
+        }
+
+
         template <typename TEXT, typename OUTPUT>
         static void constructC(TEXT &text, OUTPUT &output)
         {
@@ -79,26 +121,6 @@ namespace stool
         {
             construct_im(wt, bwt);
         }
-        /*
-        static void constructBWT(string &bwt, int_vector<> &outputBWT)
-        {
-            outputBWT.width(8);
-            outputBWT.resize(bwt.size());
-            for (uint64_t i = 0; i < bwt.size(); i++)
-            {
-                outputBWT[i] = bwt[i];
-            }
-        }
-        static void constructBWT(std::vector<char> &bwt, int_vector<> &outputBWT)
-        {
-            outputBWT.width(8);
-            outputBWT.resize(bwt.size());
-            for (uint64_t i = 0; i < bwt.size(); i++)
-            {
-                outputBWT[i] = bwt[i];
-            }
-        }
-        */
         template <typename INDEX = uint64_t>
         static void constructBWT(const std::vector<uint8_t> &text, const std::vector<INDEX> &sa, sdsl::int_vector<> &outputBWT)
         {
