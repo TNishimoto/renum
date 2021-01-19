@@ -130,7 +130,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     //sdsl::bit_vector bv;
 
     std::cout << "Loading : " << inputFile << std::endl;
-    std::cout << "Constructing dbit array for maximal repeats : " << std::endl;
+    //std::cout << "Constructing dbit array for maximal repeats : " << std::endl;
     //stool::stnode_on_rlbwt::SDSLFunction::constructDBitArray(inputFile, bv);
     //sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
 

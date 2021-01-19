@@ -174,6 +174,10 @@ int main(int argc, char *argv[])
         return -1;
     }
     std::string ivFile = inputFile + ".iv";
+
+    auto vec = load_bwt(inputFile);
+    stool::Printer::print(vec);
+    throw -1;
     /*
     testDBitArray(ivFile);
     

@@ -84,5 +84,5 @@ target_link_libraries(text_to_bwt.out divsufsort divsufsort64)
 add_executable(print.out src/main/print.cpp)
 target_link_libraries(print.out fn)
 
-#add_executable(bwt_test.out src/debug/bwt_test.cpp)
-#target_link_libraries(bwt_test.out fn)
+add_executable(bwt_test.out src/debug/bwt_test.cpp)
+target_link_libraries(bwt_test.out fn)

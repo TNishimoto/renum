@@ -76,6 +76,62 @@ bool write(string filename, std::vector<uint8_t> &text)
 
     return true;
 }
+bool constructOccCharVec(const std::vector<uint8_t> &text, std::vector<bool> &output){
+    output.resize(256, false);
+    for(uint64_t i=0;i<text.size();i++){
+        output[text[i]] = true;
+    }
+}
+void replace(std::vector<uint8_t> &text, uint8_t oldChar, uint8_t newChar){
+    for(uint64_t i=0;i<text.size();i++){
+        if(text[i] == oldChar){
+            text[i] = newChar;
+        }
+    }
+}
+void sanityze(std::vector<uint8_t> &text){
+    std::vector<bool> occVec;
+    constructOccCharVec(text, occVec);
+    if(occVec[0]){
+        std::cout << "This text contains character 0" << std::endl;
+        uint8_t replaceChar = 0;
+        for(uint64_t i=1;i<occVec.size();i++){
+            if(i != 8 && !occVec[i]){
+                replaceChar = i;
+                break;
+            }
+        }
+        if(replaceChar != 0){
+            std::cout << "We replace the character 0 with " << (int)replaceChar << "." << std::endl;
+            replace(text, 0, replaceChar);
+        }else{
+            std::cout << "We cannot replace the character 0."<< std::endl;
+            throw -1;
+        }
+
+    }
+
+    if(occVec[8]){
+        std::cout << "This text contains character 8" << std::endl;
+        uint8_t replaceChar = 8;
+        for(uint64_t i=9;i<occVec.size();i++){
+            if(!occVec[i]){
+                replaceChar = i;
+                break;
+            }
+        }
+        if(replaceChar != 8){
+            std::cout << "We replace the character 8 with " << (int)replaceChar << "." << std::endl;
+            replace(text, 8, replaceChar);
+        }else{
+            std::cout << "We cannot replace the character 8."<< std::endl;
+            throw -1;
+        }
+
+    }
+
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -100,6 +156,8 @@ int main(int argc, char *argv[])
     }
     std::vector<uint8_t> text;
     load(inputFile, text);
+    sanityze(text);
+    /*
     bool xb = false;
     for (uint64_t i = 0; i < text.size(); i++)
     {
@@ -113,6 +171,7 @@ int main(int argc, char *argv[])
         std::cout << "Character Error!" << std::endl;
         throw -1;
     }
+    */
 
     text.push_back(sc);
     std::vector<uint8_t> bwt = construct_bwt(text);
