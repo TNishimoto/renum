@@ -70,6 +70,7 @@ namespace stool
             }
             void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
             {
+                (void) node;
                 bool _store_edge_chars = edgeChars != nullptr;
 
                 this->clear();
@@ -257,7 +258,7 @@ namespace stool
                     CHAR c = this->indexVec[i];
                     std::pair<INDEX_SIZE, INDEX_SIZE> p = this->get_node_ianterval(c);
                     uint64_t w = p.second - p.first + 1;
-                    if (largest_width < w)
+                    if ((uint64_t)largest_width < w)
                     {
                         largest_index = c;
                         largest_width = w;

@@ -222,8 +222,8 @@ namespace stool
             void computeNextSTNodes(ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> &em, STNodeVector<INDEX_SIZE> &tmp)
             {
                 tmp.clear();
-                RINTERVAL intv;
-                RINTERVAL child;
+                //RINTERVAL intv;
+                //RINTERVAL child;
 
                 uint64_t size = this->node_count();
                 uint64_t L = this->get_first_child_pointer();

@@ -41,7 +41,7 @@ public:
     static uint64_t outputMaximalSubstrings(std::ofstream &out, stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR> &stnodeSequencer, stool::stnode_on_rlbwt::STTreeAnalysisResult &analysis)
     {
 
-        using INDEX_SIZE = typename stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR>::index_type;
+        //using INDEX_SIZE = typename stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR>::index_type;
         uint8_t print_type = 0;
         out.write((char *)(&print_type), sizeof(print_type));
         uint8_t index_bits = sizeof(INDEX_SIZE);

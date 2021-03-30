@@ -1,15 +1,15 @@
-# Suffix Tree Node Iterator on RLBWT
+# Suffix Tree Node Iterator based on RLBWT
 
-//This library provides the implementation of a uni-directional iterator for suffix tree nodes.  
-//The iterator uses $xr$ bytes and runs in $O(log (n/r))$ time per node,  
-//where $n$ is the length of the input BWT, $r$ is the number of runs in the BWT, and $x$ is approximately 7~20.  
-//This library also provides a program enumerating maximal repeats.  
+This library provides the implementation of a uni-directional iterator for suffix tree nodes.  
+The iterator uses $xr$ bytes and runs in $O(log (n/r))$ time per node,  
+where $n$ is the length of the input BWT, $r$ is the number of runs in the BWT, and $x$ is approximately 7~20.  
+This library also provides a program enumerating maximal repeats.  
 
 ## Download
 The source codes in 'module' directory are maintained in different repositories. 
 So, to download all the necessary source codes, do the following:
 
-> git clone https://github.com/TNishimoto/stnode_iterator_on_rlbwt.git  
+> git clone https://github.com/TNishimoto/stnode_iterator_based_on_rlbwt.git  
 > cd stnode_iterator_on_rlbwt  
 > git submodule init  
 > git submodule update  

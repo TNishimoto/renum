@@ -99,7 +99,9 @@ namespace stool
                     this->last_value = p;
                 }
                 last_unused_size--;
+#if DEBUG
                 assert(this->size() == prevSize + 1);
+#endif
             }
             void pop_back()
             {
@@ -134,7 +136,9 @@ namespace stool
                 p = p >> (last_unused_size + 1);
                 this->last_value = p;
                 last_unused_size++;
+#if DEBUG
                 assert(this->size() == prevSize - 1);
+#endif
             }
             void push_front(bool value)
             {
@@ -155,7 +159,9 @@ namespace stool
                     this->fst_value = p;
                 }
                 fst_unused_size--;
+#if DEBUG
                 assert(this->size() == prevSize + 1);
+#endif
             }
             void pop_front()
             {
@@ -190,8 +196,9 @@ namespace stool
                 p = p << (fst_unused_size + 1);
                 this->fst_value = p;
                 fst_unused_size++;
-
+#if DEBUG
                 assert(this->size() == prevSize - 1);
+#endif
             }
             std::vector<bool> to_vector()
             {

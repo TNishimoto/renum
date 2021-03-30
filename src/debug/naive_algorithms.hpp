@@ -43,7 +43,7 @@ namespace stool
         std::vector<uint64_t> minCharIndexes;
         for (uint64_t i = 0; i < text.size(); i++)
         {
-          if (text[i] == minChar)
+          if ((uint64_t)text[i] == minChar)
           {
             minCharIndexes.push_back(i);
           }
