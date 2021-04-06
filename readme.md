@@ -23,7 +23,7 @@ We assume that the library and header files of SDSL are installed in \~/lib and 
 
 > mkdir build  
 > cd build  
-> cmake .. -DCMAKE_BUILD_TYPE=Release -DSDSL_LIBRARY_DIR=~/lib -DSDSL_INCLUDE_DIR=~/include  
+> cmake .. -DCMAKE_BUILD_TYPE=Release -DSDSL_LIBRARY_DIR=\~/lib -DSDSL_INCLUDE_DIR=\~/include  
 > make  
 
 
