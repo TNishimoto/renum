@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input bwt file path", true);
     p.add<string>("lcp_interval_file", 'l', "LCP interval file path", true);
-    p.add<string>("output_file", 'o', "output file path", false, "");
+    p.add<string>("output_file", 'o', "output file path (default: lcp_interval_file.interval.log)", false, "");
     p.add<bool>("string_flag", 's', "Output the string represented by each interval if this flag is 1", false, true);
 
     //p.add<string>("tree_file", 't', "file type", false, "NULL");

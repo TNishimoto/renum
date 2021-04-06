@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 {
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input file name", true);
-    p.add<string>("output_file", 'o', "output file name", false, "");
+    p.add<string>("output_file", 'o', "output file path (default: input_file_path.dfs.max)", false, "");
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
 
     if (outputFile.size() == 0)
     {
-        outputFile = inputFile + ".max";
+        outputFile = inputFile + ".dfs.max";
     }
     computeMaximalSubstrings(inputFile, outputFile);
 }

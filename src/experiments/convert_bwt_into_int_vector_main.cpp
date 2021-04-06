@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 {
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input bwt file path (text format)", true);
-    p.add<string>("output_file", 'o', "output bwt file path (binary file)", false, "");
+    p.add<string>("output_file", 'o', "output bwt file path (binary file) (default: input_bwt_file.iv)", false, "");
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");

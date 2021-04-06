@@ -1,9 +1,9 @@
 # R-enum: Enumeration of Characteristic Substrings in BWT-runs Bounded Space
 
-This library provides the implementation of a uni-directional iterator for suffix tree nodes.  
-The iterator uses $xr$ bytes and runs in $O(log (n/r))$ time per node,  
-where $n$ is the length of the input BWT, $r$ is the number of runs in the BWT, and $x$ is approximately 7~20.  
-This library also provides a program enumerating maximal repeats.  
+This library provides implementations for enumerating characteristic substrings (maximal substrings and minimal unique substrings) in a string T by processing the BWT of T.  
+The programs run in O(n log r) time with O(r) bytes of working space,  
+where n is the length of the input BWT, and r is the number of runs in the BWT.  
+For more details on R-enum, please see (https://arxiv.org/abs/2004.01493).
 
 ## Download
 The source codes in 'module' directory are maintained in different repositories. 
@@ -92,7 +92,7 @@ usage: ./print.out --input_file=string --lcp_interval_file=string [options] ...
 options:  
   -i, --input_file           input bwt file path (string)  
   -l, --lcp_interval_file    LCP interval file path (string)  
-  -o, --output_file          output file path (string [=])  
+  -o, --output_file          output file path (default: lcp_interval_file.interval.log) (string [=])  
   -s, --string_flag          Output the string represented by each interval if this flag is 1 (bool [=1])  
   -?, --help                 print this message  
 
@@ -198,11 +198,6 @@ $ ./print.out -i ./sample.txt.bwt -l ./sample.txt.bwt.mus
 > _______________________________________________________  
 
 
-
-## Library
-
-(in preparation)  
-
 ## Excecutions for Experiments
 
 ### convert_bwt_into_int_vector.out  
@@ -211,39 +206,77 @@ This program converts a given BWT in text format into the BWT in binary format(s
 usage: ./convert_bwt_into_int_vector.out --input_file=string [options] ...   
 options:  
   -i, --input_file     input bwt file path (text format) (string)  
-  -o, --output_file    output bwt file path (binary file) (string [=])  
+  -o, --output_file    output bwt file path (binary file) (default: input_bwt_file.iv) (string [=])  
   -?, --help           print this message  
 
 $ ./convert_bwt_into_int_vector.out -i ./sample.txt.bwt  
-Finished.  
-______________________RESULT______________________  
-Input BWT File                                   : ./sample.txt.bwt  
-Output BWT File                                  : ./sample.txt.bwt.iv  
-_______________________________________________________  
+> Finished.  
+> ______________________RESULT______________________  
+> Input BWT File                                   : ./sample.txt.bwt  
+> Output BWT File                                  : ./sample.txt.bwt.iv  
+> _______________________________________________________  
 
 
 ### bbo_meximal_repeat.out
 
 This program outputs the LCP intervals for all the maximal repeats   
-in the string represented by a given BWT, using the algorithm described in (https://link.springer.com/chapter/10.1007/978-3-642-34109-0_11).  
+in the string represented by a given BWT, using the algorithm described in (https://link.springer.com/chapter/10.1007/978-3-642-34109-0_11).   
+I did not the technique for storing a queue for LCP intervals in $n + o(n)$ bits. 
+So, the memory usage of this implementation is slightly larger than the original implementation.
+
 The format of the input BWT must be binary format (sdsl::int_vector).  
 The input file is deleted after finishing the program.  
 
 usage: ./bbo_meximal_repeat.out --input_file=string [options] ...   
 options:  
   -i, --input_file     input file name (string)  
-  -o, --output_file    output file name (string [=])  
+  -o, --output_file    output file path (default: input_file_path.bbo.max) (string [=])  
   -?, --help           print this message  
 
-______________________RESULT______________________  
-BWT File                                         : ./sample.txt.bwt.iv  
-Output File                                      : ./sample.txt.bwt.iv.max  
-The length of the input text             : 36  
-The number of maximum substrings         : 16  
-Peak count       : 22  
-The usage of Wavelet tree : 3[KB]  
-Excecution time                          : 0[s]  
-Character per second                     : inf[KB/s]  
-         Preprocessing time              : 0[s]  
-         Enumeration time                : 0[s]  
-_______________________________________________________  
+$ ./bbo_maximal_repeat.out -i ./sample.txt.bwt.iv
+
+> ______________________RESULT______________________  
+> BWT File                                 : ./sample.txt.bwt.iv  
+> Output File                              : ./sample.txt.bwt.iv.bbo.max  
+> The length of the input text             : 36  
+> The number of maximum substrings         : 16  
+> Peak count                               : 22  
+> The memory usage of Wavelet tree         : 3[KB]  
+> The memory usage of Queue                : 0[KB]  
+> Excecution time                          : 0[s]  
+> Character per second                     : inf[KB/s]  
+>          Preprocessing time              : 0[s]  
+>          Enumeration time                : 0[s]  
+> _______________________________________________________  
+
+### dfs_meximal_repeat.out
+
+This program outputs the LCP intervals for all the maximal repeats   
+in the string represented by a given BWT, using the algorithm described in (https://link.springer.com/chapter/10.1007/978-3-319-23826-5_22).   
+The format of the input BWT must be binary format (sdsl::int_vector).  
+The input file is deleted after finishing the program.  
+
+usage: ./bbo_meximal_repeat.out --input_file=string [options] ...   
+options:  
+  -i, --input_file     input file name (string)  
+  -o, --output_file    output file path (default: input_file_path.dfs.max) (string [=])  
+  -?, --help           print this message  
+
+$ ./dfs_maximal_repeat.out -i ./sample.txt.bwt.iv
+
+> ______________________RESULT______________________
+> BWT File                                 : ./sample.txt.bwt.iv
+> Output File                              : ./sample.txt.bwt.iv.dfs.max
+> The length of the input text             : 36
+> The number of maximum substrings         : 16
+> The usage of Wavelet tree                : 3[KB]
+> Excecution time                          : 0[s]
+> Character per second                     : inf[KB/s]
+>          Preprocessing time              : 0[s]
+>          Enumeration time                : 0[s]
+> _______________________________________________________ 
+
+
+## Library
+
+(in preparation)  
