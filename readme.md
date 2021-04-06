@@ -41,11 +41,11 @@ options:
   
 $ echo -n GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT > sample.txt  
 $ ./text_to_bwt.out -i sample.txt -s $  
-Special character: $(36)  
-Input Text: GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT$  
-Output BWT: TCGCGCGGGATACAGAGGAT$GTGAGCATGGAAGTC  
-writing: sample.txt.bwt  
-wrote: sample.txt.bwt, time = 2  
+> Special character: $(36)  
+> Input Text: GATCAATGAGGTGGACACCAGAGGCGGGGACTTGT$  
+> Output BWT: TCGCGCGGGATACAGAGGAT$GTGAGCATGGAAGTC  
+> writing: sample.txt.bwt  
+> wrote: sample.txt.bwt, time = 2  
 
 ### maximal_repeat.out  
 
@@ -64,25 +64,25 @@ options:
   -?, --help           print this message  
 
 $ ./maximal_repeat.out -i ./sample.txt.bwt  
-______________________RESULT______________________  
-RLBWT File                               : ./sample.txt.bwt  
-Output                                   : ./sample.txt.bwt.max  
-Peak children count                      : 22  
-Thread number                            : 8  
-Integer Type                             : UINT32_t  
-The length of the input text             : 36  
-The number of runs on BWT                : 31  
-The number of maximum substrings         : 16  
-______________________Execution Time______________________  
-Excecution time                          : 0 [s]  
-Character per second                     : inf [KB/s]  
-         Preprocessing time              : 0 [s]  
-         Enumeration time                : 0 [s]  
-______________________Memory Usage______________________  
-RLBWT    : 0 [KB]  
-WT       : 10 [KB]  
-Queue    : 16 [KB]  
-_______________________________________________________  
+> ______________________RESULT______________________  
+> RLBWT File                               : ./sample.txt.bwt  
+> Output                                   : ./sample.txt.bwt.max  
+> Peak children count                      : 22  
+> Thread number                            : 8  
+> Integer Type                             : UINT32_t  
+> The length of the input text             : 36  
+> The number of runs on BWT                : 31  
+> The number of maximum substrings         : 16  
+> ______________________Execution Time______________________  
+> Excecution time                          : 0 [s]  
+> Character per second                     : inf [KB/s]  
+>          Preprocessing time              : 0 [s]  
+>          Enumeration time                : 0 [s]  
+> ______________________Memory Usage______________________  
+> RLBWT    : 0 [KB]  
+> WT       : 10 [KB]  
+> Queue    : 16 [KB]  
+> _______________________________________________________  
 
 ### print.out  
 This program converts the LCP intervals stored in a given binary file into a new file in text format.  
@@ -97,31 +97,31 @@ options:
   -?, --help                 print this message  
 
 $ ./print.out -i ./sample.txt.bwt -l ./sample.txt.bwt.max -s 1  
-(i, j, LCP, substring)  
-0, 35, 0,  
-30, 35, 1, T  
-10, 15, 1, C  
-16, 29, 1, G  
-1, 9, 1, A  
-28, 29, 2, GT  
-8, 9, 2, AT  
-2, 4, 2, AC  
-22, 27, 2, GG  
-5, 7, 2, AG  
-32, 34, 2, TG  
-10, 12, 2, CA  
-16, 20, 2, GA  
-25, 26, 3, GGG  
-22, 23, 4, GGAC  
-18, 19, 4, GAGG  
-______________________RESULT______________________  
-BWT File                                 : ./sample.txt.bwt  
-Interval File                            : ./sample.txt.bwt.max  
-Output File                              : ./sample.txt.bwt.max.interval.log  
-File Type: LCPInterval  
-Integer Type: uint32t  
-Count: 16  
-_______________________________________________________  
+> (i, j, LCP, substring)  
+> 0, 35, 0,  
+> 30, 35, 1, T  
+> 10, 15, 1, C  
+> 16, 29, 1, G  
+> 1, 9, 1, A  
+> 28, 29, 2, GT  
+> 8, 9, 2, AT  
+> 2, 4, 2, AC  
+> 22, 27, 2, GG  
+> 5, 7, 2, AG  
+> 32, 34, 2, TG  
+> 10, 12, 2, CA  
+> 16, 20, 2, GA  
+> 25, 26, 3, GGG  
+> 22, 23, 4, GGAC  
+> 18, 19, 4, GAGG  
+> ______________________RESULT______________________  
+> BWT File                                 : ./sample.txt.bwt  
+> Interval File                            : ./sample.txt.bwt.max  
+> Output File                              : ./sample.txt.bwt.max.interval.log  
+> File Type: LCPInterval  
+> Integer Type: uint32t  
+> Count: 16  
+> _______________________________________________________  
 
 ### mus.out  
 
@@ -140,62 +140,62 @@ options:
   -?, --help           print this message  
 
 $ ./mus.out -i ./sample.txt.bwt  
-______________________RESULT______________________  
-RLBWT File                               : ./sample.txt.bwt  
-Output                                   : ./sample.txt.bwt.mus  
-Peak children count                      : 22  
-Thread number                            : 8  
-Integer Type                             : UINT32_t  
-The length of the input text             : 36  
-The number of runs on BWT                : 31  
-The number of MUSs       : 5  
-______________________Execution Time______________________  
-Excecution time                          : 12 [s]  
-Character per second                     : 3 [KB/s]  
-         Preprocessing time              : 8 [s]  
-         Enumeration time                : 4 [s]  
-______________________Memory Usage______________________  
-RLBWT    : 0 [KB]  
-WT       : 10 [KB]  
-Queue    : 16 [KB]  
-_______________________________________________________  
+> ______________________RESULT______________________  
+> RLBWT File                               : ./sample.txt.bwt  
+> Output                                   : ./sample.txt.bwt.mus  
+> Peak children count                      : 22  
+> Thread number                            : 8  
+> Integer Type                             : UINT32_t  
+> The length of the input text             : 36  
+> The number of runs on BWT                : 31  
+> The number of MUSs       : 5  
+> ______________________Execution Time______________________  
+> Excecution time                          : 12 [s]  
+> Character per second                     : 3 [KB/s]  
+>          Preprocessing time              : 8 [s]  
+>          Enumeration time                : 4 [s]  
+> ______________________Memory Usage______________________  
+> RLBWT    : 0 [KB]  
+> WT       : 10 [KB]  
+> Queue    : 16 [KB]  
+> _______________________________________________________  
 
 
 $ ./print.out -i ./sample.txt.bwt -l ./sample.txt.bwt.mus
 
-File Type: LCPInterval  
-Integer Type: uint32t  
-Count: 21  
-(i, j, LCP, substring)  
-0, 0, 1, $  
-31, 31, 2, TC  
-35, 35, 2, TT  
-13, 13, 2, CC  
-14, 14, 2, CG  
-15, 15, 2, CT  
-21, 21, 2, GC  
-1, 1, 2, AA  
-29, 29, 3, GTG  
-9, 9, 3, ATG  
-2, 2, 3, ACA  
-27, 27, 3, GGT  
-5, 5, 3, AGA  
-32, 32, 3, TGA  
-33, 33, 3, TGG  
-34, 34, 3, TGT  
-11, 11, 3, CAC  
-12, 12, 3, CAG  
-20, 20, 3, GAT  
-25, 25, 4, GGGA  
-26, 26, 4, GGGG  
-______________________RESULT______________________  
-BWT File                                 : ./sample.txt.bwt  
-Interval File                            : ./sample.txt.bwt.mus  
-Output File                              : ./sample.txt.bwt.mus.interval.log  
-File Type: LCPInterval  
-Integer Type: uint32t  
-Count: 21  
-_______________________________________________________  
+> File Type: LCPInterval  
+> Integer Type: uint32t  
+> Count: 21  
+> (i, j, LCP, substring)  
+> 0, 0, 1, $  
+> 31, 31, 2, TC  
+> 35, 35, 2, TT  
+> 13, 13, 2, CC  
+> 14, 14, 2, CG  
+> 15, 15, 2, CT  
+> 21, 21, 2, GC  
+> 1, 1, 2, AA  
+> 29, 29, 3, GTG  
+> 9, 9, 3, ATG  
+> 2, 2, 3, ACA  
+> 27, 27, 3, GGT  
+> 5, 5, 3, AGA  
+> 32, 32, 3, TGA  
+> 33, 33, 3, TGG  
+> 34, 34, 3, TGT  
+> 11, 11, 3, CAC  
+> 12, 12, 3, CAG  
+> 20, 20, 3, GAT  
+> 25, 25, 4, GGGA  
+> 26, 26, 4, GGGG  
+> ______________________RESULT______________________  
+> BWT File                                 : ./sample.txt.bwt  
+> Interval File                            : ./sample.txt.bwt.mus  
+> Output File                              : ./sample.txt.bwt.mus.interval.log  
+> File Type: LCPInterval  
+> Integer Type: uint32t  
+> Count: 21  
+> _______________________________________________________  
 
 
 
