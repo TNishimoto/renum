@@ -71,6 +71,7 @@ namespace stool
             }
             void load(std::ifstream &file)
             {
+                (void)file;
                 assert(false);
                 throw -1;
                 /*
@@ -83,6 +84,7 @@ namespace stool
             }
             void write(std::ofstream &out)
             {
+                (void)out;
                 assert(false);
                 throw -1;
                 /*
