@@ -76,7 +76,7 @@ bool write(string filename, std::vector<uint8_t> &text)
 
     return true;
 }
-bool constructOccCharVec(const std::vector<uint8_t> &text, std::vector<bool> &output){
+void constructOccCharVec(const std::vector<uint8_t> &text, std::vector<bool> &output){
     output.resize(256, false);
     for(uint64_t i=0;i<text.size();i++){
         output[text[i]] = true;

@@ -25,7 +25,6 @@
 #include "../rlbwt/fpos_data_structure.hpp"
 #include "../rlbwt/bwt_decompress.hpp"
 
-
 using namespace std;
 using namespace stool;
 
@@ -63,7 +62,8 @@ public:
             uint8_t c = it.get_edge_character(i);
             uint64_t L = it.get_child_left_boundary(i);
             uint64_t R = it.get_child_right_boundary(i);
-                uint64_t count = R - L + 1;
+
+            uint64_t count = R - L + 1;
 
             this->counter_array[c] = count;
 
@@ -75,6 +75,7 @@ public:
                 }
             }
         }
+
         stool::stnode_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> output_vec;
 
         stool::stnode_on_rlbwt::WeinerLinkCommonFunctions::compute_weiner_links(em, it, output_vec);
@@ -83,7 +84,9 @@ public:
             uint64_t w = wnode_it.get_children_count();
             for (uint64_t i = 0; i < w; i++)
             {
+
                 uint8_t c = wnode_it.get_edge_character(i);
+
                 if (this->counter_array[c] >= 2)
                 {
                     uint64_t L = wnode_it.get_child_left_boundary(i);
@@ -105,6 +108,11 @@ public:
     template <typename STNODES>
     static std::vector<stool::LCPInterval<uint64_t>> enumerate(STNODES &stnodeSequencer)
     {
+        if (!stnodeSequencer.has_edge_characters())
+        {
+            std::cout << "Error: This sequence does not have edge characters." << std::endl;
+            throw -1;
+        }
 
         std::vector<stool::LCPInterval<uint64_t>> r;
         MUSDetectionArray<uint64_t> mus_arr;
@@ -116,6 +124,8 @@ public:
         {
             std::vector<stool::LCPInterval<uint64_t>> r2;
             uint64_t lcp = it.get_depth();
+            stool::stnode_on_rlbwt::STDepthIteratorErrorChecker::error_check(it);
+
             for (auto node_it = it.begin(); node_it != it.end(); node_it++)
             {
 
@@ -123,24 +133,11 @@ public:
                 {
 
                     mus_arr.build(*em, node_it, lcp);
-                    for (auto &it : mus_arr.mus_intervals)
+                    for (auto &mus_it : mus_arr.mus_intervals)
                     {
-                        r2.push_back(it);
+                        r2.push_back(mus_it);
                     }
-                    /*
-                    node_it.print();
-                    auto output_vec = stool::stnode_on_rlbwt::WeinerLinkCommonFunctions::compute_weiner_links(*em, node_it);
-                    for (auto wnode_it = output_vec.begin(); wnode_it != output_vec.end(); wnode_it++)
-                    {
-                        std::cout << wnode_it.get_left() << "/" << wnode_it.get_right() << std::endl;
-                    }
-                    //node_it.compute_weiner_links();
-                    output_vec.print();
-                    */
                 }
-
-                /*
-                */
             }
 
             for (auto &it : r2)
@@ -151,6 +148,76 @@ public:
         }
         std::cout << "STOP" << std::endl;
         return r;
+    }
+    template <typename STNODES>
+    static uint64_t online_enumerate(std::ofstream &out, STNODES &stnodeSequencer, stool::stnode_on_rlbwt::STTreeAnalysisResult &analysis)
+    {
+        if (!stnodeSequencer.has_edge_characters())
+        {
+            std::cout << "Error: This sequence does not have edge characters." << std::endl;
+            throw -1;
+        }
+
+        analysis.start(stnodeSequencer.get_input_text_length());
+
+        using INDEX_SIZE = typename STNODES::index_type;
+        uint8_t print_type = 0;
+        out.write((char *)(&print_type), sizeof(print_type));
+        uint8_t index_bits = sizeof(INDEX_SIZE);
+        out.write((char *)(&index_bits), sizeof(index_bits));
+        uint64_t count = 0;
+
+        std::vector<stool::LCPInterval<uint64_t>> r;
+        MUSDetectionArray<uint64_t> mus_arr;
+        auto em = stnodeSequencer.get_interval_search_deta_structure();
+
+        auto it = stnodeSequencer.begin();
+
+        std::vector<stool::LCPInterval<INDEX_SIZE>> buffer;
+
+        while (it != stnodeSequencer.end())
+        {
+
+            analysis.analyze(stnodeSequencer);
+            std::vector<stool::LCPInterval<uint64_t>> r2;
+            uint64_t lcp = it.get_depth();
+
+            for (auto node_it = it.begin(); node_it != it.end(); node_it++)
+            {
+                if (node_it.is_maximal_repeat())
+                {
+                    //node_it.error_check();
+                    //stool::stnode_on_rlbwt::STDepthIteratorErrorChecker::error_check(node_it);
+                    mus_arr.build(*em, node_it, lcp);
+
+                    for (auto &mus_it : mus_arr.mus_intervals)
+                    {
+                        INDEX_SIZE left = mus_it.i;
+                        INDEX_SIZE right = mus_it.j;
+
+                        stool::LCPInterval<INDEX_SIZE> intv(left, right, mus_it.lcp);
+
+                        buffer.push_back(intv);
+                        count++;
+                        if (buffer.size() >= 8000)
+                        {
+                            out.write((char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+                            buffer.clear();
+                        }
+                    }
+                }
+                
+            }
+            it++;
+        }
+        if (buffer.size() >= 1)
+        {
+            out.write((char *)(&buffer[0]), sizeof(stool::LCPInterval<INDEX_SIZE>) * buffer.size());
+            buffer.clear();
+        }
+        
+        std::cout << "Enumerated" << std::endl;
+        return count;
     }
 };
 void debug(std::string inputFile)
@@ -170,7 +237,6 @@ void debug(std::string inputFile)
     std::sort(MUSs.begin(), MUSs.end(), stool::LCPIntervalDepthOrderComp<uint64_t>());
     std::cout << "Constuct Test MUSs[END]" << std::endl;
 
-    /*
     for (auto &it : MUSs)
     {
         string s = "";
@@ -185,7 +251,6 @@ void debug(std::string inputFile)
         std::cout << it.to_string();
     }
     std::cout << std::endl;
-    */
 
     stool::rlbwt2::BWTAnalysisResult analysisResult;
     stool::stnode_on_rlbwt::RLE<uint8_t> rlbwt;
@@ -193,7 +258,7 @@ void debug(std::string inputFile)
     using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint32_t>;
     RDS ds = RDS(&rlbwt);
 
-    std::cout << "Enumerate Maximal Substrings..." << std::endl;
+    std::cout << "Enumerate Minimal unique substrings..." << std::endl;
     stool::stnode_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
     stnodeTraverser.initialize(1, ds, true);
     auto test_MUSs = MUSEnumerator::enumerate(stnodeTraverser);
@@ -210,7 +275,7 @@ void debug(std::string inputFile)
     std::cout << "OK!" << MUSs.size() << std::endl;
 }
 
-void computeMUSs(std::string inputFile, std::string outputFile, string mode, int thread_num)
+void computeMUSs(std::string inputFile, std::string outputFile, int thread_num)
 {
 
     auto start = std::chrono::system_clock::now();
@@ -226,21 +291,22 @@ void computeMUSs(std::string inputFile, std::string outputFile, string mode, int
     stool::stnode_on_rlbwt::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
 
-    char MODE = mode[0];
-
     uint64_t ms_count = 0;
     stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
+    uint64_t ds_memory_usage = 0;
 
     if (analysisResult.str_size < UINT32_MAX - 10)
     {
         using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint32_t>;
         RDS ds = RDS(&rlbwt);
         mid = std::chrono::system_clock::now();
+        ds_memory_usage = ds.get_using_memory();
 
-        std::cout << "Enumerate Maximal Substrings..." << std::endl;
+        std::cout << "Enumerate Minimal unique substrings..." << std::endl;
         stool::stnode_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
-        stnodeTraverser.initialize(thread_num, ds, false);
-        ms_count = stool::stnode_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+        stnodeTraverser.initialize(thread_num, ds, true);
+        //ms_count = stool::stnode_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+        ms_count = MUSEnumerator::online_enumerate(out, stnodeTraverser, st_result);
         bit_size_mode = "UINT32_t";
     }
     else
@@ -248,11 +314,12 @@ void computeMUSs(std::string inputFile, std::string outputFile, string mode, int
         using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint64_t>;
         RDS ds = RDS(&rlbwt);
         mid = std::chrono::system_clock::now();
+        ds_memory_usage = ds.get_using_memory();
 
-        std::cout << "Enumerate Maximal Substrings..." << std::endl;
+        std::cout << "Enumerate Minimal unique substrings..." << std::endl;
         stool::stnode_on_rlbwt::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
-        stnodeTraverser.initialize(thread_num, ds, false);
-        ms_count = stool::stnode_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+        stnodeTraverser.initialize(thread_num, ds, true);
+        ms_count = MUSEnumerator::online_enumerate(out, stnodeTraverser, st_result);
     }
 
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
@@ -266,7 +333,6 @@ void computeMUSs(std::string inputFile, std::string outputFile, string mode, int
     std::cout << "______________________RESULT______________________" << std::endl;
     std::cout << "RLBWT File \t\t\t\t : " << inputFile << std::endl;
     std::cout << "Output \t\t\t\t\t : " << outputFile << std::endl;
-    std::cout << "LPOS and FPos Vector type \t\t\t\t : " << (MODE == '0' ? "std::vector<uint64_t>" : "EliasFano") << std::endl;
     std::cout << "Peak children count \t\t\t : " << st_result.max_nodes_at_level << std::endl;
     //std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
 
@@ -275,12 +341,20 @@ void computeMUSs(std::string inputFile, std::string outputFile, string mode, int
 
     std::cout << "The length of the input text \t\t : " << analysisResult.str_size << std::endl;
     std::cout << "The number of runs on BWT \t\t : " << analysisResult.run_count << std::endl;
-    std::cout << "The number of maximum substrings \t : " << ms_count << std::endl;
-    std::cout << "Excecution time \t\t\t : " << elapsed << "[ms]" << std::endl;
-    std::cout << "Character per second \t\t\t : " << bps << "[KB/s]" << std::endl;
-    std::cout << "\t Preprocessing time \t\t : " << construction_time << "[ms]" << std::endl;
-    std::cout << "\t Enumeration time \t\t : " << enumeration_time << "[ms]" << std::endl;
+    std::cout << "The number of MUSs \t : " << ms_count << std::endl;
 
+    std::cout << "\033[33m";
+    std::cout << "______________________Execution Time______________________" << std::endl;
+    std::cout << "Excecution time \t\t\t : " << elapsed << " [s]" << std::endl;
+    std::cout << "Character per second \t\t\t : " << bps << " [KB/s]" << std::endl;
+    std::cout << "\t Preprocessing time \t\t : " << construction_time << " [s]" << std::endl;
+    std::cout << "\t Enumeration time \t\t : " << enumeration_time << " [s]" << std::endl;
+
+    std::cout << "\033[32m";
+    std::cout << "______________________Memory Usage______________________" << std::endl;
+    std::cout << "RLBWT \t : " << (rlbwt.get_using_memory() / 1000) << " [KB]" << std::endl;
+    std::cout << "WT \t : " << (ds_memory_usage / 1000) << " [KB]" << std::endl;
+    std::cout << "Queue \t : " << st_result.peak_memory_of_queue / 1000 << " [KB]" << std::endl;
     std::cout << "_______________________________________________________" << std::endl;
 
     std::cout << "\033[39m" << std::endl;
@@ -296,17 +370,14 @@ int main(int argc, char *argv[])
 
     cmdline::parser p;
     p.add<string>("input_file", 'i', "input file name", true);
-    //p.add<bool>("mode", 'm', "mode", false, false);
-    p.add<string>("output_file", 'o', "output file name", false, "");
-    p.add<string>("mode", 'm', "mode", false, "1");
+    p.add<string>("output_file", 'o', "output file path (default: input_file_path.mus)", false, "");
     p.add<int>("thread_num", 'p', "thread number", false, -1);
 
     p.parse_check(argc, argv);
     string inputFile = p.get<string>("input_file");
-    string mode = p.get<string>("mode");
+    //string mode = p.get<string>("mode");
 
     string outputFile = p.get<string>("output_file");
-    string format = "binary";
     int thread_num = p.get<int>("thread_num");
     if (thread_num < 0)
     {
@@ -325,15 +396,8 @@ int main(int argc, char *argv[])
 
     if (outputFile.size() == 0)
     {
-        if (format == "csv")
-        {
-            outputFile = inputFile + ".max.csv";
-        }
-        else
-        {
-            outputFile = inputFile + ".max";
-        }
+        outputFile = inputFile + ".mus";
     }
-    debug(inputFile);
-    //computeMUSs(inputFile, outputFile, mode, thread_num);
+    //debug(inputFile);
+    computeMUSs(inputFile, outputFile, thread_num);
 }

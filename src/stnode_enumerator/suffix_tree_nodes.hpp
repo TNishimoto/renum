@@ -57,10 +57,9 @@ namespace stool
 
             ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> *get_interval_search_deta_structure() const
             {
-                ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS>* r = const_cast<ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS>*>(&ems[0]);
+                ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> *r = const_cast<ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> *>(&ems[0]);
                 return r;
             }
-
 
             bool has_edge_characters() const
             {
@@ -359,6 +358,7 @@ namespace stool
 
             void print()
             {
+                std::cout << "PRINT (SUFFIX_TREE_NODES)" << std::endl;
                 if (this->mode == STANDARD_MODE)
                 {
                     this->standard_st_traverser.print();
@@ -376,6 +376,8 @@ namespace stool
                     assert(false);
                     throw -1;
                 }
+                std::cout << "[END] PRINT (SUFFIX_TREE_NODES)" << std::endl;
+
             }
             /*
             void print_info()
@@ -442,7 +444,7 @@ namespace stool
                     throw -1;
                 }
             }
-            
+
             CHAR get_edge_character(const ITERATOR &iter, uint64_t ith_child) const
             {
                 if (this->mode == STANDARD_MODE)
@@ -606,7 +608,26 @@ namespace stool
                     throw -1;
                 }
             }
+/*
+#ifdef DEBUG
+            void error_check()
+            {
+                auto it = this->begin();
 
+                while (it != this->end())
+                {
+                    std::vector<stool::LCPInterval<uint64_t>> r2;
+                    uint64_t lcp = it.get_depth();
+                    for (auto node_it = it.begin(); node_it != it.end(); node_it++)
+                    {
+                        stool::stnode_on_rlbwt::STDepthIteratorErrorChecker::error_check(node_it);
+                    }
+
+                    it++;
+                }
+            }
+#endif
+*/
         };
 
     } // namespace stnode_on_rlbwt

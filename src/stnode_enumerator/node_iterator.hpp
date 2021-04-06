@@ -96,7 +96,7 @@ namespace stool
                 ++(*this);
                 return *this;
             }
-            
+
             bool operator!=(const STNodeIterator &rhs) const
             {
                 return this->node_index != rhs.node_index || this->child_index != rhs.child_index;
@@ -121,9 +121,10 @@ namespace stool
                     }
                 }
             }
-            bool has_edge_characters() const {
+            bool has_edge_characters() const
+            {
                 return this->traverser->has_edge_characters();
-            }  
+            }
         };
         template <typename TRAVERSER>
         class STDepthIterator
@@ -169,8 +170,10 @@ namespace stool
 
             STDepthIterator &operator++()
             {
+
                 if (traverser->succ())
                 {
+
                     this->depth++;
                     return *this;
                 }
@@ -197,6 +200,46 @@ namespace stool
             bool operator!=(const STDepthIterator &rhs) const
             {
                 return this->get_depth() != rhs.get_depth();
+            }
+            void print(){
+                std::cout << "\033[31m [BEGIN]Nodes: " << std::endl;
+                for(auto node_it = this->begin();node_it != this->end();++node_it){
+                    std::cout << "   ";
+                    node_it.print();
+                    std::cout << std::endl;
+                }
+                std::cout << "[END] \033[39m" << std::endl;
+
+            }
+        };
+
+        class STDepthIteratorErrorChecker
+        {
+            public:
+            template <typename TRAVERSER>
+            static void error_check(TRAVERSER &it)
+            {
+                it.print();
+                /*
+                std::cout << "Error Check" << std::endl;
+                it.print();
+                uint64_t w = it.get_children_count();
+
+                uint64_t prevR = 0;
+
+                for (uint64_t i = 0; i < w; i++)
+                {
+                    uint64_t L = it.get_child_left_boundary(i);
+                    uint64_t R = it.get_child_right_boundary(i);
+
+                    std::cout << "[R/L/prevR]= " << R << "/" << L << "/" << prevR << std::endl;
+                    if (i != 0)
+                    {
+                        assert(L - 1 == prevR);
+                    }
+                    prevR = R;
+                }
+                */
             }
         };
 

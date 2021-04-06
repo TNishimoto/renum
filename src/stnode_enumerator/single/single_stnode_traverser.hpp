@@ -163,7 +163,7 @@ namespace stool
             }
             void print() const
             {
-                std::cout << "[STNODE_COUNT, CHILDREN_COUNT] = [" << this->node_count() << ", " << this->child_count() << "]" << std::endl;
+                std::cout << "(SINGLE)[STNODE_COUNT, CHILDREN_COUNT] = [" << this->node_count() << ", " << this->child_count() << "]" << std::endl;
                 stool::Printer::print("child_vec", this->childs_vec);
                 stool::Printer::print_bits("first_child_flag_vec", this->first_child_flag_vec);
                 stool::Printer::print_bits("maximal_repeat_check_vec", this->maximal_repeat_check_vec);
@@ -334,7 +334,6 @@ namespace stool
                     this->pop_node(output_node, output_children, output_edge_chars);
                     em->executeWeinerLinkSearch(output_node, output_children, this->store_edge_chars ? &output_edge_chars : nullptr, output_vec);
                     this->import(output_vec);
-
                 }
 
                 this->lcp++;
@@ -530,6 +529,29 @@ namespace stool
             {
                 return this->check_maximal_repeat(iter.node_index);
             }
+/*
+#if DEBUG
+            void error_check()
+            {
+                uint64_t w = this->get_children_count();
+
+                uint64_t prevR = 0;
+
+                for (uint64_t i = 0; i < w; i++)
+                {
+                uint64_t L = this->get_child_left_boundary(i);
+                uint64_t R = this->get_child_right_boundary(i);
+
+                    std::cout << "[R/L/prevR]= " << R << "/" << L << "/" << prevR << std::endl;
+                    if (i != 0)
+                    {
+                        assert((int64_t)L - 1 == prevR);
+                    }
+                    prevR = R;
+                }
+            }
+#endif
+*/
         };
 
     } // namespace stnode_on_rlbwt

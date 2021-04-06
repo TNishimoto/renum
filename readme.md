@@ -1,4 +1,4 @@
-# Suffix Tree Node Iterator based on RLBWT
+# R-enum: Enumeration of Characteristic Substrings in BWT-runs Bounded Space
 
 This library provides the implementation of a uni-directional iterator for suffix tree nodes.  
 The iterator uses $xr$ bytes and runs in $O(log (n/r))$ time per node,  
@@ -9,22 +9,23 @@ This library also provides a program enumerating maximal repeats.
 The source codes in 'module' directory are maintained in different repositories. 
 So, to download all the necessary source codes, do the following:
 
-> git clone https://github.com/TNishimoto/stnode_iterator_based_on_rlbwt.git  
-> cd stnode_iterator_on_rlbwt  
+> git clone https://github.com/TNishimoto/renum.git  
+> cd renum  
 > git submodule init  
 > git submodule update  
 
-You need sdsl-lite(https://github.com/simongog/sdsl-lite) to excecute this program. Please edit CMakeLists.txt to set SDSL library and include directory paths.
+You need sdsl-lite(https://github.com/simongog/sdsl-lite) to excecute this program. 
+
+Please edit CMakeLists.txt to set SDSL library and include directory paths.
 
 ## Compile
+We assume that the library and header files of SDSL are installed in ~/lib and ~/include directories, respectively. 
+
 > mkdir build  
 > cd build  
-> cmake -DCMAKE_BUILD_TYPE=Release ..  
+> cmake .. -DCMAKE_BUILD_TYPE=Release -DSDSL_LIBRARY_DIR=~/lib -DSDSL_INCLUDE_DIR=~/include  
 > make  
 
-## Library
-
-(in preparation)  
 
 ## Executions && Examples
 
@@ -50,7 +51,7 @@ wrote: sample.txt.bwt, time = 2
 
 This program outputs the LCP intervals for all the maximal repeats 
 in the string represented by a given BWT.  
-The output file is econded in binary format, and print.out can decode the encoded file.  
+The output file is encoded in binary format, and print.out can decode the encoded file.  
 The program can use multithreading for computing maximal repeats.  
 It works with a single thread if you use "-p 1".  
 It uses all the processors in your computer if you use "-p -1" or you do not use the -p option.  
@@ -72,10 +73,15 @@ Integer Type                             : UINT32_t
 The length of the input text             : 36  
 The number of runs on BWT                : 31  
 The number of maximum substrings         : 16  
+______________________Execution Time______________________  
 Excecution time                          : 0 [s]  
 Character per second                     : inf [KB/s]  
          Preprocessing time              : 0 [s]  
          Enumeration time                : 0 [s]  
+______________________Memory Usage______________________  
+RLBWT    : 0 [KB]  
+WT       : 10 [KB]  
+Queue    : 16 [KB]  
 _______________________________________________________  
 
 ### print.out  
@@ -116,6 +122,88 @@ File Type: LCPInterval
 Integer Type: uint32t  
 Count: 16  
 _______________________________________________________  
+
+### mus.out  
+
+This program outputs the LCP intervals for all the minimal unique substrings 
+in the string represented by a given BWT.  
+The output file is encoded in binary format, and print.out can decode the encoded file.  
+The program can use multithreading for computing minimal unique substrings.  
+It works with a single thread if you use "-p 1".  
+It uses all the processors in your computer if you use "-p -1" or you do not use the -p option.  
+
+usage: ./mus.out --input_file=string [options] ...  
+options:  
+  -i, --input_file     input file name (string)  
+  -o, --output_file    output file path (default: input_file_path.mus) (string [=])  
+  -p, --thread_num     thread number (int [=-1])  
+  -?, --help           print this message  
+
+$ ./mus.out -i ./sample.txt.bwt  
+______________________RESULT______________________  
+RLBWT File                               : ./sample.txt.bwt  
+Output                                   : ./sample.txt.bwt.mus  
+Peak children count                      : 22  
+Thread number                            : 8  
+Integer Type                             : UINT32_t  
+The length of the input text             : 36  
+The number of runs on BWT                : 31  
+The number of MUSs       : 5  
+______________________Execution Time______________________  
+Excecution time                          : 12 [s]  
+Character per second                     : 3 [KB/s]  
+         Preprocessing time              : 8 [s]  
+         Enumeration time                : 4 [s]  
+______________________Memory Usage______________________  
+RLBWT    : 0 [KB]  
+WT       : 10 [KB]  
+Queue    : 16 [KB]  
+_______________________________________________________  
+
+
+$ ./print.out -i ./sample.txt.bwt -l ./sample.txt.bwt.mus
+
+File Type: LCPInterval  
+Integer Type: uint32t  
+Count: 21  
+(i, j, LCP, substring)  
+0, 0, 1, $  
+31, 31, 2, TC  
+35, 35, 2, TT  
+13, 13, 2, CC  
+14, 14, 2, CG  
+15, 15, 2, CT  
+21, 21, 2, GC  
+1, 1, 2, AA  
+29, 29, 3, GTG  
+9, 9, 3, ATG  
+2, 2, 3, ACA  
+27, 27, 3, GGT  
+5, 5, 3, AGA  
+32, 32, 3, TGA  
+33, 33, 3, TGG  
+34, 34, 3, TGT  
+11, 11, 3, CAC  
+12, 12, 3, CAG  
+20, 20, 3, GAT  
+25, 25, 4, GGGA  
+26, 26, 4, GGGG  
+______________________RESULT______________________  
+BWT File                                 : ./sample.txt.bwt  
+Interval File                            : ./sample.txt.bwt.mus  
+Output File                              : ./sample.txt.bwt.mus.interval.log  
+File Type: LCPInterval  
+Integer Type: uint32t  
+Count: 21  
+_______________________________________________________  
+
+
+
+## Library
+
+(in preparation)  
+
+## Excecutions for Experiments
 
 ### convert_bwt_into_int_vector.out  
 This program converts a given BWT in text format into the BWT in binary format(sdsl::int_vector).  

@@ -266,9 +266,11 @@ namespace stool
                 return std::pair<uint64_t, uint64_t>(next_st_count, next_children_count);
             }
 
-            void print()
+            void print(uint64_t spaceSize = 0)
             {
-                std::cout << "[STNODE_COUNT, CHILDREN_COUNT] = [" << this->node_count() << ", " << this->children_count() << "]" << std::endl;
+                std::string space = std::string(spaceSize, ' ');
+
+                std::cout << space << "(STANDARD_SUB)[STNODE_COUNT, CHILDREN_COUNT] = [" << this->node_count() << ", " << this->children_count() << "]" << std::endl;
                 STNodeVector<INDEX_SIZE> item;
                 this->to_stnode_vector(item);
 

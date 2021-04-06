@@ -262,14 +262,15 @@ namespace stool
 
             void print()
             {
-                std::cout << "PRINT STNODE Traverser" << std::endl;
+                std::cout << "\033[32m PRINT Traverser(Standard)" << std::endl;
                 std::cout << "[LCP, STNODE_COUNT, CHILDREN_COUNT] = [" << this->current_lcp << ", " << this->_node_count << ", " << this->_child_count << "]" << std::endl;
                 for (uint64_t i = 0; i < this->sub_trees.size(); i++)
                 {
+                    std::cout << "   SUBTREE " << i << std::endl;
                     this->sub_trees[i]->print();
                 }
 
-                std::cout << "[END]" << std::endl;
+                std::cout << "[END] \033[39m" << std::endl;
             }
 
             uint64_t get_using_memory()
@@ -538,7 +539,7 @@ namespace stool
 
             INDEX_SIZE get_child_right_boundary(INDEX_SIZE child_index, INDEX_SIZE array_index) const
             {
-                return this->sub_trees[array_index]->get_child_left_boundary(child_index);
+                return this->sub_trees[array_index]->get_child_right_boundary(child_index);
             }
             INDEX_SIZE get_child_right_boundary(const ITERATOR &iter, uint64_t ith_child) const
             {

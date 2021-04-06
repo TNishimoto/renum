@@ -80,6 +80,10 @@ namespace stool
             template <typename STNODES>
             void analyze(STNODES &stnodeSequencer)
             {
+                if(this->input_text_length == 0){
+                    std::cout << "Please execute the start function before executing the analyze function." << std::endl;
+                    throw -1;
+                }
                 this->peak_memory_of_queue = std::max(this->peak_memory_of_queue, stnodeSequencer.get_using_memory());
 
                 this->current_lcp++;
