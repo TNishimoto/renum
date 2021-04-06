@@ -19,7 +19,7 @@ You need sdsl-lite(https://github.com/simongog/sdsl-lite) to excecute this progr
 Please edit CMakeLists.txt to set SDSL library and include directory paths.
 
 ## Compile
-We assume that the library and header files of SDSL are installed in ~/lib and ~/include directories, respectively. 
+We assume that the library and header files of SDSL are installed in \~/lib and \~/include directories, respectively. 
 
 > mkdir build  
 > cd build  
