@@ -5,13 +5,13 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/src/cmdline.h"
-#include "stool/src/sa_bwt_lcp.hpp"
-#include "../rlbwt/bwt_analysis_result.hpp"
-#include "../rlbwt/rle.hpp"
-#include "../rlbwt/bwt_decompress.hpp"
+#include "stool/include/cmdline.h"
+#include "stool/include/sa_bwt_lcp.hpp"
+#include "../include/rlbwt/bwt_analysis_result.hpp"
+#include "../include/rlbwt/rle.hpp"
+#include "../include/rlbwt/bwt_decompress.hpp"
 
-#include "../basic/fmindex.hpp"
+#include "../include/basic/fmindex.hpp"
 
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/wt_gmr.hpp>

@@ -44,20 +44,25 @@ LINK_DIRECTORIES(${SDSL_LIBRARY_DIR})
 include_directories(${SDSL_INCLUDE_DIR})
 #include_directories(~/include)
 
+if(NOT TARGET stool)
+add_subdirectory(module/stool)
+endif()
 
 
 
 #set(GLOB SOURCES src/minimal_substrings/*.cpp)
 
 # STOOL submodule
-FILE(GLOB STOOL_SOURCES module/stool/src/*.cpp module/libdivsufsort/sa.cpp)
+FILE(GLOB STOOL_SOURCES module/libdivsufsort/sa.cpp)
 INCLUDE_DIRECTORIES(module)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
-FILE(GLOB STNODE_SOURCES src/basic/*.cpp src/rlbwt/range_distinct/*.cpp)
+
+FILE(GLOB STNODE_SOURCES src/lib/basic/*.cpp src/lib/rlbwt/*.cpp)
 
 
 add_library(fn STATIC ${STOOL_SOURCES} ${STNODE_SOURCES})
-target_link_libraries(fn sdsl divsufsort divsufsort64)
+target_link_libraries(fn stool sdsl divsufsort divsufsort64)
 
 
 
@@ -68,7 +73,7 @@ add_executable(mus.out src/main/mus_main.cpp)
 target_link_libraries(mus.out fn)
 
 add_executable(text_to_bwt.out src/main/text_to_bwt_main.cpp)
-target_link_libraries(text_to_bwt.out divsufsort divsufsort64)
+target_link_libraries(text_to_bwt.out fn)
 
 add_executable(print.out src/main/print.cpp)
 target_link_libraries(print.out fn)

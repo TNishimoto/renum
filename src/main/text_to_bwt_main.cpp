@@ -5,11 +5,15 @@
 #include <vector>
 #include <random>
 #include <chrono>
-#include "divsufsort64.h"
-#include "stool/src/cmdline.h"
+#include "libdivsufsort/sa.hpp"
+#include "stool/include/sa_bwt_lcp.hpp"
+#include <divsufsort64.h>
+
+#include "stool/include/cmdline.h"
 
 
 using namespace std;
+
 
 std::vector<uint8_t> construct_bwt(const std::vector<uint8_t> &text)
 {
@@ -36,6 +40,7 @@ std::vector<uint8_t> construct_bwt(const std::vector<uint8_t> &text)
 
     return bwt;
 }
+
 
 bool load(string &filename, std::vector<uint8_t> &output)
 {
@@ -174,6 +179,7 @@ int main(int argc, char *argv[])
     */
 
     text.push_back(sc);
+    //std::vector<uint64_t> sa = stool::construct_suffix_array(text);
     std::vector<uint8_t> bwt = construct_bwt(text);
 
     if(bwt.size() < 100){

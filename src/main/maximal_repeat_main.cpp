@@ -1,29 +1,27 @@
 #include <cassert>
 #include <chrono>
-#include "../module/stool/src/io.hpp"
-#include "../module/stool/src/sa_bwt_lcp.hpp"
-
-#include "../module/stool/src/print.hpp"
-#include "../module/stool/src/cmdline.h"
-#include "../module/stool/src/debug.hpp"
-#include "../module/libdivsufsort/sa.hpp"
+#include "stool/include/io.hpp"
+#include "stool/include/sa_bwt_lcp.hpp"
+#include "stool/include/cmdline.h"
+#include "stool/include/debug.hpp"
+#include "stool/include/print.hpp"
+#include "stool/include/cmdline.h"
+#include "stool/include/debug.hpp"
+#include "libdivsufsort/sa.hpp"
 //#include "../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
 //#include "module/rlbwt_iterator/src/include/bwt.hpp"
 
-#include "stool/src/io.hpp"
-#include "stool/src/cmdline.h"
-#include "stool/src/debug.hpp"
 
 #include <sdsl/bit_vectors.hpp>
 
-#include "../debug/beller_debug.hpp"
-#include "../debug/naive_algorithms.hpp"
-#include "../debug/stnode_checker.hpp"
+#include "../include/debug/beller_debug.hpp"
+#include "../include/debug/naive_algorithms.hpp"
+#include "../include/debug/stnode_checker.hpp"
 
-#include "../stnode_enumerator/application.hpp"
-#include "../rlbwt/bwt_analysis_result.hpp"
-#include "../rlbwt/fpos_data_structure.hpp"
-#include "../rlbwt/bwt_decompress.hpp"
+#include "../include/stnode_enumerator/application.hpp"
+#include "../include/rlbwt/bwt_analysis_result.hpp"
+#include "../include/rlbwt/fpos_data_structure.hpp"
+#include "../include/rlbwt/bwt_decompress.hpp"
 
 
 using namespace std;
