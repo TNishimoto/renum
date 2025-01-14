@@ -6,8 +6,8 @@
 #include <sdsl/wt_algorithm.hpp>
 #include <sdsl/wavelet_trees.hpp>
 
-using namespace std;
-using namespace sdsl;
+//using namespace std;
+//using namespace sdsl;
 
 namespace stool
 {
@@ -52,19 +52,19 @@ namespace stool
         }
         */
 
-        bool load(string &filename, std::vector<uint8_t> &output)
+        bool load(std::string &filename, std::vector<uint8_t> &output)
         {
             std::ifstream file;
             file.open(filename, std::ios::binary);
 
             if (!file)
             {
-                std::cerr << "error reading file " << endl;
+                std::cerr << "error reading file " << std::endl;
                 return false;
             }
-            file.seekg(0, ios::end);
+            file.seekg(0, std::ios::end);
             auto n = (unsigned long)file.tellg();
-            file.seekg(0, ios::beg);
+            file.seekg(0, std::ios::beg);
 
             output.resize(n / sizeof(char));
 
@@ -98,14 +98,14 @@ namespace stool
             return true;
         }
         */
-        static uint64_t LF(uint64_t i, int_vector<> &bwt, std::vector<uint64_t> &C, wt_gmr<> &wt)
+        static uint64_t LF(uint64_t i, sdsl::int_vector<> &bwt, std::vector<uint64_t> &C, sdsl::wt_gmr<> &wt)
         {
             uint8_t c = bwt[i];
             uint64_t cNum = wt.rank(i, c);
             return C[c] + cNum;
         }
 
-        std::vector<char> decompress_bwt(string filename)
+        std::vector<char> decompress_bwt(std::string filename)
         {
 
             std::vector<uint8_t> bwt;
@@ -116,7 +116,7 @@ namespace stool
             FreqArr.resize(256, 0);
             C.resize(256, 0);
 
-            int_vector<> iv;
+            sdsl::int_vector<> iv;
             iv.resize(bwt.size());
 
             uint8_t minChar = 255;
@@ -144,7 +144,7 @@ namespace stool
             {
                 C[i] = C[i - 1] + FreqArr[i - 1];
             }
-            wt_gmr<> wt;
+            sdsl::wt_gmr<> wt;
             construct_im(wt, iv);
 
             std::vector<char> outputText;

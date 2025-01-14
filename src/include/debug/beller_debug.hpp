@@ -8,8 +8,8 @@
 #include "../basic/char_interval.hpp"
 
 //#include "sa_lcp.hpp"
-using namespace std;
-using namespace sdsl;
+//using namespace std;
+//using namespace sdsl;
 
 namespace stool
 {
@@ -54,9 +54,9 @@ namespace stool
             }
         }
         template <typename INDEX = uint64_t>
-        bool equal_check_lcp_intervals(std::vector<LCPInterval<INDEX>> &item1, std::vector<LCPInterval<INDEX>> &item2, string name = "")
+        bool equal_check_lcp_intervals(std::vector<LCPInterval<INDEX>> &item1, std::vector<LCPInterval<INDEX>> &item2, std::string name = "")
         {
-            using LCPINTV = LCPInterval<INDEX>;
+            using LCPINTV = stool::LCPInterval<INDEX>;
 
             sort(item1.begin(), item1.end(), [](const LCPINTV &lhs, const LCPINTV &rhs) {
                 if (lhs.lcp != rhs.lcp)

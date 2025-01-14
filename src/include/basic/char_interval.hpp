@@ -7,7 +7,7 @@
 #include <queue>
 
 //#include "sa_lcp.hpp"
-using namespace std;
+//using namespace std;
 //using namespace sdsl;
 
 namespace stool

@@ -17,8 +17,8 @@
 
 
 //#include "sa_lcp.hpp"
-using namespace std;
-using namespace sdsl;
+//using namespace std;
+//using namespace sdsl;
 
 namespace stool
 {
@@ -26,7 +26,7 @@ namespace stool
     class FMIndex
     {
     public:
-        static uint64_t LF(uint64_t i, int_vector<> &bwt, std::vector<uint64_t> &C, wt_gmr<> &wt)
+        static uint64_t LF(uint64_t i, sdsl::int_vector<> &bwt, std::vector<uint64_t> &C, sdsl::wt_gmr<> &wt)
         {
             uint8_t c = bwt[i];
             uint64_t cNum = wt.rank(i, c);
@@ -34,11 +34,11 @@ namespace stool
         }
 
         template <typename OUTPUT>
-        static void constructC(wt_huff<> &wt, uint8_t lastChar, OUTPUT &output)
+        static void constructC(sdsl::wt_huff<> &wt, uint8_t lastChar, OUTPUT &output)
         {
             uint64_t CHARMAX = UINT8_MAX + 1;
 
-            vector<uint64_t> tmp;
+            std::vector<uint64_t> tmp;
 
             tmp.resize(CHARMAX, 0);
             output.resize(CHARMAX, 0);
@@ -56,7 +56,7 @@ namespace stool
             }
         }
 
-        static void constructFrequencyArray(wt_huff<> &wt, uint8_t last_char, std::vector<uint64_t> &output)
+        static void constructFrequencyArray(sdsl::wt_huff<> &wt, uint8_t last_char, std::vector<uint64_t> &output)
         {
             uint64_t CHARMAX = UINT8_MAX + 1;
 
@@ -81,7 +81,7 @@ namespace stool
                 output[i] = k;
             }
         }
-        static void constructCArray(wt_huff<> &wt, uint8_t last_char, std::vector<uint64_t> &output)
+        static void constructCArray(sdsl::wt_huff<> &wt, uint8_t last_char, std::vector<uint64_t> &output)
         {
             uint64_t CHARMAX = UINT8_MAX + 1;
             std::vector<uint64_t> freqArr;
@@ -101,7 +101,7 @@ namespace stool
         {
             uint64_t CHARMAX = UINT8_MAX + 1;
 
-            vector<uint64_t> tmp;
+            std::vector<uint64_t> tmp;
 
             tmp.resize(CHARMAX, 0);
             output.resize(CHARMAX, 0);
@@ -117,7 +117,7 @@ namespace stool
                 output[i] = output[i - 1] + tmp[i - 1];
             }
         }
-        static void constructSelect(int_vector<> &bwt, wt_gmr<> &wt)
+        static void constructSelect(sdsl::int_vector<> &bwt, sdsl::wt_gmr<> &wt)
         {
             construct_im(wt, bwt);
         }
@@ -141,7 +141,7 @@ namespace stool
             }
         }
 
-        static uint64_t FL(uint64_t i, std::vector<uint64_t> &C, wt_gmr<> &wt)
+        static uint64_t FL(uint64_t i, std::vector<uint64_t> &C, sdsl::wt_gmr<> &wt)
         {
             uint64_t x = 0;
             for (x = 0; x < C.size(); x++)
@@ -158,7 +158,7 @@ namespace stool
             //std::cout << "xxx:" << c << "/" << nth << std::endl;
             return wt.select((nth + 1), c);
         }
-        static uint64_t get_start_pos(int_vector<> &bwt)
+        static uint64_t get_start_pos(sdsl::int_vector<> &bwt)
         {
             for (uint64_t i = 0; i < bwt.size(); i++)
             {

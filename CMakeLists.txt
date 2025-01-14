@@ -2,12 +2,15 @@ cmake_minimum_required(VERSION 2.8)
 
 #Project Information
 project(renum)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 if(CPP_STATIC)
-set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -Wall -pthread -Wextra -static")
+set(CMAKE_CXX_FLAGS "-m64 -Wall -pthread -Wextra -static")
 else(CPP_STATIC)
-set(CMAKE_CXX_FLAGS "-std=c++11 -m64 -Wall -pthread -Wextra")
+set(CMAKE_CXX_FLAGS "-m64 -Wall -pthread -Wextra")
 endif(CPP_STATIC)
 
 #set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG -DDEBUG_PRINT")
@@ -78,6 +81,8 @@ target_link_libraries(text_to_bwt.out fn)
 add_executable(print.out src/main/print.cpp)
 target_link_libraries(print.out fn)
 
+add_executable(exsample.out src/main/library_sample_main.cpp)
+target_link_libraries(exsample.out fn)
 
 
 

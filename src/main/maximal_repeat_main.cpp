@@ -8,20 +8,14 @@
 #include "stool/include/cmdline.h"
 #include "stool/include/debug.hpp"
 #include "libdivsufsort/sa.hpp"
+
+#include "../include/include.hpp"
+#include <sdsl/bit_vectors.hpp>
+
 //#include "../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
 //#include "module/rlbwt_iterator/src/include/bwt.hpp"
 
 
-#include <sdsl/bit_vectors.hpp>
-
-#include "../include/debug/beller_debug.hpp"
-#include "../include/debug/naive_algorithms.hpp"
-#include "../include/debug/stnode_checker.hpp"
-
-#include "../include/stnode_enumerator/application.hpp"
-#include "../include/rlbwt/bwt_analysis_result.hpp"
-#include "../include/rlbwt/fpos_data_structure.hpp"
-#include "../include/rlbwt/bwt_decompress.hpp"
 
 
 using namespace std;

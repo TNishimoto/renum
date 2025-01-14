@@ -9,8 +9,8 @@
 #include "../rlbwt/range_distinct/succinct_range_distinct.hpp"
 
 //#include "sa_lcp.hpp"
-using namespace std;
-using namespace sdsl;
+//using namespace std;
+//using namespace sdsl;
 
 namespace stool
 {

@@ -217,7 +217,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 
 
     std::cout << "Constructing Wavelet Tree..." << std::endl;
-    wt_huff<> wt;
+    sdsl::wt_huff<> wt;
     std::vector<uint64_t> C;
     uint8_t lastChar = stool::stnode_on_rlbwt::SDSLFunction::load_wavelet_tree(inputFile, wt, C);
 

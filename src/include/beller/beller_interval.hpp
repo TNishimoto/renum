@@ -10,8 +10,8 @@
 #include "beller_component.hpp"
 
 //#include "sa_lcp.hpp"
-using namespace std;
-using namespace sdsl;
+//using namespace std;
+//using namespace sdsl;
 
 namespace stool
 {

@@ -3,6 +3,8 @@
 #include "./fmindex.hpp"
 #include <sdsl/wt_algorithm.hpp>
 #include <sdsl/wavelet_trees.hpp>
+#include <cstdio> 
+#include <filesystem>
 namespace stool
 {
     namespace stnode_on_rlbwt
@@ -10,10 +12,12 @@ namespace stool
         class SDSLFunction
         {
         public:
-            static int deleteFile(string fileName)
+            static int deleteFile(const std::string fileName)
             {
+                std::filesystem::path _fileName; 
+                _fileName = fileName;
                 std::cout << "Delete: " << fileName << std::endl;
-                return !(remove(fileName));
+                return !(std::filesystem::remove(_fileName));
             }
             static uint8_t get_last_char(std::string inputFile)
             {
@@ -41,7 +45,7 @@ namespace stool
 
                 return c;
             }
-            static uint8_t get_Char(wt_huff<> &wt, uint64_t i, uint8_t last_char)
+            static uint8_t get_Char(sdsl::wt_huff<> &wt, uint64_t i, uint8_t last_char)
             {
                 if (i + 1 != wt.size())
                 {
@@ -52,7 +56,7 @@ namespace stool
                     return last_char;
                 }
             }
-            static uint64_t get_rank(wt_huff<> &wt, uint64_t i, uint8_t c, uint8_t last_char)
+            static uint64_t get_rank(sdsl::wt_huff<> &wt, uint64_t i, uint8_t c, uint8_t last_char)
             {
                 if (i == 0)
                 {
@@ -68,7 +72,7 @@ namespace stool
                 }
             }
 
-            static uint8_t load_wavelet_tree(string bwt_iv_file, wt_huff<> &wt, std::vector<uint64_t> &output_C_array)
+            static uint8_t load_wavelet_tree(std::string bwt_iv_file, sdsl::wt_huff<> &wt, std::vector<uint64_t> &output_C_array)
             {
                 uint8_t c = get_last_char(bwt_iv_file);
 

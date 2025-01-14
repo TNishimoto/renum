@@ -96,12 +96,12 @@ namespace stool
             //std::vector<std::unordered_set<uint64_t>> sets;
             stool::stnode_on_rlbwt::LightRangeDistinctDataStructure2<sdsl::int_vector<>, uint64_t> lrdds;
             sdsl::int_vector<> bwt;
-            wt_gmr<> wt;
+            sdsl::wt_gmr<> wt;
             std::vector<uint64_t> C;
             std::vector<char> text;
-            vector<uint64_t> sa;
+            std::vector<uint64_t> sa;
 
-            void initialize(string inputFile)
+            void initialize(std::string inputFile)
             {
                 std::vector<uint8_t> _bwt;
                 stool::bwt::load(inputFile, _bwt);
@@ -120,7 +120,7 @@ namespace stool
                 text.swap(tmpText);
                 sa = stool::construct_suffix_array(text);
 
-                vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::NaiveAlgorithms::naive_compute_lcp_intervals<char, uint64_t>(text, sa);
+                std::vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::NaiveAlgorithms::naive_compute_lcp_intervals<char, uint64_t>(text, sa);
                 std::sort(
                     correct_lcp_intervals.begin(),
                     correct_lcp_intervals.end(),
