@@ -29,7 +29,7 @@
 
 //#include "../minimal_substrings/naive_minimal_substrings.hpp"
 
-using namespace std;
+//using namespace std;
 //using namespace stool;
 
 using INDEXTYPE = int64_t;
