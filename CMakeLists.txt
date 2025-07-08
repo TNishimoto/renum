@@ -55,19 +55,19 @@ target_link_libraries(fn sdsl divsufsort divsufsort64)
 
 
 
-add_executable(maximal_repeat.out src/main/maximal_repeat_main.cpp)
+add_executable(maximal_repeat.out main/maximal_repeat_main.cpp)
 target_link_libraries(maximal_repeat.out fn)
 
-add_executable(mus.out src/main/mus_main.cpp)
+add_executable(mus.out main/mus_main.cpp)
 target_link_libraries(mus.out fn)
 
-add_executable(text_to_bwt.out src/main/text_to_bwt_main.cpp)
+add_executable(text_to_bwt.out main/text_to_bwt_main.cpp)
 target_link_libraries(text_to_bwt.out fn)
 
-add_executable(print.out src/main/print.cpp)
+add_executable(print.out main/print.cpp)
 target_link_libraries(print.out fn)
 
-add_executable(exsample.out src/main/library_sample_main.cpp)
+add_executable(exsample.out main/library_sample_main.cpp)
 target_link_libraries(exsample.out fn)
 
 
@@ -79,13 +79,13 @@ target_link_libraries(exsample.out fn)
 
 ### For Experiments
 
-add_executable(convert_bwt_into_int_vector.out src/experiments/convert_bwt_into_int_vector_main.cpp)
+add_executable(convert_bwt_into_int_vector.out experiments/convert_bwt_into_int_vector_main.cpp)
 target_link_libraries(convert_bwt_into_int_vector.out fn)
 
-add_executable(bbo_maximal_repeat.out src/experiments/bbo_meximal_repeat_main.cpp)
+add_executable(bbo_maximal_repeat.out experiments/bbo_meximal_repeat_main.cpp)
 target_link_libraries(bbo_maximal_repeat.out fn)
 
-#add_executable(dfs_maximal_repeat.out src/experiments/dfs_maximal_repeat_main.cpp)
+#add_executable(dfs_maximal_repeat.out experiments/dfs_maximal_repeat_main.cpp)
 #target_link_libraries(dfs_maximal_repeat.out fn)
 
 

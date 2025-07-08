@@ -23,10 +23,19 @@ namespace stool
             INDEX i;
             INDEX j;
             CHAR c;
-            CharInterval();
-            CharInterval(INDEX _i, INDEX _j, CHAR _c);
+            CharInterval(){
 
-            std::string to_string() const;
+            }
+            CharInterval(INDEX _i, INDEX _j, CHAR _c): i(_i), j(_j), c(_c){
+
+            }
+
+            std::string to_string() const
+        {
+            std::string s = "a";
+            s[0] = c;
+            return "[" + std::to_string(i) + ", " + std::to_string(j) + ", " + s + "]";
+        }
         };
     }
 } // namespace stool
