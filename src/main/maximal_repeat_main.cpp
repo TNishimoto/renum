@@ -19,8 +19,6 @@
 
 
 
-using namespace std;
-using namespace stool;
 
 using CHAR = char;
 using INDEX = uint64_t;
@@ -31,7 +29,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, int
 {
 
     auto start = std::chrono::system_clock::now();
-    string bit_size_mode = "UINT64_t";
+    std::string bit_size_mode = "UINT64_t";
     std::chrono::system_clock::time_point mid;
 
     std::ofstream out(outputFile, std::ios::out | std::ios::binary);
@@ -123,13 +121,13 @@ int main(int argc, char *argv[])
 #endif
 
     cmdline::parser p;
-    p.add<string>("input_file", 'i', "input bwt file path", true);
-    p.add<string>("output_file", 'o', "output file path (default: input_file_path.max)", false, "");
+    p.add<std::string>("input_file", 'i', "input bwt file path", true);
+    p.add<std::string>("output_file", 'o', "output file path (default: input_file_path.max)", false, "");
     p.add<int>("thread_num", 'p', "thread number for parallel processing", false, -1);
 
     p.parse_check(argc, argv);
-    string inputFile = p.get<string>("input_file");
-    string outputFile = p.get<string>("output_file");
+    std::string inputFile = p.get<std::string>("input_file");
+    std::string outputFile = p.get<std::string>("output_file");
     int thread_num = p.get<int>("thread_num");
     if (thread_num < 0)
     {

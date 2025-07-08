@@ -12,7 +12,6 @@
 #include "stool/include/third_party/cmdline.h"
 
 
-using namespace std;
 
 
 std::vector<uint8_t> construct_bwt(const std::vector<uint8_t> &text)
@@ -42,19 +41,19 @@ std::vector<uint8_t> construct_bwt(const std::vector<uint8_t> &text)
 }
 
 
-bool load(string &filename, std::vector<uint8_t> &output)
+bool load(std::string &filename, std::vector<uint8_t> &output)
 {
     std::ifstream file;
     file.open(filename, std::ios::binary);
 
     if (!file)
     {
-        std::cerr << "error reading file " << endl;
+        std::cerr << "error reading file " << std::endl;
         return false;
     }
-    file.seekg(0, ios::end);
+    file.seekg(0, std::ios::end);
     auto n = (unsigned long)file.tellg();
-    file.seekg(0, ios::beg);
+    file.seekg(0, std::ios::beg);
 
     output.resize(n / sizeof(char));
 
@@ -64,12 +63,12 @@ bool load(string &filename, std::vector<uint8_t> &output)
 
     return true;
 }
-bool write(string filename, std::vector<uint8_t> &text)
+bool write(std::string filename, std::vector<uint8_t> &text)
 {
     std::cout << "writing: " << filename << std::endl;
     auto start = std::chrono::system_clock::now();
 
-    ofstream os(filename, ios::out | ios::binary);
+    std::ofstream os(filename, std::ios::out | std::ios::binary);
     if (!os)
         return 1;
     os.write((const char *)(&text[0]), sizeof(char) * text.size());
@@ -141,14 +140,14 @@ void sanityze(std::vector<uint8_t> &text){
 int main(int argc, char *argv[])
 {
     cmdline::parser p;
-    p.add<string>("input_file", 'i', "input file path", true);
-    p.add<string>("output_file", 'o', "output bwt file path", false, "");
-    p.add<string>("special_character", 's', "special character", false, "");
+    p.add<std::string>("input_file", 'i', "input file path", true);
+    p.add<std::string>("output_file", 'o', "output bwt file path", false, "");
+    p.add<std::string>("special_character", 's', "special character", false, "");
 
     p.parse_check(argc, argv);
-    string inputFile = p.get<string>("input_file");
-    string outputFile = p.get<string>("output_file");
-    string specialCharacter = p.get<string>("special_character");
+    std::string inputFile = p.get<std::string>("input_file");
+    std::string outputFile = p.get<std::string>("output_file");
+    std::string specialCharacter = p.get<std::string>("special_character");
 
     uint8_t sc = 0;
     if(specialCharacter.size() > 0){

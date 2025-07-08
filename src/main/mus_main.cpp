@@ -13,8 +13,6 @@
 #include <sdsl/bit_vectors.hpp>
 
 
-using namespace std;
-using namespace stool;
 
 using CHAR = char;
 using INDEX = uint64_t;
@@ -212,7 +210,7 @@ void debug(std::string inputFile)
 {
     std::cout << "Constuct Test MUSs" << std::endl;
     std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
-    vector<uint64_t> sa = stool::construct_suffix_array(text);
+    std::vector<uint64_t> sa = stool::construct_suffix_array(text);
     /*
     for (uint64_t p = 0; p < text.size(); p++)
     {
@@ -227,7 +225,7 @@ void debug(std::string inputFile)
 
     for (auto &it : MUSs)
     {
-        string s = "";
+        std::string s = "";
         for (uint64_t p = 0; p < it.lcp; p++)
         {
             s += text[sa[it.i] + p];
@@ -267,7 +265,7 @@ void computeMUSs(std::string inputFile, std::string outputFile, int thread_num)
 {
 
     auto start = std::chrono::system_clock::now();
-    string bit_size_mode = "UINT64_t";
+    std::string bit_size_mode = "UINT64_t";
     std::chrono::system_clock::time_point mid;
 
     std::ofstream out(outputFile, std::ios::out | std::ios::binary);
@@ -357,15 +355,15 @@ int main(int argc, char *argv[])
 #endif
 
     cmdline::parser p;
-    p.add<string>("input_file", 'i', "input file name", true);
-    p.add<string>("output_file", 'o', "output file path (default: input_file_path.mus)", false, "");
+    p.add<std::string>("input_file", 'i', "input file name", true);
+    p.add<std::string>("output_file", 'o', "output file path (default: input_file_path.mus)", false, "");
     p.add<int>("thread_num", 'p', "thread number", false, -1);
 
     p.parse_check(argc, argv);
-    string inputFile = p.get<string>("input_file");
+    std::string inputFile = p.get<std::string>("input_file");
     //string mode = p.get<string>("mode");
 
-    string outputFile = p.get<string>("output_file");
+    std::string outputFile = p.get<std::string>("output_file");
     int thread_num = p.get<int>("thread_num");
     if (thread_num < 0)
     {
