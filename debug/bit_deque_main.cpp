@@ -2,9 +2,7 @@
 #include <chrono>
 #include <string>
 
-#include "stool/include/io.hpp"
-#include "stool/include/cmdline.h"
-#include "stool/include/debug.hpp"
+#include "stool/include/stool.hpp"
 #include "../stnode_enumerator/single/bit_deque.hpp"
 
 std::vector<bool> to_vector(std::deque<bool> &vec)

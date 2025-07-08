@@ -1,11 +1,7 @@
 #include <cassert>
 #include <chrono>
-#include "stool/include/io.hpp"
-#include "stool/include/sa_bwt_lcp.hpp"
 
-#include "stool/include/print.hpp"
-#include "stool/include/cmdline.h"
-#include "stool/include/debug.hpp"
+#include "stool/include/stool.hpp"
 #include "../module/libdivsufsort/sa.hpp"
 
 //#include "hpp/bwt.hpp"
@@ -17,12 +13,6 @@
 #include "../include/debug/naive_algorithms.hpp"
 #include <sdsl/wt_algorithm.hpp>
 
-//#include "../postorder_maximal_substring_intervals.hpp"
-//#include "../forward_bwt.hpp"
-
-using namespace std;
-//using namespace stool;
-//using namespace stool::rlbwt;
 
 using CHAR = char;
 using INDEX = uint64_t;

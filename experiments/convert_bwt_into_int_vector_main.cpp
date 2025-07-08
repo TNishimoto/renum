@@ -1,12 +1,7 @@
 #include <cassert>
 #include <chrono>
-#include "stool/include/io/io.hpp"
-#include "stool/include/strings/sa_bwt_lcp.hpp"
-#include "stool/include/strings/lcp_interval.hpp"
+#include "stool/include/stool.hpp"
 
-#include "stool/include/debug/print.hpp"
-#include "stool/include/third_party/cmdline.h"
-#include "stool/include/debug/debug.hpp"
 #include "libdivsufsort/sa.hpp"
 
 //#include "hpp/bwt.hpp"
@@ -21,12 +16,6 @@
 
 #include <sdsl/wt_algorithm.hpp>
 
-//#include "../postorder_maximal_substring_intervals.hpp"
-//#include "../forward_bwt.hpp"
-
-using namespace std;
-//using namespace stool;
-//using namespace stool::rlbwt;
 
 using CHAR = char;
 using INDEX = uint64_t;
@@ -59,12 +48,12 @@ std::vector<uint8_t> load_bwt(std::string filename)
 int main(int argc, char *argv[])
 {
     cmdline::parser p;
-    p.add<string>("input_file", 'i', "input bwt file path (text format)", true);
-    p.add<string>("output_file", 'o', "output bwt file path (binary file) (default: input_bwt_file.iv)", false, "");
+    p.add<std::string>("input_file", 'i', "input bwt file path (text format)", true);
+    p.add<std::string>("output_file", 'o', "output bwt file path (binary file) (default: input_bwt_file.iv)", false, "");
 
     p.parse_check(argc, argv);
-    string inputFile = p.get<string>("input_file");
-    string outputFile = p.get<string>("output_file");
+    std::string inputFile = p.get<std::string>("input_file");
+    std::string outputFile = p.get<std::string>("output_file");
 
     std::ifstream ifs(inputFile);
     bool inputFileExist = ifs.is_open();

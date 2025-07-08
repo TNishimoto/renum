@@ -1,12 +1,7 @@
 #include <cassert>
 #include <chrono>
 #include <stdio.h>
-#include "stool/include/io.hpp"
-#include "stool/include/sa_bwt_lcp.hpp"
-
-#include "stool/include/print.hpp"
-#include "stool/include/cmdline.h"
-#include "stool/include/debug.hpp"
+#include "stool/include/stool.hpp"
 #include "../module/libdivsufsort/sa.hpp"
 
 //#include "hpp/bwt.hpp"

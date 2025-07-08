@@ -1,20 +1,15 @@
 #include <cassert>
 #include <chrono>
 #include <stdio.h>
-#include "stool/include/io/io.hpp"
-#include "stool/include/strings/sa_bwt_lcp.hpp"
 
-#include "stool/include/debug/print.hpp"
-#include "stool/include/third_party/cmdline.h"
-#include "stool/include/debug/debug.hpp"
+
+#include "stool/include/stool.hpp"
 #include "../module/libdivsufsort/sa.hpp"
 
 //#include "hpp/bwt.hpp"
 #include "../include/basic/interval_search_data_structure.hpp"
 //#include "../beller/beller_interval.hpp"
 #include "../include/debug/beller_debug.hpp"
-
-
 #include "../include/debug/naive_algorithms.hpp"
 #include "../include/stnode_enumerator/single/single_stnode_traverser.hpp"
 #include "../include/stnode_enumerator/application.hpp"
@@ -22,12 +17,7 @@
 #include <sdsl/wt_algorithm.hpp>
 #include "../include/basic/sdsl_functions.hpp"
 
-//#include "../postorder_maximal_substring_intervals.hpp"
-//#include "../forward_bwt.hpp"
 
-using namespace std;
-//using namespace stool;
-//using namespace stool::rlbwt;
 
 using CHAR = char;
 using INDEX = uint64_t;
@@ -75,7 +65,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
     stool::IO::load(inputFile,text);
     text.push_back(0);
 
-    vector<INDEX> sa = stool::construct_suffix_array(text);
+    std::vector<INDEX> sa = stool::construct_suffix_array(text);
     sdsl::int_vector<> bwt;
     stool::renum::FMIndex::constructBWT(text, sa, bwt);
 
@@ -217,12 +207,12 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 int main(int argc, char *argv[])
 {
     cmdline::parser p;
-    p.add<string>("input_file", 'i', "input file name", true);
-    p.add<string>("output_file", 'o', "output file path (default: input_file_path.bbo.max)", false, "");
+    p.add<std::string>("input_file", 'i', "input file name", true);
+    p.add<std::string>("output_file", 'o', "output file path (default: input_file_path.bbo.max)", false, "");
 
     p.parse_check(argc, argv);
-    string inputFile = p.get<string>("input_file");
-    string outputFile = p.get<string>("output_file");
+    std::string inputFile = p.get<std::string>("input_file");
+    std::string outputFile = p.get<std::string>("output_file");
 
     std::ifstream ifs(inputFile);
     bool inputFileExist = ifs.is_open();
