@@ -87,7 +87,7 @@ uint8_t get_last_char(std::string inputFile, std::vector<uint64_t> &C, sdsl::bit
   }
   std::cout << "Constructing array C..." << std::endl;
 
-  stool::FMIndex::constructC(bwt, C);
+  stool::renum::FMIndex::constructC(bwt, C);
 
   return bwt[bwt.size() - 1];
 }
@@ -100,17 +100,17 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
   std::vector<uint8_t> text = stool::load_text_from_file(inputFile, true);
   vector<INDEX> sa = stool::construct_suffix_array(text);
   sdsl::int_vector<> bwt;
-  stool::FMIndex::constructBWT(text, sa, bwt);
+  stool::renum::FMIndex::constructBWT(text, sa, bwt);
 
   std::vector<uint64_t> C;
-  stool::FMIndex::constructC(bwt, C);
+  stool::renum::FMIndex::constructC(bwt, C);
 
   wt_huff<> wt;
   construct_im(wt, bwt);
 
   uint64_t lastChar = bwt[bwt.size() - 1];
 
-  stool::IntervalSearchDataStructure range;
+  stool::renum::IntervalSearchDataStructure range;
   range.initialize(&wt, &C, lastChar);
   /*
   std::cout << wt.size() << "/" << bwt.size() << std::endl;
@@ -126,7 +126,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
   }
   */
 
-  auto test_Intervals = stool::beller::computeLCPIntervals<uint64_t>(range);
+  auto test_Intervals = stool::renum::computeLCPIntervals<uint64_t>(range);
   test_Intervals.push_back(LCPINTV(0, text.size() - 1, 0));
 
   if (correctCheck)
@@ -134,7 +134,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
     auto correctLCP = stool::constructLCP(text, sa);
     std::cout << "Correct" << std::endl;
     std::vector<LCPINTV> correct_intervals = stool::esaxx::NaiveAlgorithms::naive_compute_lcp_intervals(text, sa);
-    stool::beller::equal_check_lcp_intervals(test_Intervals, correct_intervals);
+    stool::renum::equal_check_lcp_intervals(test_Intervals, correct_intervals);
     std::cout << "OK!" << std::endl;
   }
 }
@@ -158,7 +158,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
 
   uint64_t ms_count = 0;
 
-  stool::IntervalSearchDataStructure range;
+  stool::renum::IntervalSearchDataStructure range;
   range.initialize(&wt, &C, lastChar);
 
   std::ofstream out(outputFile, std::ios::out | std::ios::binary);
@@ -177,22 +177,22 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, boo
 
   if (input_text_size - 10 < UINT32_MAX)
   {
-    stool::beller::OutputStructure<uint32_t> os;
+    stool::renum::OutputStructure<uint32_t> os;
     os.is_output_maximal_substrings = true;
     os.out = &out;
     os.bwt_bit_rank1 = &bwt_bit_rank1;
 
-    ms_count = stool::beller::outputMaximalSubstrings<uint32_t>(range, os);
+    ms_count = stool::renum::outputMaximalSubstrings<uint32_t>(range, os);
     peak_count = os.peak;
   }
   else
   {
-    stool::beller::OutputStructure<uint64_t> os;
+    stool::renum::OutputStructure<uint64_t> os;
     os.is_output_maximal_substrings = true;
     os.out = &out;
     os.bwt_bit_rank1 = &bwt_bit_rank1;
 
-    ms_count = stool::beller::outputMaximalSubstrings<uint64_t>(range, os);
+    ms_count = stool::renum::outputMaximalSubstrings<uint64_t>(range, os);
     peak_count = os.peak;
 
   }

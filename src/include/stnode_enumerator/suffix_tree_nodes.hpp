@@ -20,7 +20,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
 
         const uint SUCCINCT_MODE = 1;
@@ -53,7 +53,7 @@ namespace stool
             bool use_fast_mode = true;
             uint mode = SINGLE_MODE;
             RLBWTDS *_RLBWTDS;
-            stool::stnode_on_rlbwt::RLE<CHAR> *_RLBWT;
+            stool::renum::RLE<CHAR> *_RLBWT;
 
             ExplicitWeinerLinkComputerOnRLBWT<RLBWTDS> *get_interval_search_deta_structure() const
             {
@@ -621,7 +621,7 @@ namespace stool
                     uint64_t lcp = it.get_depth();
                     for (auto node_it = it.begin(); node_it != it.end(); node_it++)
                     {
-                        stool::stnode_on_rlbwt::STDepthIteratorErrorChecker::error_check(node_it);
+                        stool::renum::STDepthIteratorErrorChecker::error_check(node_it);
                     }
 
                     it++;
@@ -631,5 +631,5 @@ namespace stool
 */
         };
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

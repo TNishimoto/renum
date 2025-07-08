@@ -17,7 +17,7 @@ std::vector<bool> to_vector(std::deque<bool> &vec)
     return r;
 }
 
-bool check_test(stool::stnode_on_rlbwt::BitDeque &vec1, std::deque<bool> &vec2)
+bool check_test(stool::renum::BitDeque &vec1, std::deque<bool> &vec2)
 {
     /*
     auto r = vec1.to_vector();
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
   std::string format = "binary";
   */
 
-    stool::stnode_on_rlbwt::BitDeque bdeq;
+    stool::renum::BitDeque bdeq;
 
     /*
     bdeq.push_back(true);
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     }
     */
 
-    stool::stnode_on_rlbwt::BitDeque deq1;
+    stool::renum::BitDeque deq1;
     std::deque<bool> deq2;
     for (uint64_t i = 0; i < 10; i++)
     {

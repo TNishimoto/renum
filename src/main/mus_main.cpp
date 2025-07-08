@@ -64,9 +64,9 @@ public:
             }
         }
 
-        stool::stnode_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> output_vec;
+        stool::renum::STNodeVector<typename EM::INDEX, typename EM::CHAR> output_vec;
 
-        stool::stnode_on_rlbwt::WeinerLinkCommonFunctions::compute_weiner_links(em, it, output_vec);
+        stool::renum::WeinerLinkCommonFunctions::compute_weiner_links(em, it, output_vec);
         for (auto wnode_it = output_vec.begin(); wnode_it != output_vec.end(); wnode_it++)
         {
             uint64_t w = wnode_it.get_children_count();
@@ -112,7 +112,7 @@ public:
         {
             std::vector<stool::LCPInterval<uint64_t>> r2;
             uint64_t lcp = it.get_depth();
-            stool::stnode_on_rlbwt::STDepthIteratorErrorChecker::error_check(it);
+            stool::renum::STDepthIteratorErrorChecker::error_check(it);
 
             for (auto node_it = it.begin(); node_it != it.end(); node_it++)
             {
@@ -138,7 +138,7 @@ public:
         return r;
     }
     template <typename STNODES>
-    static uint64_t online_enumerate(std::ofstream &out, STNODES &stnodeSequencer, stool::stnode_on_rlbwt::STTreeAnalysisResult &analysis)
+    static uint64_t online_enumerate(std::ofstream &out, STNODES &stnodeSequencer, stool::renum::STTreeAnalysisResult &analysis)
     {
         if (!stnodeSequencer.has_edge_characters())
         {
@@ -175,7 +175,7 @@ public:
                 if (node_it.is_maximal_repeat())
                 {
                     //node_it.error_check();
-                    //stool::stnode_on_rlbwt::STDepthIteratorErrorChecker::error_check(node_it);
+                    //stool::renum::STDepthIteratorErrorChecker::error_check(node_it);
                     mus_arr.build(*em, node_it, lcp);
 
                     for (auto &mus_it : mus_arr.mus_intervals)
@@ -241,13 +241,13 @@ void debug(std::string inputFile)
     std::cout << std::endl;
 
     stool::rlbwt2::BWTAnalysisResult analysisResult;
-    stool::stnode_on_rlbwt::RLE<uint8_t> rlbwt;
+    stool::renum::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
-    using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint32_t>;
+    using RDS = stool::renum::RLEWaveletTree<uint32_t>;
     RDS ds = RDS(&rlbwt);
 
     std::cout << "Enumerate Minimal unique substrings..." << std::endl;
-    stool::stnode_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
+    stool::renum::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
     stnodeTraverser.initialize(1, ds, true);
     auto test_MUSs = MUSEnumerator::enumerate(stnodeTraverser);
 
@@ -259,7 +259,7 @@ void debug(std::string inputFile)
     }
     std::cout << std::endl;
     */
-    stool::beller::equal_check_lcp_intervals(MUSs, test_MUSs);
+    stool::renum::equal_check_lcp_intervals(MUSs, test_MUSs);
     std::cout << "OK!" << MUSs.size() << std::endl;
 }
 
@@ -276,36 +276,36 @@ void computeMUSs(std::string inputFile, std::string outputFile, int thread_num)
         throw std::runtime_error("Cannot open the output file!");
     }
     stool::rlbwt2::BWTAnalysisResult analysisResult;
-    stool::stnode_on_rlbwt::RLE<uint8_t> rlbwt;
+    stool::renum::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
 
     uint64_t ms_count = 0;
-    stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
+    stool::renum::STTreeAnalysisResult st_result;
     uint64_t ds_memory_usage = 0;
 
     if (analysisResult.str_size < UINT32_MAX - 10)
     {
-        using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint32_t>;
+        using RDS = stool::renum::RLEWaveletTree<uint32_t>;
         RDS ds = RDS(&rlbwt);
         mid = std::chrono::system_clock::now();
         ds_memory_usage = ds.get_using_memory();
 
         std::cout << "Enumerate Minimal unique substrings..." << std::endl;
-        stool::stnode_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
+        stool::renum::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds, true);
-        //ms_count = stool::stnode_on_rlbwt::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
+        //ms_count = stool::renum::Application::outputMaximalSubstrings(out, stnodeTraverser, st_result);
         ms_count = MUSEnumerator::online_enumerate(out, stnodeTraverser, st_result);
         bit_size_mode = "UINT32_t";
     }
     else
     {
-        using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint64_t>;
+        using RDS = stool::renum::RLEWaveletTree<uint64_t>;
         RDS ds = RDS(&rlbwt);
         mid = std::chrono::system_clock::now();
         ds_memory_usage = ds.get_using_memory();
 
         std::cout << "Enumerate Minimal unique substrings..." << std::endl;
-        stool::stnode_on_rlbwt::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
+        stool::renum::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds, true);
         ms_count = MUSEnumerator::online_enumerate(out, stnodeTraverser, st_result);
     }

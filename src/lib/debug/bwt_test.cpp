@@ -64,9 +64,9 @@ void testCArray(std::string filename){
     sdsl::int_vector<> iv;
     sdsl::load_from_file(iv, filename);
     std::vector<uint64_t> C;
-    stool::FMIndex::constructC(iv, C);
+    stool::renum::FMIndex::constructC(iv, C);
 
-    uint8_t c = stool::stnode_on_rlbwt::SDSLFunction::get_last_char(filename);
+    uint8_t c = stool::renum::SDSLFunction::get_last_char(filename);
     std::cout << (int)c << std::endl;
 
     std::cout << "Constructing Wavelet Tree..." << std::endl;
@@ -75,8 +75,8 @@ void testCArray(std::string filename){
     std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
     std::vector<uint64_t> C2;
-    //stool::FMIndex::constructC(bwt, C);
-    stool::FMIndex::constructCArray(wt, c, C2);
+    //stool::renum::FMIndex::constructC(bwt, C);
+    stool::renum::FMIndex::constructCArray(wt, c, C2);
 
     stool::equal_check(C, C2);
 }
@@ -106,7 +106,7 @@ void naiveConstructDBitArray(std::string bwt_iv_file, sdsl::bit_vector &bv){
 void testDBitArray(std::string bwt_iv_file){
     sdsl::bit_vector bv1, bv2;
     naiveConstructDBitArray(bwt_iv_file, bv1);
-    stool::stnode_on_rlbwt::SDSLFunction::constructDBitArray(bwt_iv_file, bv2);
+    stool::renum::SDSLFunction::constructDBitArray(bwt_iv_file, bv2);
     if(bv1.size() < 100){
         for(uint64_t i=0;i<bv1.size();i++){
             std::cout << bv1[i];
@@ -138,7 +138,7 @@ void testBWT_WT(std::string bwt_iv_file){
     sdsl::int_vector<> bwt;
     sdsl::load_from_file(bwt, bwt_iv_file);
 
-    uint8_t c = stool::stnode_on_rlbwt::SDSLFunction::get_last_char(bwt_iv_file);
+    uint8_t c = stool::renum::SDSLFunction::get_last_char(bwt_iv_file);
 
 
     wt_huff<> wt;
@@ -147,7 +147,7 @@ void testBWT_WT(std::string bwt_iv_file){
 
     for(uint64_t x=0;x<bwt.size();x++){
         uint8_t c1 = bwt[x];
-        uint8_t c2 = stool::stnode_on_rlbwt::SDSLFunction::get_Char(wt, x, c);
+        uint8_t c2 = stool::renum::SDSLFunction::get_Char(wt, x, c);
 
         if(c1 != c2){
             std::cout << "Error! " << c1 << "/" << c2 << "/" << x << std::endl;

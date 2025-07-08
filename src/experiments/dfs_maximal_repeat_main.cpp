@@ -38,10 +38,10 @@ class DFSApplication
 {
 public:
     template <typename INDEX_SIZE, typename INTERVAL_SEARCH, typename CHAR = uint8_t>
-    static uint64_t outputMaximalSubstrings(std::ofstream &out, stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR> &stnodeSequencer, stool::stnode_on_rlbwt::STTreeAnalysisResult &analysis)
+    static uint64_t outputMaximalSubstrings(std::ofstream &out, stool::renum::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR> &stnodeSequencer, stool::renum::STTreeAnalysisResult &analysis)
     {
 
-        //using INDEX_SIZE = typename stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR>::index_type;
+        //using INDEX_SIZE = typename stool::renum::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR>::index_type;
         uint8_t print_type = 0;
         out.write((char *)(&print_type), sizeof(print_type));
         uint8_t index_bits = sizeof(INDEX_SIZE);
@@ -197,7 +197,7 @@ uint8_t get_last_char(std::string inputFile, std::vector<uint64_t> &C, sdsl::bit
     }
     std::cout << "Constructing array C..." << std::endl;
 
-    stool::FMIndex::constructC(bwt, C);
+    stool::renum::FMIndex::constructC(bwt, C);
 
     return bwt[bwt.size() - 1];
 }
@@ -211,7 +211,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 
     std::cout << "Loading : " << inputFile << std::endl;
     //std::cout << "Constructing dbit array for maximal repeats : " << std::endl;
-    //stool::stnode_on_rlbwt::SDSLFunction::constructDBitArray(inputFile, bv);
+    //stool::renum::SDSLFunction::constructDBitArray(inputFile, bv);
     //sdsl::bit_vector::rank_1_type bwt_bit_rank1(&bv);
 
 
@@ -219,7 +219,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     std::cout << "Constructing Wavelet Tree..." << std::endl;
     sdsl::wt_huff<> wt;
     std::vector<uint64_t> C;
-    uint8_t lastChar = stool::stnode_on_rlbwt::SDSLFunction::load_wavelet_tree(inputFile, wt, C);
+    uint8_t lastChar = stool::renum::SDSLFunction::load_wavelet_tree(inputFile, wt, C);
 
 
 
@@ -230,7 +230,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
 
     uint64_t ms_count = 0;
 
-    stool::IntervalSearchDataStructure<uint8_t> range;
+    stool::renum::IntervalSearchDataStructure<uint8_t> range;
     range.initialize(&wt, &C, lastChar);
 
     std::ofstream out(outputFile, std::ios::out | std::ios::binary);
@@ -243,15 +243,15 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     auto mid = std::chrono::system_clock::now();
 
     std::cout << "Enumerating..." << std::endl;
-    stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
+    stool::renum::STTreeAnalysisResult st_result;
 
     if (input_text_size - 10 < UINT32_MAX)
     {
         using INDEX_TYPE = uint32_t;
 
-        stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
+        stool::renum::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
         wsearch.initialize(&range, input_text_size);
-        stool::stnode_on_rlbwt::DFSTraverser<INDEX_TYPE, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
+        stool::renum::DFSTraverser<INDEX_TYPE, stool::renum::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch, false);
         ms_count = DFSApplication::outputMaximalSubstrings(out, traverser, st_result);
     }
@@ -259,9 +259,9 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile)
     {
         using INDEX_TYPE = uint64_t;
 
-        stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
+        stool::renum::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
         wsearch.initialize(&range, input_text_size);
-        stool::stnode_on_rlbwt::DFSTraverser<INDEX_TYPE, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
+        stool::renum::DFSTraverser<INDEX_TYPE, stool::renum::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch, false);
         ms_count = DFSApplication::outputMaximalSubstrings(out, traverser, st_result);
     }

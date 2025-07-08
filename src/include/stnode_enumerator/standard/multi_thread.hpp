@@ -16,7 +16,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
 
         std::mutex mtx;
@@ -100,5 +100,5 @@ namespace stool
                 }
             }
         }
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

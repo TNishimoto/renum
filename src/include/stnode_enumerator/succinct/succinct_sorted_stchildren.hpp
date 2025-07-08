@@ -15,7 +15,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         template <typename INDEX_SIZE, typename RLBWTDS>
         class SuccinctSortedSTChildren
@@ -183,5 +183,5 @@ namespace stool
             }
         };
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

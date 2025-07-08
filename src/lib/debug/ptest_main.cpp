@@ -59,7 +59,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string dataFile, strin
     //std::cout << "FPOS Data Structure: " << FPOSMODE << std::endl;
 
     //uint64_t ms_count = 0;
-    //stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
+    //stool::renum::STTreeAnalysisResult st_result;
 
     double construction_time = 0;
     std::chrono::system_clock::time_point mid;
@@ -71,8 +71,8 @@ void computeMaximalSubstrings(std::string inputFile, std::string dataFile, strin
 
     //lpos_vec.build_from_bit_vector(run_bits);
     using LPOSDS = stool::EliasFanoVector;
-    using FPOSDS = stool::stnode_on_rlbwt::LightFPosDataStructure;
-    FPOSDS fposds = stool::stnode_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
+    using FPOSDS = stool::renum::LightFPosDataStructure;
+    FPOSDS fposds = stool::renum::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
     std::cout << "FPOS Vec using memory = " << fposds.get_using_memory() / 1000 << "[KB]" << std::endl;
     data_structure_bytes += fposds.get_using_memory();
 
@@ -81,11 +81,11 @@ void computeMaximalSubstrings(std::string inputFile, std::string dataFile, strin
     std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
     std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
 
-    using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint32_t, LPOSDS, FPOSDS>;
+    using RDS = stool::renum::RLEWaveletTree<uint32_t, LPOSDS, FPOSDS>;
     RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
     std::cout << "Enumerate Maximal Substrings..." << std::endl;
-    stool::stnode_on_rlbwt::STNodeTraverser<uint32_t, RDS> stnodeTraverser;
+    stool::renum::STNodeTraverser<uint32_t, RDS> stnodeTraverser;
     stnodeTraverser.initialize(thread_num, ds);
 
     if (dataFile.size() != 0)

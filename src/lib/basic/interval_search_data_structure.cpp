@@ -6,13 +6,13 @@
 #include "../../include/basic/interval_search_data_structure.hpp"
 
 template <typename CHAR>
-void stool::IntervalSearchDataStructure<CHAR>::initialize(stool::WT *_wt, std::vector<uint64_t> *_C, CHAR _lastChar)
+void stool::renum::IntervalSearchDataStructure<CHAR>::initialize(stool::WT *_wt, std::vector<uint64_t> *_C, CHAR _lastChar)
 {
     this->wt = _wt;
     this->C = _C;
     this->lastChar = _lastChar;
     /*
-            stool::FMIndex::constructC(bwt, C);
+            stool::renum::FMIndex::constructC(bwt, C);
             construct_im(wt, bwt);
             */
 
@@ -22,7 +22,7 @@ void stool::IntervalSearchDataStructure<CHAR>::initialize(stool::WT *_wt, std::v
 }
 template <typename CHAR>
 template <typename INDEX_SIZE>
-uint64_t stool::IntervalSearchDataStructure<CHAR>::getIntervals(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE, CHAR>> &output)
+uint64_t stool::renum::IntervalSearchDataStructure<CHAR>::getIntervals(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE, CHAR>> &output)
 {
     using CHARINTV = CharInterval<INDEX_SIZE, CHAR>;
     std::vector<CHARINTV> r;
@@ -64,7 +64,7 @@ uint64_t stool::IntervalSearchDataStructure<CHAR>::getIntervals(INDEX_SIZE i, IN
     return p;
 }
 
-template class stool::IntervalSearchDataStructure<uint8_t>;
+template class stool::renum::IntervalSearchDataStructure<uint8_t>;
 
-template uint64_t stool::IntervalSearchDataStructure<uint8_t>::getIntervals(uint32_t, uint32_t, std::vector<CharInterval<uint32_t, uint8_t>> &);
-template uint64_t stool::IntervalSearchDataStructure<uint8_t>::getIntervals(uint64_t, uint64_t, std::vector<CharInterval<uint64_t, uint8_t>> &);
+template uint64_t stool::renum::IntervalSearchDataStructure<uint8_t>::getIntervals(uint32_t, uint32_t, std::vector<CharInterval<uint32_t, uint8_t>> &);
+template uint64_t stool::renum::IntervalSearchDataStructure<uint8_t>::getIntervals(uint64_t, uint64_t, std::vector<CharInterval<uint64_t, uint8_t>> &);

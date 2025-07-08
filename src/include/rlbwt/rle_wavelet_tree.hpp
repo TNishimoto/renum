@@ -14,7 +14,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
 
         template <typename INDEX_SIZE>
@@ -26,19 +26,19 @@ namespace stool
             using CHAR = uint8_t;
             using UCHAR = typename std::make_unsigned<CHAR>::type;
             using CHAR_VEC = sdsl::int_vector<>;
-            using FPOSDS = stool::stnode_on_rlbwt::LightFPosDataStructure;
+            using FPOSDS = stool::renum::LightFPosDataStructure;
 
         private:
-            stool::stnode_on_rlbwt::RLE<CHAR> *rlbwt;
+            stool::renum::RLE<CHAR> *rlbwt;
             stool::WT wt;
 
         public:
 
-            stool::stnode_on_rlbwt::LightFPosDataStructure _fposDS;
+            stool::renum::LightFPosDataStructure _fposDS;
 
-            //RLEWaveletTree(stool::stnode_on_rlbwt::RLE<CHAR> *_rlbwt, string inputFile) : rlbwt(_rlbwt)
+            //RLEWaveletTree(stool::renum::RLE<CHAR> *_rlbwt, string inputFile) : rlbwt(_rlbwt)
 
-            RLEWaveletTree(stool::stnode_on_rlbwt::RLE<CHAR> *_rlbwt) : rlbwt(_rlbwt)
+            RLEWaveletTree(stool::renum::RLE<CHAR> *_rlbwt) : rlbwt(_rlbwt)
             {
                 uint64_t data_structure_bytes = 0;
                 const sdsl::int_vector<>* head_char_vec_pointer = rlbwt->get_head_char_vec();
@@ -63,7 +63,7 @@ namespace stool
             {
                 return this->rlbwt->get_lpos_vec();
             }
-            stool::stnode_on_rlbwt::RLE<CHAR>* get_rlbwt() const {
+            stool::renum::RLE<CHAR>* get_rlbwt() const {
                 return this->rlbwt;
             } 
             const sdsl::int_vector<> *get_head_chars_pointer() const
@@ -100,5 +100,5 @@ namespace stool
                 return sdsl::size_in_bytes(this->wt) + this->_fposDS.get_using_memory();
             }
         };
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

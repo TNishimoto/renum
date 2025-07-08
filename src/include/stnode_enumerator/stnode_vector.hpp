@@ -14,7 +14,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         /*
         int64_t debug_sum_counter = 0;
@@ -76,7 +76,7 @@ namespace stool
                     return this->width_vec[this->width_vec.size() - 1] + 1;
                 }
             }
-            uint64_t mini_increment(uint64_t L, stool::CharInterval<INDEX_SIZE, uint8_t> &output, bool &leftmost) const
+            uint64_t mini_increment(uint64_t L, stool::renum::CharInterval<INDEX_SIZE, uint8_t> &output, bool &leftmost) const
             {
                 assert(L < this->first_child_flag_vec.size());
                 if (this->first_child_flag_vec[L])
@@ -102,10 +102,10 @@ namespace stool
                     return L + 1;
                 }
             }
-            void get_last(std::vector<stool::CharInterval<INDEX_SIZE, uint8_t>> &output) const
+            void get_last(std::vector<stool::renum::CharInterval<INDEX_SIZE, uint8_t>> &output) const
             {
                 uint64_t width = this->get_last_width() - 1;
-                stool::CharInterval<INDEX_SIZE, uint8_t> tmp;
+                stool::renum::CharInterval<INDEX_SIZE, uint8_t> tmp;
                 bool b = false;
                 uint64_t L = this->first_child_flag_vec.size() - width;
                 for (uint64_t i = 0; i < width; i++)
@@ -135,7 +135,7 @@ namespace stool
             std::pair<INDEX_SIZE,INDEX_SIZE> get_last_node() const
             {
                 uint64_t width = this->get_last_width() - 1;
-                stool::CharInterval<INDEX_SIZE, uint8_t> tmp;
+                stool::renum::CharInterval<INDEX_SIZE, uint8_t> tmp;
                 bool b = false;
                 uint64_t L = this->first_child_flag_vec.size() - width;
                 for (uint64_t i = 0; i < width; i++)
@@ -348,5 +348,5 @@ namespace stool
                 }
             }
         };
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

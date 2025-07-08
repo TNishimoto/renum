@@ -12,7 +12,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         template <typename T>
         class RankSupportVectorWrapper
@@ -373,5 +373,5 @@ namespace stool
                 return x;
             }
         };
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

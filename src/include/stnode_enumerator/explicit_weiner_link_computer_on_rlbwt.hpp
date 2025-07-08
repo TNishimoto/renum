@@ -16,7 +16,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         /*
             This is a data structure to ...
@@ -25,7 +25,7 @@ namespace stool
         class ExplicitWeinerLinkComputerOnRLBWT
         {
 
-            stool::stnode_on_rlbwt::STNodeChecker *stnc;
+            stool::renum::STNodeChecker *stnc;
 
         public:
             using CHAR = typename RLBWTDS::CHAR;
@@ -52,9 +52,9 @@ namespace stool
             std::vector<CharInterval<INDEX, uint8_t>> charIntervalTmpVec;
 
             RLBWTDS *_RLBWTDS;
-            stool::stnode_on_rlbwt::RLE<CHAR> *rlbwt;
-            stool::stnode_on_rlbwt::LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX, CHAR> lightRangeSearcher;
-            stool::stnode_on_rlbwt::SuccinctRangeDistinctDataStructure<INDEX> heavyRangeSearcher;
+            stool::renum::RLE<CHAR> *rlbwt;
+            stool::renum::LightRangeDistinctDataStructure<typename RLBWTDS::CHAR_VEC, INDEX, CHAR> lightRangeSearcher;
+            stool::renum::SuccinctRangeDistinctDataStructure<INDEX> heavyRangeSearcher;
             uint64_t get_input_text_length() const
             {
                 return this->rlbwt->str_size();
@@ -87,7 +87,7 @@ namespace stool
                 lightRangeSearcher.initialize(head_chars);
                 heavyRangeSearcher.initialize(wt, lastChar);
             }
-            void executeWeinerLinkSearch(std::pair<INDEX, INDEX> &node, std::vector<std::pair<INDEX, INDEX>> &children, std::vector<uint8_t> *edgeChars, stool::stnode_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
+            void executeWeinerLinkSearch(std::pair<INDEX, INDEX> &node, std::vector<std::pair<INDEX, INDEX>> &children, std::vector<uint8_t> *edgeChars, stool::renum::STNodeVector<INDEX, CHAR> &output_vec)
             {
                 bool _store_edge_chars = edgeChars != nullptr;
 
@@ -234,7 +234,7 @@ namespace stool
                 return this->_RLBWTDS->checkMaximalRepeat(left, right);
             }
 
-            void output(uint8_t c, bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
+            void output(uint8_t c, bool _store_edge_chars, stool::renum::STNodeVector<INDEX, CHAR> &output_vec)
             {
                 //RINTERVAL copy;
 
@@ -320,7 +320,7 @@ namespace stool
             }
             */
             
-            void output(bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<INDEX, CHAR> &output_vec)
+            void output(bool _store_edge_chars, stool::renum::STNodeVector<INDEX, CHAR> &output_vec)
             {
                 //RINTERVAL copy;
 
@@ -452,7 +452,7 @@ namespace stool
                 {
                     DEBUGcharIntervalTmpVec1.resize(count1);
                     DEBUGcharIntervalTmpVec2.resize(count2);
-                    stool::beller::check(DEBUGcharIntervalTmpVec1, DEBUGcharIntervalTmpVec2);
+                    stool::renum::check(DEBUGcharIntervalTmpVec1, DEBUGcharIntervalTmpVec2);
                 }
                 return true;
             }
@@ -600,5 +600,5 @@ namespace stool
             }
         };
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

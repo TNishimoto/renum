@@ -14,7 +14,7 @@
 
 namespace stool
 {
-    namespace beller
+    namespace renum
     {
         
 
@@ -119,7 +119,7 @@ namespace stool
                 this->first_process(range);
             }
 
-            void process(IntervalSearchDataStructure<uint8_t> &range, BellerSmallComponent &bsc, stool::beller::OutputStructure<INDEX> &os)
+            void process(IntervalSearchDataStructure<uint8_t> &range, BellerSmallComponent &bsc, stool::renum::OutputStructure<INDEX> &os)
             {
                 uint64_t k = 0;
                 for (auto &c : this->occurrenceChars)
@@ -190,7 +190,7 @@ namespace stool
                     os.peak = k;
                 }
             }
-            void computeLCPIntervals(IntervalSearchDataStructure<uint8_t> &range, bool &isEnd, stool::beller::OutputStructure<INDEX> &os)
+            void computeLCPIntervals(IntervalSearchDataStructure<uint8_t> &range, bool &isEnd, stool::renum::OutputStructure<INDEX> &os)
             {
                 using INTERVAL = stool::LCPInterval<INDEX>;
                 uint64_t max_interval_count = 0;
@@ -255,5 +255,5 @@ namespace stool
             }
         };
 
-    } // namespace beller
+    } // namespace renum
 } // namespace stool

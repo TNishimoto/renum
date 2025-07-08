@@ -44,7 +44,7 @@ class LCPIntervalTest
 {
 public:
     template <typename STNODES>
-    static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(STNODES &stnodeSequencer, stool::stnode_on_rlbwt::STNodeChecker *checker)
+    static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(STNODES &stnodeSequencer, stool::renum::STNodeChecker *checker)
     {
 
         std::vector<stool::LCPInterval<uint64_t>> r;
@@ -112,7 +112,7 @@ public:
     }
 
     template <typename INDEX_SIZE, typename INTERVAL_SEARCH, typename CHAR = uint8_t>
-    static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(stool::stnode_on_rlbwt::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR> &stnodeSequencer, stool::stnode_on_rlbwt::STNodeChecker *checker)
+    static std::vector<stool::LCPInterval<uint64_t>> testLCPIntervals(stool::renum::DFSTraverser<INDEX_SIZE, INTERVAL_SEARCH, CHAR> &stnodeSequencer, stool::renum::STNodeChecker *checker)
     {
 
         std::vector<stool::LCPInterval<uint64_t>> r;
@@ -148,21 +148,21 @@ template <typename INDEX>
 void testLCPIntervals(std::string inputFile, string mode, int thread_num)
 {
     stool::rlbwt2::BWTAnalysisResult analysisResult;
-    stool::stnode_on_rlbwt::RLE<uint8_t> rlbwt;
+    stool::renum::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
 
-    stool::stnode_on_rlbwt::STNodeChecker stnc;
+    stool::renum::STNodeChecker stnc;
     stnc.initialize(inputFile);
 
     std::vector<stool::LCPInterval<uint64_t>> test_Intervals;
-    using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<INDEX>;
+    using RDS = stool::renum::RLEWaveletTree<INDEX>;
     RDS ds = RDS(&rlbwt);
 
     if (mode == "A")
     {
 
         std::cout << "General Test" << std::endl;
-        stool::stnode_on_rlbwt::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
+        stool::renum::SuffixTreeNodes<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds, true);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest::testLCPIntervals(stnodeTraverser, &stnc);
         test_Intervals.swap(tmp);
@@ -171,7 +171,7 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
     {
 
         std::cout << "Standard Test" << std::endl;
-        stool::stnode_on_rlbwt::STNodeTraverser<INDEX, RDS> stnodeTraverser;
+        stool::renum::STNodeTraverser<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds, true);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest::testLCPIntervals(stnodeTraverser, &stnc);
         test_Intervals.swap(tmp);
@@ -180,7 +180,7 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
     {
 
         std::cout << "Fast Test" << std::endl;
-        stool::stnode_on_rlbwt::FastSTNodeTraverser<INDEX, RDS> stnodeTraverser;
+        stool::renum::FastSTNodeTraverser<INDEX, RDS> stnodeTraverser;
         stnodeTraverser.initialize(thread_num, ds, true);
         std::vector<stool::LCPInterval<uint64_t>> tmp = LCPIntervalTest::testLCPIntervals(stnodeTraverser, &stnc);
         test_Intervals.swap(tmp);
@@ -189,8 +189,8 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
     {
 
         std::cout << "Single Test" << std::endl;
-        using INTERVAL_SEARCH = stool::stnode_on_rlbwt::ExplicitWeinerLinkComputerOnRLBWT<RDS>;
-        stool::stnode_on_rlbwt::SingleSTNodeTraverser<INDEX, INTERVAL_SEARCH> stnodeTraverser;
+        using INTERVAL_SEARCH = stool::renum::ExplicitWeinerLinkComputerOnRLBWT<RDS>;
+        stool::renum::SingleSTNodeTraverser<INDEX, INTERVAL_SEARCH> stnodeTraverser;
         INTERVAL_SEARCH em;
         em.initialize(&ds);
         stnodeTraverser.initialize(&em, true);
@@ -198,9 +198,9 @@ void testLCPIntervals(std::string inputFile, string mode, int thread_num)
         test_Intervals.swap(tmp);
     }
 
-    //std::vector<stool::LCPInterval<uint64_t>> tmp = stool::stnode_on_rlbwt::Application<RDS>::testLCPIntervals(stnodeTraverser);
+    //std::vector<stool::LCPInterval<uint64_t>> tmp = stool::renum::Application<RDS>::testLCPIntervals(stnodeTraverser);
 
-    stool::beller::equal_check_lcp_intervals(test_Intervals, stnc.lcp_intervals);
+    stool::renum::equal_check_lcp_intervals(test_Intervals, stnc.lcp_intervals);
     std::cout << "LCP interval check OK!" << std::endl;
 }
 void computeLCPIntervals_beller(std::string inputFile)
@@ -209,7 +209,7 @@ void computeLCPIntervals_beller(std::string inputFile)
     //string text = "";
     std::cout << "Loading : " << inputFile << std::endl;
 
-    stool::stnode_on_rlbwt::STNodeChecker stnc;
+    stool::renum::STNodeChecker stnc;
     stnc.initialize(inputFile);
 
     std::vector<uint8_t> bwt2;
@@ -239,19 +239,19 @@ void computeLCPIntervals_beller(std::string inputFile)
     */
 
     std::vector<uint64_t> C;
-    stool::FMIndex::constructC(bwt, C);
+    stool::renum::FMIndex::constructC(bwt, C);
 
     wt_huff<> wt;
     construct_im(wt, bwt);
 
     uint64_t lastChar = bwt[bwt.size() - 1];
 
-    stool::IntervalSearchDataStructure<uint8_t> range;
+    stool::renum::IntervalSearchDataStructure<uint8_t> range;
     range.initialize(&wt, &C, lastChar);
 
-    stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t> wsearch;
+    stool::renum::ExplicitWeinerLinkComputer<uint32_t> wsearch;
     wsearch.initialize(&range, bwt.size());
-    stool::stnode_on_rlbwt::SingleSTNodeTraverser<uint32_t, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>> traverser;
+    stool::renum::SingleSTNodeTraverser<uint32_t, stool::renum::ExplicitWeinerLinkComputer<uint32_t>> traverser;
     traverser.initialize(&wsearch, true);
 
     auto test_Intervals = LCPIntervalTest::testLCPIntervals(traverser, &stnc);
@@ -263,7 +263,7 @@ void computeLCPIntervals_DFS(std::string inputFile)
     //string text = "";
     std::cout << "Loading : " << inputFile << std::endl;
 
-    stool::stnode_on_rlbwt::STNodeChecker stnc;
+    stool::renum::STNodeChecker stnc;
     stnc.initialize(inputFile);
 
     std::vector<uint8_t> bwt2;
@@ -293,23 +293,23 @@ void computeLCPIntervals_DFS(std::string inputFile)
     */
 
     std::vector<uint64_t> C;
-    stool::FMIndex::constructC(bwt, C);
+    stool::renum::FMIndex::constructC(bwt, C);
 
     wt_huff<> wt;
     construct_im(wt, bwt);
 
     uint64_t lastChar = bwt[bwt.size() - 1];
 
-    stool::IntervalSearchDataStructure<uint8_t> range;
+    stool::renum::IntervalSearchDataStructure<uint8_t> range;
     range.initialize(&wt, &C, lastChar);
 
-    stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t> wsearch;
+    stool::renum::ExplicitWeinerLinkComputer<uint32_t> wsearch;
     wsearch.initialize(&range, bwt.size());
-    stool::stnode_on_rlbwt::DFSTraverser<uint32_t, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>> traverser;
+    stool::renum::DFSTraverser<uint32_t, stool::renum::ExplicitWeinerLinkComputer<uint32_t>> traverser;
     traverser.initialize(&wsearch, true);
 
-    auto test_Intervals = LCPIntervalTest::testLCPIntervals<uint32_t, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<uint32_t>, uint8_t>(traverser, &stnc);
-    stool::beller::equal_check_lcp_intervals(test_Intervals, stnc.lcp_intervals);
+    auto test_Intervals = LCPIntervalTest::testLCPIntervals<uint32_t, stool::renum::ExplicitWeinerLinkComputer<uint32_t>, uint8_t>(traverser, &stnc);
+    stool::renum::equal_check_lcp_intervals(test_Intervals, stnc.lcp_intervals);
     std::cout << "OK!" << std::endl;
 }
 

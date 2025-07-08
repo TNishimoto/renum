@@ -13,7 +13,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
 
 
@@ -222,7 +222,7 @@ namespace stool
                 {
                     INDEX_SIZE p = tmpSearchStack.top();
                     uint8_t c = (uint8_t)(*_char_vec)[p];
-                    auto pair = stool::CharInterval<INDEX_SIZE, uint8_t>(tmpRangeDistinctResult[c], p, c);
+                    auto pair = stool::renum::CharInterval<INDEX_SIZE, uint8_t>(tmpRangeDistinctResult[c], p, c);
                     output[count++] = pair;
 
                     tmpSearchStack.pop();
@@ -231,5 +231,5 @@ namespace stool
             }
         };
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

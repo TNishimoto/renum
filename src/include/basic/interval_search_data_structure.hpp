@@ -10,6 +10,9 @@
 
 namespace stool
 {
+    namespace renum
+    {
+
     template <typename CHAR>
     class IntervalSearchDataStructure
     {
@@ -26,4 +29,5 @@ namespace stool
         template <typename INDEX_SIZE>
         uint64_t getIntervals(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE, CHAR>> &output);
     };
+}
 } // namespace stool

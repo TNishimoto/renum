@@ -14,7 +14,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
 
         /*
@@ -42,7 +42,7 @@ namespace stool
             std::vector<RINTERVAL> rIntervalTmpVec;
             std::vector<CHAR_INTERVAL> charIntervalTmpVec;
 
-            stool::IntervalSearchDataStructure<CHAR> *searcher;
+            stool::renum::IntervalSearchDataStructure<CHAR> *searcher;
             //sdsl::bit_vector::rank_1_type *bwt_bit_rank1;
             uint64_t strSize = 0;
 
@@ -68,7 +68,7 @@ namespace stool
                 this->searcher = _searcher;
                 this->strSize = _strSize;
             }
-            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
+            void executeWeinerLinkSearch(std::pair<INDEX_SIZE, INDEX_SIZE> &node, std::vector<std::pair<INDEX_SIZE, INDEX_SIZE>> &children, std::vector<uint8_t> *edgeChars, stool::renum::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
             {
                 (void) node;
                 bool _store_edge_chars = edgeChars != nullptr;
@@ -92,7 +92,7 @@ namespace stool
                 this->fit();
                 this->output(_store_edge_chars, output_vec);
             }
-            void executeWeinerLinkSearch(stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &stack)
+            void executeWeinerLinkSearch(stool::renum::STNodeVector<INDEX_SIZE, CHAR> &stack)
             {
                 //uint64_t left = stack.get_last_left_boundary();
                 //uint64_t right = stack.get_last_right_boundary();
@@ -100,7 +100,7 @@ namespace stool
                 this->clear();
                 //this->computeSTNodeCandidates(left, right);
 
-                stool::CharInterval<INDEX_SIZE, uint8_t> tmp;
+                stool::renum::CharInterval<INDEX_SIZE, uint8_t> tmp;
                 uint64_t L = stack.childs_vec.size() - stack.get_last_width();
                 bool b = false;
                 while (L < stack.childs_vec.size())
@@ -216,7 +216,7 @@ namespace stool
             }
             */
 
-            void output(bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
+            void output(bool _store_edge_chars, stool::renum::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
             {
                 //RINTERVAL copy;
 
@@ -266,7 +266,7 @@ namespace stool
                 }
                 return largest_index;
             }
-            void output(CHAR c, bool _store_edge_chars, int64_t parent_lcp, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
+            void output(CHAR c, bool _store_edge_chars, int64_t parent_lcp, stool::renum::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
             {
                 auto &currentVec = this->childrenVec[c];
                 uint64_t count = currentVec.size();
@@ -311,7 +311,7 @@ namespace stool
                     output_vec.width_vec.push_back(count);
                 }
             }
-            void sortedOutput(bool _store_edge_chars, int64_t parent_lcp, stool::stnode_on_rlbwt::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
+            void sortedOutput(bool _store_edge_chars, int64_t parent_lcp, stool::renum::STNodeVector<INDEX_SIZE, CHAR> &output_vec)
             {
                 //RINTERVAL copy;
                 if (this->indexCount > 0)
@@ -463,7 +463,7 @@ namespace stool
         public:
             /*
             template <typename EM>
-            static void output(const EM em, uint8_t c, bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
+            static void output(const EM em, uint8_t c, bool _store_edge_chars, stool::renum::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
             {
                 //RINTERVAL copy;
 
@@ -510,7 +510,7 @@ namespace stool
                 output_vec.maximal_repeat_check_vec.push_back(isMaximalRepeat);
             }
             template <typename EM>
-            static void output(const EM em, bool _store_edge_chars, stool::stnode_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
+            static void output(const EM em, bool _store_edge_chars, stool::renum::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output_vec)
             {
                 for (uint64_t i = 0; i < em.indexCount; i++)
                 {
@@ -520,7 +520,7 @@ namespace stool
             }
             */
             template <typename EM, typename ITERATOR>
-            static void compute_weiner_links(EM &em, const ITERATOR &it, stool::stnode_on_rlbwt::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output)
+            static void compute_weiner_links(EM &em, const ITERATOR &it, stool::renum::STNodeVector<typename EM::INDEX, typename EM::CHAR> &output)
             {
                 using CHAR = typename EM::CHAR;
                 using INDEX = typename EM::INDEX;
@@ -547,5 +547,5 @@ namespace stool
             }
         };
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

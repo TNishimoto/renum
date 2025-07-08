@@ -5,7 +5,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
 
         template <typename CHAR_VEC, typename INDEX_SIZE, typename CHAR>
@@ -23,5 +23,5 @@ namespace stool
             void initialize(const CHAR_VEC *__char_vec);
             uint64_t range_distinct(INDEX_SIZE i, INDEX_SIZE j, std::vector<CharInterval<INDEX_SIZE, CHAR>> &output);
         };
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

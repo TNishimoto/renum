@@ -7,7 +7,7 @@
 #include <filesystem>
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         class SDSLFunction
         {
@@ -80,7 +80,7 @@ namespace stool
                 construct(wt, bwt_iv_file);
                 //std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
-                stool::FMIndex::constructCArray(wt, c, output_C_array);
+                stool::renum::FMIndex::constructCArray(wt, c, output_C_array);
                 deleteFile(bwt_iv_file);
                 return c;
             }
@@ -145,6 +145,6 @@ namespace stool
             }
         };
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 
 } // namespace stool

@@ -8,7 +8,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         template <typename INDEX_SIZE>
         struct RInterval
@@ -25,5 +25,5 @@ namespace stool
             static RInterval get_special();
         };
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

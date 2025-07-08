@@ -52,19 +52,19 @@ int main(int argc, char *argv[])
     }
 
     stool::rlbwt2::BWTAnalysisResult analysisResult;
-    stool::stnode_on_rlbwt::RLE<uint8_t> rlbwt;
+    stool::renum::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
 
     uint64_t ms_count = 0;
-    stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
+    stool::renum::STTreeAnalysisResult st_result;
     uint64_t ds_memory_usage = 0;
 
-    using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint64_t>;
+    using RDS = stool::renum::RLEWaveletTree<uint64_t>;
     RDS ds = RDS(&rlbwt);
     ds_memory_usage = ds.get_using_memory();
 
     std::cout << "Enumerate LCP intervals..." << std::endl;
-    stool::stnode_on_rlbwt::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
+    stool::renum::SuffixTreeNodes<uint64_t, RDS> stnodeTraverser;
     stnodeTraverser.initialize(thread_num, ds, true);
 
     auto depth_iterator = stnodeTraverser.begin();

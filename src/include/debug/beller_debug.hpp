@@ -15,7 +15,7 @@
 
 namespace stool
 {
-    namespace beller
+    namespace renum
     {
 
         template <typename INDEX_SIZE>
@@ -128,6 +128,6 @@ namespace stool
             }
             return true;
         }
-    } // namespace beller
+    } // namespace renum
 
 } // namespace stool

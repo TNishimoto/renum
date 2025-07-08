@@ -12,7 +12,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
 
         template <typename INDEX_SIZE, typename RLBWTDS, typename CHAR = uint8_t>
@@ -33,7 +33,7 @@ namespace stool
             uint64_t parent_current_lcp = 0;
 
             RLBWTDS *_RLBWTDS = nullptr;
-            stool::stnode_on_rlbwt::RLE<CHAR> *rlbwt;
+            stool::renum::RLE<CHAR> *rlbwt;
 
             bool store_edge_chars = false;
 
@@ -54,7 +54,7 @@ namespace stool
             }
             void import(STNodeVector<INDEX_SIZE> &item, uint64_t lcp, uint64_t num)
             {
-                std::vector<stool::CharInterval<INDEX_SIZE, uint8_t>> tmp;
+                std::vector<stool::renum::CharInterval<INDEX_SIZE, uint8_t>> tmp;
                 for (uint64_t i = 0; i < num; i++)
                 {
                     tmp.clear();
@@ -541,5 +541,5 @@ namespace stool
             }
         };
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

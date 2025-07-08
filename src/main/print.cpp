@@ -50,8 +50,8 @@ public:
         {
             this->bwt[i] = _bwt[i];
         }
-        stool::FMIndex::constructSelect(this->bwt, wt);
-        stool::FMIndex::constructC(this->bwt, this->C);
+        stool::renum::FMIndex::constructSelect(this->bwt, wt);
+        stool::renum::FMIndex::constructC(this->bwt, this->C);
     }
     void extract(uint64_t i, uint64_t l, std::string &output)
     {
@@ -59,7 +59,7 @@ public:
         output.resize(l);
         for (uint64_t x = 0; x < l; x++)
         {
-            p = stool::FMIndex::FL(p, C, wt);
+            p = stool::renum::FMIndex::FL(p, C, wt);
             output[x] = this->bwt[p];
         }
     }
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 
     /*
     stool::rlbwt2::BWTAnalysisResult analysisResult;
-    stool::stnode_on_rlbwt::RLE<uint8_t> rlbwt;
+    stool::renum::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
     */
     BWTDecompressor dec;

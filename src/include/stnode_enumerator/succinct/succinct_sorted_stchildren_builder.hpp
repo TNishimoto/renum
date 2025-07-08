@@ -15,7 +15,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         class SuccinctSortedSTChildrenBuilderProfiler
         {
@@ -385,5 +385,5 @@ namespace stool
             }
         };
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

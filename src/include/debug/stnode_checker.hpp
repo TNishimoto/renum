@@ -29,7 +29,7 @@
 #include <mutex>
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         template <typename CHAR_VEC, typename INDEX_SIZE>
         class LightRangeDistinctDataStructure2
@@ -97,7 +97,7 @@ namespace stool
             std::vector<stool::LCPInterval<uint64_t>> lcp_intervals;
             std::vector<std::unordered_map<uint64_t, uint64_t>> maps;
             //std::vector<std::unordered_set<uint64_t>> sets;
-            stool::stnode_on_rlbwt::LightRangeDistinctDataStructure2<sdsl::int_vector<>, uint64_t> lrdds;
+            stool::renum::LightRangeDistinctDataStructure2<sdsl::int_vector<>, uint64_t> lrdds;
             sdsl::int_vector<> bwt;
             sdsl::wt_gmr<> wt;
             std::vector<uint64_t> C;
@@ -113,8 +113,8 @@ namespace stool
                 {
                     this->bwt[i] = _bwt[i];
                 }
-                stool::FMIndex::constructSelect(this->bwt, wt);
-                stool::FMIndex::constructC(this->bwt, this->C);
+                stool::renum::FMIndex::constructSelect(this->bwt, wt);
+                stool::renum::FMIndex::constructC(this->bwt, this->C);
                 this->lrdds.preprocess(&this->bwt);
 
                 std::cout << "Construct Checker" << std::endl;
@@ -260,8 +260,8 @@ namespace stool
 
                     for (uint64_t x = 0; x < count; x++)
                     {
-                        uint64_t l = stool::FMIndex::LF(output[x].i, bwt, C, wt);
-                        uint64_t r = stool::FMIndex::LF(output[x].j, bwt, C, wt);
+                        uint64_t l = stool::renum::FMIndex::LF(output[x].i, bwt, C, wt);
+                        uint64_t r = stool::renum::FMIndex::LF(output[x].j, bwt, C, wt);
 
                         auto it = this->maps[this->current_lcp].find(l);
                         if (it != this->maps[this->current_lcp].end())
@@ -287,7 +287,7 @@ namespace stool
                     correctWlinks.end(),
                     stool::LCPIntervalPreorderComp<uint64_t>());
 
-                stool::beller::equal_check_lcp_intervals(wlinks, correctWlinks, "Weiner link check");
+                stool::renum::equal_check_lcp_intervals(wlinks, correctWlinks, "Weiner link check");
                 return true;
             }
 
@@ -356,5 +356,5 @@ namespace stool
                 }
             }
         };
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

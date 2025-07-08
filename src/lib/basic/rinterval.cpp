@@ -15,7 +15,7 @@ using namespace std;
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
 
         template <typename INDEX>
@@ -35,8 +35,8 @@ namespace stool
             r.beginIndex = std::numeric_limits<INDEX>::max();
             return r;
         }
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 
 } // namespace stool
-template class stool::stnode_on_rlbwt::RInterval<uint32_t>;
-template class stool::stnode_on_rlbwt::RInterval<uint64_t>;
+template class stool::renum::RInterval<uint32_t>;
+template class stool::renum::RInterval<uint64_t>;

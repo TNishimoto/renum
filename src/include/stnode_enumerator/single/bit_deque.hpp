@@ -13,7 +13,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         class BitDeque
         {
@@ -219,5 +219,5 @@ namespace stool
                 return output;
             }
         };
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

@@ -152,7 +152,7 @@ uint8_t get_last_char(sdsl::int_vector<> &bwt, std::vector<uint64_t> &C, sdsl::b
     }
     std::cout << "Constructing array C..." << std::endl;
 
-    stool::FMIndex::constructC(bwt, C);
+    stool::renum::FMIndex::constructC(bwt, C);
 
     return bwt[bwt.size() - 1];
 }
@@ -180,7 +180,7 @@ void computeMaximalSubstrings(std::string inputFile, string mode, int thread_num
     std::cout << "WT using memory = " << sdsl::size_in_bytes(wt) / 1000 << "[KB]" << std::endl;
 
     uint64_t ms_count = 0;
-    stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
+    stool::renum::STTreeAnalysisResult st_result;
 
     double construction_time = 0;
     std::chrono::system_clock::time_point mid;
@@ -192,8 +192,8 @@ void computeMaximalSubstrings(std::string inputFile, string mode, int thread_num
 
     //lpos_vec.build_from_bit_vector(run_bits);
     using LPOSDS = stool::EliasFanoVector;
-    using FPOSDS = stool::stnode_on_rlbwt::LightFPosDataStructure;
-    FPOSDS fposds = stool::stnode_on_rlbwt::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
+    using FPOSDS = stool::renum::LightFPosDataStructure;
+    FPOSDS fposds = stool::renum::LightFPosDataStructure(diff_char_vec, lpos_vec, wt);
     std::cout << "FPOS Vec using memory = " << fposds.get_using_memory() / 1000 << "[KB]" << std::endl;
     data_structure_bytes += fposds.get_using_memory();
 
@@ -201,11 +201,11 @@ void computeMaximalSubstrings(std::string inputFile, string mode, int thread_num
     construction_time = std::chrono::duration_cast<std::chrono::seconds>(mid - start).count();
     std::cout << "Construction time: " << construction_time << "[ms]" << std::endl;
     std::cout << "Data structure Size \t\t\t : " << (data_structure_bytes / 1000) << "[KB]" << std::endl;
-    using RDS = stool::stnode_on_rlbwt::RLEWaveletTree<uint32_t, LPOSDS, FPOSDS>;
+    using RDS = stool::renum::RLEWaveletTree<uint32_t, LPOSDS, FPOSDS>;
     RDS ds = RDS(diff_char_vec, wt, lpos_vec, fposds);
 
     std::cout << "Enumerate Maximal Substrings..." << std::endl;
-    stool::stnode_on_rlbwt::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
+    stool::renum::SuffixTreeNodes<uint32_t, RDS> stnodeTraverser;
     stnodeTraverser.use_fast_mode = mode == "1";
 
     stnodeTraverser.initialize(thread_num, ds);
@@ -275,7 +275,7 @@ void computeMaximalSubstrings_beller(std::string inputFile)
 
     uint64_t ms_count = 0;
 
-    stool::IntervalSearchDataStructure range;
+    stool::renum::IntervalSearchDataStructure range;
     range.initialize(&wt, &C, lastChar);
 
     uint64_t input_text_size = wt.size();
@@ -286,13 +286,13 @@ void computeMaximalSubstrings_beller(std::string inputFile)
 
     std::cout << "Enumerating..." << std::endl;
     uint64_t peak_count = 0;
-    stool::stnode_on_rlbwt::STTreeAnalysisResult st_result;
+    stool::renum::STTreeAnalysisResult st_result;
 
         using INDEX_TYPE = uint32_t;
 
-        stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
+        stool::renum::ExplicitWeinerLinkComputer<INDEX_TYPE> wsearch;
         wsearch.initialize(&range, &bwt_bit_rank1, input_text_size);
-        stool::stnode_on_rlbwt::SingleSTNodeTraverser<INDEX_TYPE, stool::stnode_on_rlbwt::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
+        stool::renum::SingleSTNodeTraverser<INDEX_TYPE, stool::renum::ExplicitWeinerLinkComputer<INDEX_TYPE>> traverser;
         traverser.initialize(&wsearch);
         ms_count = MaximalRepeatTest::test(traverser, plain_bwt);
     auto end = std::chrono::system_clock::now();

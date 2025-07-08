@@ -12,7 +12,7 @@
 #include <sdsl/rmq_support.hpp> // include header for range minimum queries
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
 
         template <typename INDEX_SIZE>
@@ -79,5 +79,5 @@ namespace stool
                 return k;
             }
         };
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool

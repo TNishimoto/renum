@@ -15,7 +15,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         /*
             void build_succinct()

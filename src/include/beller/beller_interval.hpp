@@ -15,17 +15,17 @@
 
 namespace stool
 {
-    namespace beller
+    namespace renum
     {
 
         template <typename INDEX>
         std::vector<stool::LCPInterval<INDEX>> computeLCPIntervals(IntervalSearchDataStructure<uint8_t> &range)
         {
-            stool::beller::BellerComponent<INDEX> comp;
+            stool::renum::BellerComponent<INDEX> comp;
             comp.initialize(range);
             bool isEnd = false;
 
-            stool::beller::OutputStructure<INDEX> os;
+            stool::renum::OutputStructure<INDEX> os;
             os.is_output_maximal_substrings = false;
             //std::vector<stool::LCPInterval<INDEX>> r;
 
@@ -42,9 +42,9 @@ namespace stool
             return os.outputIntervals;
         }
         template <typename INDEX>
-        uint64_t outputMaximalSubstrings(IntervalSearchDataStructure<uint8_t> &range, stool::beller::OutputStructure<INDEX> &os)
+        uint64_t outputMaximalSubstrings(IntervalSearchDataStructure<uint8_t> &range, stool::renum::OutputStructure<INDEX> &os)
         {
-            stool::beller::BellerComponent<INDEX> comp;
+            stool::renum::BellerComponent<INDEX> comp;
             comp.initialize(range);
 
             uint64_t print_ratio = 100;
@@ -77,5 +77,5 @@ namespace stool
             return os.count;
         }
 
-    } // namespace beller
+    } // namespace renum
 } // namespace stool

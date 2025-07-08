@@ -11,7 +11,7 @@
 
 namespace stool
 {
-    namespace stnode_on_rlbwt
+    namespace renum
     {
         template <typename CHAR_VEC, typename INDEX_SIZE, typename CHAR>
         void LightRangeDistinctDataStructure<CHAR_VEC, INDEX_SIZE, CHAR>::initialize(const CHAR_VEC *__char_vec)
@@ -60,5 +60,5 @@ namespace stool
         template class LightRangeDistinctDataStructure<sdsl::int_vector<>, uint32_t, uint8_t>;
         template class LightRangeDistinctDataStructure<sdsl::int_vector<>, uint64_t, uint8_t>;
 
-    } // namespace stnode_on_rlbwt
+    } // namespace renum
 } // namespace stool
