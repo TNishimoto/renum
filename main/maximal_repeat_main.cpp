@@ -1,20 +1,8 @@
 #include <cassert>
 #include <chrono>
 
-//#include "stool/include/stool.hpp"
-//#include "stool/include/sa_bwt_lcp.hpp"
-//#include "stool/include/cmdline.h"
-//#include "stool/include/debug.hpp"
-//#include "stool/include/print.hpp"
-#include "stool/include/third_party/cmdline.h"
-//#include "stool/include/debug.hpp"
-//#include "libdivsufsort/sa.hpp"
-
-#include "../include/include.hpp"
-#include <sdsl/bit_vectors.hpp>
-
-//#include "../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
-//#include "module/rlbwt_iterator/src/include/bwt.hpp"
+#include "stool/include/stool.hpp"
+#include "../include/renum.hpp"
 
 
 
@@ -37,7 +25,7 @@ void computeMaximalSubstrings(std::string inputFile, std::string outputFile, int
     {
         throw std::runtime_error("Cannot open the output file!");
     }
-    stool::rlbwt2::BWTAnalysisResult analysisResult;
+    stool::renum::BWTAnalysisResult analysisResult;
     stool::renum::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
 

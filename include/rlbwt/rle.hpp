@@ -8,8 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include "./bwt_analysis_result.hpp"
-#include "stool/include/specialized_collection/elias_fano_vector.hpp"
-
+#include "stool/include/stool.hpp"
 namespace stool
 {
     namespace renum
@@ -44,7 +43,7 @@ namespace stool
             {
                 return (this->head_char_vec)[_run_index];
             }
-            void load(std::string filename, stool::rlbwt2::BWTAnalysisResult &analysisResult)
+            void load(std::string filename, stool::renum::BWTAnalysisResult &analysisResult)
             {
 
                 this->head_char_vec.width(8);

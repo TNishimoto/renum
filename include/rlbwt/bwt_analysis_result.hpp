@@ -7,19 +7,11 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
-//#include "common/io.h"
-//#include "common/print.hpp"
-//#include "other_functions.hpp"
-//#include "OnlineRlbwt/online_rlbwt.hpp"
-//#include "rlbwt.hpp"
-//#include "stool/src/elias_fano_vector.hpp"
-#include "stool/include/io/online_file_reader.hpp"
-#include "stool/include/specialized_collection/elias_fano_vector.hpp"
-#include "stool/include/basic/byte.hpp"
+#include "stool/include/stool.hpp"
 
 namespace stool
 {
-    namespace rlbwt2
+    namespace renum
     {
         struct BWTAnalysisResult
         {

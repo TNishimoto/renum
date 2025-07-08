@@ -6,12 +6,9 @@
 #include <sdsl/wt_algorithm.hpp>
 #include <sdsl/wavelet_trees.hpp>
 
-//using namespace std;
-//using namespace sdsl;
-
 namespace stool
 {
-    namespace bwt
+    namespace renum
     {
         /*
         void load(string filename, sdsl::int_vector<> &output)

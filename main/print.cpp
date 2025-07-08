@@ -5,32 +5,11 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/include/third_party/cmdline.h"
-#include "stool/include/strings/sa_bwt_lcp.hpp"
-#include "stool/include/strings/lcp_interval.hpp"
 
-#include "../include/rlbwt/bwt_analysis_result.hpp"
-#include "../include/rlbwt/rle.hpp"
-#include "../include/rlbwt/bwt_decompress.hpp"
+#include "stool/include/stool.hpp"
+#include "../include/renum.hpp"
 
-#include "../include/basic/fmindex.hpp"
 
-#include <sdsl/bit_vectors.hpp>
-#include <sdsl/wt_gmr.hpp>
-#include <sdsl/int_vector.hpp>
-#include <sdsl/wavelet_trees.hpp>
-#include <sdsl/wt_algorithm.hpp>
-
-//#include "divsufsort.h"
-//#include "divsufsort64.h"
-//#include "stool/src/io.hpp"
-//#include "libdivsufsort/sa.hpp"
-//#include "common.hpp"
-
-//#include "../minimal_substrings/naive_minimal_substrings.hpp"
-
-//using namespace std;
-//using namespace stool;
 
 using INDEXTYPE = int64_t;
 using CHAR = char;

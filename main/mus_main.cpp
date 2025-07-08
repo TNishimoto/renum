@@ -1,16 +1,8 @@
 #include <cassert>
 #include <chrono>
-#include "stool/include/io/io.hpp"
-#include "stool/include/strings/sa_bwt_lcp.hpp"
-
-#include "stool/include/debug/print.hpp"
-#include "stool/include/third_party/cmdline.h"
-#include "stool/include/debug/debug.hpp"
+#include "stool/include/stool.hpp"
 #include "libdivsufsort/sa.hpp"
-//#include "../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
-//#include "module/rlbwt_iterator/src/include/bwt.hpp"
-#include "../include/include.hpp"
-#include <sdsl/bit_vectors.hpp>
+#include "../include/renum.hpp"
 
 
 
@@ -238,7 +230,7 @@ void debug(std::string inputFile)
     }
     std::cout << std::endl;
 
-    stool::rlbwt2::BWTAnalysisResult analysisResult;
+    stool::renum::BWTAnalysisResult analysisResult;
     stool::renum::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
     using RDS = stool::renum::RLEWaveletTree<uint32_t>;
@@ -273,7 +265,7 @@ void computeMUSs(std::string inputFile, std::string outputFile, int thread_num)
     {
         throw std::runtime_error("Cannot open the output file!");
     }
-    stool::rlbwt2::BWTAnalysisResult analysisResult;
+    stool::renum::BWTAnalysisResult analysisResult;
     stool::renum::RLE<uint8_t> rlbwt;
     rlbwt.load(inputFile, analysisResult);
 
