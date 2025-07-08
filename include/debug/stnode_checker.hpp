@@ -123,7 +123,7 @@ namespace stool
                 text.swap(tmpText);
                 sa = stool::construct_suffix_array(text);
 
-                std::vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::esaxx::NaiveAlgorithms::naive_compute_lcp_intervals<char, uint64_t>(text, sa);
+                std::vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::renum::NaiveAlgorithms::naive_compute_lcp_intervals<char, uint64_t>(text, sa);
                 std::sort(
                     correct_lcp_intervals.begin(),
                     correct_lcp_intervals.end(),

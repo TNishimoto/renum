@@ -12,7 +12,7 @@
 
 namespace stool
 {
-  namespace esaxx
+  namespace renum
   {
     class NaiveAlgorithms
     {

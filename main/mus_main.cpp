@@ -211,7 +211,7 @@ void debug(std::string inputFile)
     std::cout << std::endl;
     */
 
-    auto MUSs = stool::esaxx::NaiveAlgorithms::naive_compute_MUSs(text, sa);
+    auto MUSs = stool::renum::NaiveAlgorithms::naive_compute_MUSs(text, sa);
     std::sort(MUSs.begin(), MUSs.end(), stool::LCPIntervalDepthOrderComp<uint64_t>());
     std::cout << "Constuct Test MUSs[END]" << std::endl;
 

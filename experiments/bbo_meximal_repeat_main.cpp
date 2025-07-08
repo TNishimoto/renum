@@ -120,7 +120,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
         std::vector<uint64_t> psa = stool::construct_ISA(text, sa);
         auto correctLCP = stool::construct_LCP_array(text, sa);
         std::cout << "Correct" << std::endl;
-        std::vector<LCPINTV> correct_intervals = stool::esaxx::NaiveAlgorithms::naive_compute_lcp_intervals(text, sa);
+        std::vector<LCPINTV> correct_intervals = stool::renum::NaiveAlgorithms::naive_compute_lcp_intervals(text, sa);
         stool::renum::equal_check_lcp_intervals(test_Intervals, correct_intervals);
         std::cout << "OK!" << std::endl;
     }
