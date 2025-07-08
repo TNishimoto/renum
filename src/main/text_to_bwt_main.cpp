@@ -6,10 +6,10 @@
 #include <random>
 #include <chrono>
 #include "libdivsufsort/sa.hpp"
-#include "stool/include/sa_bwt_lcp.hpp"
+#include "stool/include/strings/sa_bwt_lcp.hpp"
 #include <divsufsort64.h>
 
-#include "stool/include/cmdline.h"
+#include "stool/include/third_party/cmdline.h"
 
 
 using namespace std;

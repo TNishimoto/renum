@@ -4,6 +4,8 @@
 #include <random>
 #include <algorithm>
 #include <set>
+#include <iostream>
+#include "stool/include/strings/lcp_interval.hpp"
 
 #include "../basic/char_interval.hpp"
 

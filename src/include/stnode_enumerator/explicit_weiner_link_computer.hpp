@@ -39,7 +39,7 @@ namespace stool
             uint64_t range_distinct_threshold = 16;
 
             std::vector<uint8_t> charTmpVec;
-            vector<RINTERVAL> rIntervalTmpVec;
+            std::vector<RINTERVAL> rIntervalTmpVec;
             std::vector<CHAR_INTERVAL> charIntervalTmpVec;
 
             stool::IntervalSearchDataStructure<CHAR> *searcher;

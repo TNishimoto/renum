@@ -48,7 +48,7 @@ namespace stool
 
             // For range distinct
             std::vector<uint8_t> charTmpVec;
-            vector<RINTERVAL> rIntervalTmpVec;
+            std::vector<RINTERVAL> rIntervalTmpVec;
             std::vector<CharInterval<INDEX, uint8_t>> charIntervalTmpVec;
 
             RLBWTDS *_RLBWTDS;

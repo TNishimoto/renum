@@ -33,9 +33,9 @@ LINK_DIRECTORIES(${SDSL_LIBRARY_DIR})
 include_directories(${SDSL_INCLUDE_DIR})
 #include_directories(~/include)
 
-if(NOT TARGET stool)
-add_subdirectory(module/stool)
-endif()
+#if(NOT TARGET stool)
+#add_subdirectory(module/stool)
+#endif()
 
 
 
@@ -51,7 +51,7 @@ FILE(GLOB STNODE_SOURCES src/lib/basic/*.cpp src/lib/rlbwt/*.cpp)
 
 
 add_library(fn STATIC ${STOOL_SOURCES} ${STNODE_SOURCES})
-target_link_libraries(fn stool sdsl divsufsort divsufsort64)
+target_link_libraries(fn sdsl divsufsort divsufsort64)
 
 
 

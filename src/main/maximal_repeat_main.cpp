@@ -1,13 +1,14 @@
 #include <cassert>
 #include <chrono>
-#include "stool/include/io.hpp"
-#include "stool/include/sa_bwt_lcp.hpp"
-#include "stool/include/cmdline.h"
-#include "stool/include/debug.hpp"
-#include "stool/include/print.hpp"
-#include "stool/include/cmdline.h"
-#include "stool/include/debug.hpp"
-#include "libdivsufsort/sa.hpp"
+
+//#include "stool/include/stool.hpp"
+//#include "stool/include/sa_bwt_lcp.hpp"
+//#include "stool/include/cmdline.h"
+//#include "stool/include/debug.hpp"
+//#include "stool/include/print.hpp"
+#include "stool/include/third_party/cmdline.h"
+//#include "stool/include/debug.hpp"
+//#include "libdivsufsort/sa.hpp"
 
 #include "../include/include.hpp"
 #include <sdsl/bit_vectors.hpp>

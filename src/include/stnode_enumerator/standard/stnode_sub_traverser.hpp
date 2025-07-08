@@ -13,7 +13,7 @@
 #include "../explicit_weiner_link_computer_on_rlbwt.hpp"
 #include "../explicit_weiner_link_computer.hpp"
 
-#include "stool/include/io.hpp"
+#include "stool/include/io/io.hpp"
 #include "../stnode_vector.hpp"
 
 //#include "range_distinct/range_distinct_on_rlbwt.hpp"

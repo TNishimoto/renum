@@ -1,11 +1,11 @@
 #include <cassert>
 #include <chrono>
-#include "stool/include/io.hpp"
-#include "stool/include/sa_bwt_lcp.hpp"
+#include "stool/include/io/io.hpp"
+#include "stool/include/strings/sa_bwt_lcp.hpp"
 
-#include "stool/include/print.hpp"
-#include "stool/include/cmdline.h"
-#include "stool/include/debug.hpp"
+#include "stool/include/debug/print.hpp"
+#include "stool/include/third_party/cmdline.h"
+#include "stool/include/debug/debug.hpp"
 #include "libdivsufsort/sa.hpp"
 // #include "../module/rlbwt_iterator/src/include/rlbwt_iterator.hpp"
 // #include "module/rlbwt_iterator/src/include/bwt.hpp"
@@ -21,15 +21,15 @@ int main(int argc, char *argv[])
 #endif
 
     cmdline::parser p;
-    p.add<string>("input_file", 'i', "input file name", true);
-    p.add<string>("output_file", 'o', "output file path (default: input_file_path.mus)", false, "");
+    p.add<std::string>("input_file", 'i', "input file name", true);
+    p.add<std::string>("output_file", 'o', "output file path (default: input_file_path.mus)", false, "");
     p.add<int>("thread_num", 'p', "thread number", false, -1);
 
     p.parse_check(argc, argv);
-    string inputFile = p.get<string>("input_file");
+    std::string inputFile = p.get<std::string>("input_file");
     // string mode = p.get<string>("mode");
 
-    string outputFile = p.get<string>("output_file");
+    std::string outputFile = p.get<std::string>("output_file");
     int thread_num = p.get<int>("thread_num");
     if (thread_num < 0)
     {

@@ -23,6 +23,9 @@
 #include <sdsl/wavelet_trees.hpp>
 #include <sdsl/wt_algorithm.hpp>
 
+#include "libdivsufsort/sa.hpp"
+
+
 #include <mutex>
 namespace stool
 {

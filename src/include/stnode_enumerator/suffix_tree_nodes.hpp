@@ -8,7 +8,7 @@
 #include <vector>
 #include <type_traits>
 #include <thread>
-#include "stool/include/byte.hpp"
+#include "stool/include/basic/byte.hpp"
 #include <cmath>
 #include "../rlbwt/range_distinct/succinct_range_distinct.hpp"
 

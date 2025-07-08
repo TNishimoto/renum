@@ -13,9 +13,9 @@
 //#include "OnlineRlbwt/online_rlbwt.hpp"
 //#include "rlbwt.hpp"
 //#include "stool/src/elias_fano_vector.hpp"
-#include "stool/include/online_io.hpp"
-#include "stool/include/elias_fano_vector.hpp"
-#include "stool/include/byte.hpp"
+#include "stool/include/io/online_file_reader.hpp"
+#include "stool/include/specialized_collection/elias_fano_vector.hpp"
+#include "stool/include/basic/byte.hpp"
 
 namespace stool
 {
@@ -67,13 +67,13 @@ namespace stool
 
                     throw std::runtime_error("error");
                 }
-                uint64_t textSize = stool::FileReader::getTextSize(inp);
+                uint64_t textSize = stool::OnlineFileReader::get_text_size(inp);
                 uint8_t prevChar = 255;
                 uint64_t x = 0;
                 uint64_t count_run = 0;
                 while (true)
                 {
-                    bool b = stool::FileReader::read(inp, buffer, bufferSize, textSize);
+                    bool b = stool::OnlineFileReader::read(inp, buffer, bufferSize, textSize);
                     if (!b)
                     {
                         break;

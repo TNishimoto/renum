@@ -184,14 +184,14 @@ namespace stool
                 }
 
                 //auto start = std::chrono::system_clock::now();
-                std::vector<thread> threads;
+                std::vector<std::thread> threads;
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    threads.push_back(thread(parallel_count_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), ref(children_count_vec[i])));
+                    threads.push_back(std::thread(parallel_count_stnodes<INDEX_SIZE, RLBWTDS>, std::ref(sub_trees), fst_pos_vec[i], std::ref(position_stack), std::ref(ems[i]), std::ref(children_count_vec[i])));
                 }
 
-                for (thread &t : threads)
+                for (std::thread &t : threads)
                     t.join();
 
                 assert(position_stack.size() == 0);
@@ -345,14 +345,14 @@ namespace stool
                 }
 
                 //auto start = std::chrono::system_clock::now();
-                std::vector<thread> threads;
+                std::vector<std::thread> threads;
 
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    threads.push_back(thread(parallel_succ_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), this->sub_tree_limit_size));
+                    threads.push_back(std::thread(parallel_succ_stnodes<INDEX_SIZE, RLBWTDS>, std::ref(sub_trees), fst_pos_vec[i], std::ref(position_stack), std::ref(ems[i]), this->sub_tree_limit_size));
                 }
 
-                for (thread &t : threads)
+                for (std::thread &t : threads)
                     t.join();
                     //auto end = std::chrono::system_clock::now();
 #if DEBUG

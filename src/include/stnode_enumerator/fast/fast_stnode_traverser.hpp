@@ -464,13 +464,13 @@ namespace stool
                 //auto start = std::chrono::system_clock::now();
                 uint64_t limit = (peak_mmax - this->mmax) / (this->sub_trees.size() + 1);
 
-                std::vector<thread> threads;
+                std::vector<std::thread> threads;
                 for (uint64_t i = 0; i < this->thread_count; i++)
                 {
-                    threads.push_back(thread(parallel_succ_fast_stnodes<INDEX_SIZE, RLBWTDS>, ref(sub_trees), fst_pos_vec[i], ref(position_stack), ref(ems[i]), limit));
+                    threads.push_back(std::thread(parallel_succ_fast_stnodes<INDEX_SIZE, RLBWTDS>, std::ref(sub_trees), fst_pos_vec[i], std::ref(position_stack), std::ref(ems[i]), limit));
                 }
 
-                for (thread &t : threads)
+                for (std::thread &t : threads)
                     t.join();
                     //auto end = std::chrono::system_clock::now();
 #if DEBUG
@@ -491,7 +491,7 @@ namespace stool
 
                 uint64_t limit = peak_mmax - this->mmax;
 
-                parallel_succ_fast_stnodes<INDEX_SIZE, RLBWTDS>(ref(sub_trees), fst_pos, ref(position_stack), ref(ems[0]), limit);
+                parallel_succ_fast_stnodes<INDEX_SIZE, RLBWTDS>(ref(sub_trees), fst_pos, std::ref(position_stack), std::ref(ems[0]), limit);
                 assert(position_stack.size() == 0);
             }
             void split()

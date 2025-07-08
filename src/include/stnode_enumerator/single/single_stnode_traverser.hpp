@@ -9,7 +9,7 @@
 #include <vector>
 #include <type_traits>
 #include "../explicit_weiner_link_computer_on_rlbwt.hpp"
-#include "stool/include/io.hpp"
+#include "stool/include/io/io.hpp"
 #include "../stnode_vector.hpp"
 #include "bit_deque.hpp"
 #include "../node_iterator.hpp"

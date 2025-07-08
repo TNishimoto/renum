@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include "./bwt_analysis_result.hpp"
-#include "stool/include/elias_fano_vector.hpp"
+#include "stool/include/specialized_collection/elias_fano_vector.hpp"
 
 namespace stool
 {
@@ -69,14 +69,14 @@ namespace stool
 
                     throw std::runtime_error("error");
                 }
-                uint64_t textSize = stool::FileReader::getTextSize(inp);
+                uint64_t textSize = stool::OnlineFileReader::get_text_size(inp);
                 uint8_t prevChar = 255;
                 uint64_t x = 0;
                 uint64_t currentRunP = 0;
 
                 while (true)
                 {
-                    bool b = stool::FileReader::read(inp, buffer, bufferSize, textSize);
+                    bool b = stool::OnlineFileReader::read(inp, buffer, bufferSize, textSize);
                     if (!b)
                     {
                         break;

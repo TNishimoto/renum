@@ -112,7 +112,7 @@ namespace stool
                     if (traverser->has_edge_characters())
                     {
                         uint8_t c = this->get_edge_character(i);
-                        string charStr = c == 0 ? "$(0)" : std::string(1, c);
+                        std::string charStr = c == 0 ? "$(0)" : std::string(1, c);
                         std::cout << "(" << left << ", " << right << ", " << charStr << ")" << std::flush;
                     }
                     else

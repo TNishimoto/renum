@@ -1,12 +1,12 @@
 #include <cassert>
 #include <chrono>
 #include <stdio.h>
-#include "stool/include/io.hpp"
-#include "stool/include/sa_bwt_lcp.hpp"
+#include "stool/include/io/io.hpp"
+#include "stool/include/strings/sa_bwt_lcp.hpp"
 
-#include "stool/include/print.hpp"
-#include "stool/include/cmdline.h"
-#include "stool/include/debug.hpp"
+#include "stool/include/debug/print.hpp"
+#include "stool/include/third_party/cmdline.h"
+#include "stool/include/debug/debug.hpp"
 #include "../module/libdivsufsort/sa.hpp"
 
 //#include "hpp/bwt.hpp"
@@ -117,8 +117,8 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
 
     if (correctCheck)
     {
-        std::vector<uint64_t> psa = stool::constructISA(text, sa);
-        auto correctLCP = stool::constructLCP(text, sa);
+        std::vector<uint64_t> psa = stool::construct_ISA(text, sa);
+        auto correctLCP = stool::construct_LCP_array(text, sa);
         std::cout << "Correct" << std::endl;
         std::vector<LCPINTV> correct_intervals = stool::esaxx::NaiveAlgorithms::naive_compute_lcp_intervals(text, sa);
         stool::beller::equal_check_lcp_intervals(test_Intervals, correct_intervals);

@@ -70,13 +70,13 @@ void test_deque(uint64_t size, uint64_t thread_count, bool is_parallel)
 
     if (is_parallel)
     {
-        std::vector<thread> threads;
+        std::vector<std::thread> threads;
         for (uint64_t i = 0; i < thread_count; i++)
         {
-            threads.push_back(thread(parallel_process_deque, tmp[i], size));
+            threads.push_back(std::thread(parallel_process_deque, tmp[i], size));
         }
 
-        for (thread &t : threads)
+        for (std::thread &t : threads)
             t.join();
     }
     else
@@ -111,13 +111,13 @@ void test_vector(uint64_t size, uint64_t thread_count, bool is_parallel)
 
     if (is_parallel)
     {
-        std::vector<thread> threads;
+        std::vector<std::thread> threads;
         for (uint64_t i = 0; i < thread_count; i++)
         {
-            threads.push_back(thread(parallel_process_vector, tmp[i], size));
+            threads.push_back(std::thread(parallel_process_vector, tmp[i], size));
         }
         
-        for (thread &t : threads)
+        for (std::thread &t : threads)
             t.join();
             
     }
@@ -152,13 +152,13 @@ void test_queue(uint64_t size, uint64_t thread_count, bool is_parallel)
     }
     if (is_parallel)
     {
-        std::vector<thread> threads;
+        std::vector<std::thread> threads;
         for (uint64_t i = 0; i < thread_count; i++)
         {
-            threads.push_back(thread(parallel_process_queue, tmp[i], size));
+            threads.push_back(std::thread(parallel_process_queue, tmp[i], size));
         }
 
-        for (thread &t : threads)
+        for (std::thread &t : threads)
             t.join();
     }
     else
@@ -192,13 +192,13 @@ void test_hoge(uint64_t size, uint64_t thread_count, bool is_parallel)
     }
     if (is_parallel)
     {
-        std::vector<thread> threads;
+        std::vector<std::thread> threads;
         for (uint64_t i = 0; i < thread_count; i++)
         {
-            threads.push_back(thread(parallel_process_structure, tmp[i], size));
+            threads.push_back(std::thread(parallel_process_structure, tmp[i], size));
         }
 
-        for (thread &t : threads)
+        for (std::thread &t : threads)
             t.join();
     }
     else

@@ -120,7 +120,7 @@ namespace stool
 
                 while (true)
                 {
-                    bool b = stool::FileReader::read(stream, buffer, bufferSize, textSize + 9);
+                    bool b = stool::OnlineFileReader::read(stream, buffer, bufferSize, textSize + 9);
                     if (!b)
                     {
                         break;

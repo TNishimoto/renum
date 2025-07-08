@@ -5,8 +5,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "stool/include/cmdline.h"
-#include "stool/include/sa_bwt_lcp.hpp"
+#include "stool/include/third_party/cmdline.h"
+#include "stool/include/strings/sa_bwt_lcp.hpp"
+#include "stool/include/strings/lcp_interval.hpp"
+
 #include "../include/rlbwt/bwt_analysis_result.hpp"
 #include "../include/rlbwt/rle.hpp"
 #include "../include/rlbwt/bwt_decompress.hpp"
