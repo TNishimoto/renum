@@ -41,7 +41,7 @@ public:
     sdsl::int_vector<> bwt;
     sdsl::wt_gmr<> wt;
     std::vector<uint64_t> C;
-    void initialize(string inputFile)
+    void initialize(std::string inputFile)
     {
         std::vector<uint8_t> _bwt;
         stool::bwt::load(inputFile, _bwt);
@@ -125,18 +125,18 @@ int main(int argc, char *argv[])
 {
 
     cmdline::parser p;
-    p.add<string>("input_file", 'i', "input bwt file path", true);
-    p.add<string>("lcp_interval_file", 'l', "LCP interval file path", true);
-    p.add<string>("output_file", 'o', "output file path (default: lcp_interval_file.interval.log)", false, "");
+    p.add<std::string>("input_file", 'i', "input bwt file path", true);
+    p.add<std::string>("lcp_interval_file", 'l', "LCP interval file path", true);
+    p.add<std::string>("output_file", 'o', "output file path (default: lcp_interval_file.interval.log)", false, "");
     p.add<bool>("string_flag", 's', "Output the string represented by each interval if this flag is 1", false, true);
 
     //p.add<string>("tree_file", 't', "file type", false, "NULL");
 
     p.parse_check(argc, argv);
-    string inputFile = p.get<string>("input_file");
-    string intervalFile = p.get<string>("lcp_interval_file");
+    std::string inputFile = p.get<std::string>("input_file");
+    std::string intervalFile = p.get<std::string>("lcp_interval_file");
     //string type = p.get<string>("tree_file");
-    string outputFile = p.get<string>("output_file");
+    std::string outputFile = p.get<std::string>("output_file");
     bool string_flag = p.get<bool>("string_flag");
 
     if (outputFile.size() == 0)

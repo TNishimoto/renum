@@ -277,6 +277,6 @@ $ ./dfs_maximal_repeat.out -i ./sample.txt.bwt.iv
 > _______________________________________________________ 
 
 
-## Library
+## API Documentation (in preparation)
 
-(in preparation)  
+[Doxygen](https://TNishimoto.github.io/renum/html/index.html)
