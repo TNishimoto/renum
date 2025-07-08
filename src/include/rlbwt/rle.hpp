@@ -144,7 +144,7 @@ namespace stool
             {
                 for (INDEX i = 0; i < head_char_vec.size(); i++)
                 {
-                    if ((head_char_vec)[i] == this->smalles_character)
+                    if ((head_char_vec)[i] == this->smallest_character)
                     {
                         return i;
                     }

@@ -65,13 +65,14 @@ namespace stool
             {
                 return this->store_edge_chars;
             }
+            uint64_t _expected_peak_memory_bits = 0;
+            uint64_t _switch_threshold = 0;
+
             /*
             uint64_t print_interval = 100;
             uint64_t print_interval_counter = 0;
             uint64_t total_counter = 0;
             uint64_t alpha = 2;
-            uint64_t _expected_peak_memory_bits = 0;
-            uint64_t _switch_threshold = 0;
             uint64_t debug_peak_memory = 0;
             */
             //uint mode = FAST_MODE;

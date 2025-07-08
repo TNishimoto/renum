@@ -24,20 +24,6 @@ set(MYMOD_SOURCE_DIR ${CMAKE_SOURCE_DIR}/module)
 set(MYMOD_BINARY_DIR ${CMAKE_BINARY_DIR}/module)
 set(MYMOD_DIR 1)
 
-#add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
-#include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
-
-#if(COMPILE_LIBDIVSUFSORT)
-#add_subdirectory(${MYMOD_SOURCE_DIR}/libdivsufsort ${MYMOD_BINARY_DIR}/libdivsufsort)
-#include_directories(${MYMOD_BINARY_DIR}/libdivsufsort/include)
-#else()
-##libdivsufsort directory is here.
-##Please modify it appropriately.
-#LINK_DIRECTORIES(~/lib)
-#INCLUDE_DIRECTORIES(~/include)
-#endif()
-
-
 #SDSL lib and include directory are here
 #Please modify it appropriately.
 find_library(SDSL_LIBRARY_DIR sdsl REQUIRED)
@@ -99,8 +85,8 @@ target_link_libraries(convert_bwt_into_int_vector.out fn)
 add_executable(bbo_maximal_repeat.out src/experiments/bbo_meximal_repeat_main.cpp)
 target_link_libraries(bbo_maximal_repeat.out fn)
 
-add_executable(dfs_maximal_repeat.out src/experiments/dfs_maximal_repeat_main.cpp)
-target_link_libraries(dfs_maximal_repeat.out fn)
+#add_executable(dfs_maximal_repeat.out src/experiments/dfs_maximal_repeat_main.cpp)
+#target_link_libraries(dfs_maximal_repeat.out fn)
 
 
 
