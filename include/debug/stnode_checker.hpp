@@ -121,7 +121,7 @@ namespace stool
 
                 std::vector<char> tmpText = stool::bwt::decompress_bwt(inputFile);
                 text.swap(tmpText);
-                sa = stool::construct_suffix_array(text);
+                sa = libdivsufsort::construct_suffix_array(text);
 
                 std::vector<stool::LCPInterval<uint64_t>> correct_lcp_intervals = stool::renum::NaiveAlgorithms::naive_compute_lcp_intervals<char, uint64_t>(text, sa);
                 std::sort(

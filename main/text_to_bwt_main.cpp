@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
     */
 
     text.push_back(sc);
-    //std::vector<uint64_t> sa = stool::construct_suffix_array(text);
+    //std::vector<uint64_t> sa = libdivsufsort::construct_suffix_array(text);
     std::vector<uint8_t> bwt = construct_bwt(text);
 
     if(bwt.size() < 100){

@@ -202,7 +202,7 @@ void debug(std::string inputFile)
 {
     std::cout << "Constuct Test MUSs" << std::endl;
     std::vector<char> text = stool::bwt::decompress_bwt(inputFile);
-    std::vector<uint64_t> sa = stool::construct_suffix_array(text);
+    std::vector<uint64_t> sa = libdivsufsort::construct_suffix_array(text);
     /*
     for (uint64_t p = 0; p < text.size(); p++)
     {

@@ -65,7 +65,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
     stool::IO::load(inputFile,text);
     text.push_back(0);
 
-    std::vector<INDEX> sa = stool::construct_suffix_array(text);
+    std::vector<INDEX> sa = libdivsufsort::construct_suffix_array(text);
     sdsl::int_vector<> bwt;
     stool::renum::FMIndex::constructBWT(text, sa, bwt);
 

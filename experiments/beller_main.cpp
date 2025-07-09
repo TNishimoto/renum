@@ -88,7 +88,7 @@ void computeLCPIntervals(std::string inputFile, bool correctCheck)
   //string text = "";
   std::cout << "Loading : " << inputFile << std::endl;
   std::vector<uint8_t> text = stool::load_text_from_file(inputFile, true);
-  vector<INDEX> sa = stool::construct_suffix_array(text);
+  vector<INDEX> sa = libdivsufsort::construct_suffix_array(text);
   sdsl::int_vector<> bwt;
   stool::renum::FMIndex::constructBWT(text, sa, bwt);
 
