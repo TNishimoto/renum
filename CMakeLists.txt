@@ -18,8 +18,8 @@ set(CMAKE_CXX_FLAGS_DEBUG  "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
 if(NOT TARGET libdivsufsort)
-include_directories(${CMAKE_BINARY_DIR}/modules/libdivsufsort/include)
-add_subdirectory(modules/libdivsufsort)
+include_directories(${CMAKE_BINARY_DIR}/module/libdivsufsort/include)
+add_subdirectory(module/libdivsufsort)
 endif()
 
 #set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
