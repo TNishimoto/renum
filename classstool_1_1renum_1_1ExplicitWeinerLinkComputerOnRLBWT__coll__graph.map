@@ -1,0 +1,9 @@
+<map id="stool::renum::ExplicitWeinerLinkComputerOnRLBWT&lt; RLBWTDS &gt;" name="stool::renum::ExplicitWeinerLinkComputerOnRLBWT&lt; RLBWTDS &gt;">
+<area shape="rect" id="Node000001" title=" " alt="" coords="429,84,700,124"/>
+<area shape="rect" id="Node000002" href="$classstool_1_1renum_1_1RLE.html" title=" " alt="" coords="49,5,195,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="209,38,452,81,451,87,208,43"/>
+<area shape="rect" id="Node000003" href="$classstool_1_1renum_1_1LightRangeDistinctDataStructure.html" title=" " alt="" coords="14,69,230,139"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="244,101,429,101,429,107,244,107"/>
+<area shape="rect" id="Node000004" href="$classstool_1_1renum_1_1SuccinctRangeDistinctDataStructure.html" title=" " alt="" coords="5,163,239,203"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="248,158,451,121,452,127,249,163"/>
+</map>

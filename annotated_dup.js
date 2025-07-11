@@ -1,0 +1,48 @@
+var annotated_dup =
+[
+    [ "stool", null, [
+      [ "renum", null, [
+        [ "Application", "classstool_1_1renum_1_1Application.html", null ],
+        [ "BellerComponent", "classstool_1_1renum_1_1BellerComponent.html", null ],
+        [ "BellerSmallComponent", "structstool_1_1renum_1_1BellerSmallComponent.html", null ],
+        [ "BitDeque", "classstool_1_1renum_1_1BitDeque.html", null ],
+        [ "BWTAnalysisResult", "structstool_1_1renum_1_1BWTAnalysisResult.html", null ],
+        [ "CharInterval", "classstool_1_1renum_1_1CharInterval.html", null ],
+        [ "DFSTraverser", "classstool_1_1renum_1_1DFSTraverser.html", "classstool_1_1renum_1_1DFSTraverser" ],
+        [ "ExplicitWeinerLinkComputer", "classstool_1_1renum_1_1ExplicitWeinerLinkComputer.html", null ],
+        [ "ExplicitWeinerLinkComputerOnRLBWT", "classstool_1_1renum_1_1ExplicitWeinerLinkComputerOnRLBWT.html", null ],
+        [ "FastSTNodeSubTraverser", "classstool_1_1renum_1_1FastSTNodeSubTraverser.html", null ],
+        [ "FastSTNodeTraverser", "classstool_1_1renum_1_1FastSTNodeTraverser.html", null ],
+        [ "FMIndex", "classstool_1_1renum_1_1FMIndex.html", null ],
+        [ "FPosDataStructure", "classstool_1_1renum_1_1FPosDataStructure.html", null ],
+        [ "IntervalSearchDataStructure", "classstool_1_1renum_1_1IntervalSearchDataStructure.html", null ],
+        [ "LightFPosDataStructure", "classstool_1_1renum_1_1LightFPosDataStructure.html", null ],
+        [ "LightRangeDistinctDataStructure", "classstool_1_1renum_1_1LightRangeDistinctDataStructure.html", null ],
+        [ "LightRangeDistinctDataStructure2", "classstool_1_1renum_1_1LightRangeDistinctDataStructure2.html", null ],
+        [ "LightweightInterval", "structstool_1_1renum_1_1LightweightInterval.html", null ],
+        [ "NaiveAlgorithms", "classstool_1_1renum_1_1NaiveAlgorithms.html", null ],
+        [ "OutputStructure", "classstool_1_1renum_1_1OutputStructure.html", null ],
+        [ "RangeDistinctDataStructure", "classstool_1_1renum_1_1RangeDistinctDataStructure.html", null ],
+        [ "RankSupportVectorWrapper", "classstool_1_1renum_1_1RankSupportVectorWrapper.html", null ],
+        [ "RInterval", "structstool_1_1renum_1_1RInterval.html", null ],
+        [ "RLE", "classstool_1_1renum_1_1RLE.html", null ],
+        [ "RLEWaveletTree", "classstool_1_1renum_1_1RLEWaveletTree.html", null ],
+        [ "SDSLFunction", "classstool_1_1renum_1_1SDSLFunction.html", null ],
+        [ "SingleSTNodeTraverser", "classstool_1_1renum_1_1SingleSTNodeTraverser.html", null ],
+        [ "STDepthIterator", "classstool_1_1renum_1_1STDepthIterator.html", null ],
+        [ "STDepthIteratorErrorChecker", "classstool_1_1renum_1_1STDepthIteratorErrorChecker.html", null ],
+        [ "STNodeChecker", "classstool_1_1renum_1_1STNodeChecker.html", null ],
+        [ "STNodeIterator", "classstool_1_1renum_1_1STNodeIterator.html", null ],
+        [ "STNodeSubTraverser", "classstool_1_1renum_1_1STNodeSubTraverser.html", null ],
+        [ "STNodeTraverser", "classstool_1_1renum_1_1STNodeTraverser.html", null ],
+        [ "STNodeVector", "classstool_1_1renum_1_1STNodeVector.html", null ],
+        [ "STTreeAnalysisResult", "classstool_1_1renum_1_1STTreeAnalysisResult.html", null ],
+        [ "SuccinctRangeDistinctDataStructure", "classstool_1_1renum_1_1SuccinctRangeDistinctDataStructure.html", null ],
+        [ "SuccinctSortedSTChildren", "classstool_1_1renum_1_1SuccinctSortedSTChildren.html", null ],
+        [ "SuccinctSortedSTChildrenBuilder", "classstool_1_1renum_1_1SuccinctSortedSTChildrenBuilder.html", null ],
+        [ "SuccinctSortedSTChildrenBuilderProfiler", "classstool_1_1renum_1_1SuccinctSortedSTChildrenBuilderProfiler.html", null ],
+        [ "SuffixTreeNodes", "classstool_1_1renum_1_1SuffixTreeNodes.html", null ],
+        [ "WeinerLinkCommonFunctions", "classstool_1_1renum_1_1WeinerLinkCommonFunctions.html", null ]
+      ] ]
+    ] ]
+];
